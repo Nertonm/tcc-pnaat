@@ -1,0 +1,40 @@
+# Env
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Build / firmware
+build/
+managed_components/
+sdkconfig*
+*.bin
+*.uf2
+*.elf
+
+# Dados (imagens/dataset nunca no git — proveniência documentada em docs/)
+data/
+dataset/
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.npy
+
+# Análise
+.ipynb_checkpoints/
+*.ipynb
+
+# OS/IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Relatórios gerados
+*.pdf
+reports/
