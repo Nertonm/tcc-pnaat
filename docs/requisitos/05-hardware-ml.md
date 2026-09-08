@@ -18,10 +18,12 @@
 - Critério: suportes parafusados e jig posicionam item repetidamente; réplicas de deformidade são parametrizadas.
 - Critério de reprovação: reposicionamento altera medida/enquadramento além da tolerância. Evidência: desenho e ensaio repetido.
 
-### HW-04: Iluminação por vista
+### HW-04: Arranjo de iluminação por vista e difusão óptica
 
-- Critério: comparar ao menos duas geometrias por vista; topo prioriza silhueta/bright field e laterais avaliam dark field quando aplicável.
-- Critério de reprovação: escolher luz sem comparação ou atribuir ganho sem métrica. Evidência: imagens pareadas e métrica.
+- Entrada: 2x LEDs RGB de 5 mm de alto brilho, lente difusora (PLA 3D branco translúcido, acrílico ou papel vegetal), fita retrorrefletiva 3M e sinais PWM de controle.
+- Critério: acionamento direto dos LEDs RGB em potência máxima (luz branca) operados em modo estroboscópico via trigger do ESP32; obrigatoriedade do uso de lente difusora frontal para eliminação de hotspots rígidos em garrafas de PET/Vidro; alinhamento óptico do sensor E18-D80NK inclinado em 10°–15° mirando no anteparo retrorrefletivo oposto.
+- Critério de reprovação: iluminação contínua gerando aquecimento e descarregamento de bateria, ou ausência de difusor provocando reflexos saturados.
+- Evidência: fotos pareadas com e sem lente difusora, relatório de temperatura e logs de consumo das baterias 18650.
 
 ### HW-05: BOM e interfaces
 
