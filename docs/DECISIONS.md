@@ -152,6 +152,23 @@ Registro de posições de decisão. Nenhuma posição está fechada: cada item a
 - A decidir: mecanismo de fixação e tolerância de calibração, validados no laboratório.
 - Detalhes em `docs/design/grip-extensivel.md`.
 
+## D-18: Sistema de iluminação estroboscópica RGB com lente difusora 3D
+
+- Opções:
+  - A: Iluminação contínua comercial sem difusor.
+  - B: 2x LEDs RGB de 5 mm de alto brilho operados em potência máxima (luz branca) acionados estroboscopicamente via trigger do ESP32, com lente difusora frontal em PLA 3D translúcido, acrílico ou papel vegetal.
+- Direção forte: Opção B.
+- Justificativa: Evita o superaquecimento dos LEDs, economiza a carga das baterias 18650, atua como estroboscópio para congelar o movimento no trilho e elimina hotspots saturados em garrafas PET/Vidro.
+- A decidir: Largura precisa do pulso PWM e espessura da parede em PLA 3D da lente difusora, validadas na PoC 3.
+
+## D-19: Divisão de tarefas de tempo real entre ESP32 e Raspberry Pi 5
+
+- Opções:
+  - A: Conectar todos os sensores diretamente nas GPIOs do Raspberry Pi 5.
+  - B: Usar ESP32 para gerenciar interrupções, debounce do E18-D80NK/VL53L0X, leitura do encoder KY-040 e acionamento estroboscópico da iluminação, enviando timestamps e triggers processados para o Raspberry Pi 5.
+- Direção forte: Opção B.
+- Justificativa: Isola tarefas determinísticas de tempo real e debounce no ESP32, mantendo a capacidade computacional do Raspberry Pi 5 focada exclusivamente na inferência dos modelos de visão computacional e gerenciamento do hub.
+
 ## Regra de atualização
 
 Uma posição só sai do estado "a decidir" quando houver evidência de PoC, medição ou revisão registrada no repositório. O registro de cada revisão entra como novo item, sem apagar o histórico da posição anterior.
