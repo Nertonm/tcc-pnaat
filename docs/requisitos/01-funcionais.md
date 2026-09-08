@@ -17,6 +17,19 @@ Cada ficha informa ator, pré-condição, entrada, comportamento, saída, crité
 - Critério de reprovação: deslocar uma câmera ou remover uma vista deve gerar registro parcial, não sucesso completo.
 - Verificação: três imagens, log do trigger e teste de correlação. Dependências: HW-01, IF-01, DAT-01.
 
+#### RF-01.1: Garantir confiabilidade do trigger E18-D80NK independente de garrafa/líquido
+
+- Ator: montador/nó de visão. Pré-condição: E18-D80NK instalado no rig e esteira em operação.
+- Problema: o sensor difuso E18-D80NK pode falhar em detectar de forma consistente garrafas transparentes, translúcidas ou com líquidos diferentes, pois a reflexão direta da curvatura do plástico e a variação óptica do conteúdo alteram o retorno do feixe ao receptor.
+- Entrada: feixe infravermelho emitido pelo sensor e retorno (direto ou por anteparo) ao receptor.
+- Comportamento: aplicar as duas abordagens combinadas de ajuste físico para tornar a detecção robusta a qualquer garrafa/líquido:
+  - **(A) Ajuste de ângulo de montagem:** inclinar o sensor em 10°–15° em relação à perpendicular da garrafa (em vez de 90°), evitando que o reflexo especular direto da curvatura do plástico engane o receptor e aproveitando a refração do corpo da garrafa para um retorno mais estável.
+  - **(B) Fundo refletivo em modo barreira (barreira por oclusão):** instalar um refletor ou superfície branca no lado oposto da esteira, alinhado ao eixo do sensor. O sensor é ajustado (trimpot de sensibilidade) para permanecer ativado quando "enxerga" o fundo refletivo constantemente. Qualquer garrafa que passe — mesmo transparente — bloqueia ou refrata o feixe e interrompe esse sinal de retorno constante, convertendo o sensor difuso em um sensor de barreira reflexiva, que não depende da reflectância do próprio objeto.
+- Saída: sinal de trigger estável (borda de interrupção do feixe) independente do tipo de garrafa ou líquido, alimentando RF-01.
+- Critério de reprovação: testar com garrafa vazia, garrafa cheia de líquido transparente e garrafa cheia de líquido opaco/colorido deve produzir o mesmo comportamento de disparo (mesma janela de detecção, sem falso negativo); remover o fundo refletivo ou desalinhar o sensor deve degradar mensuravelmente a taxa de detecção.
+- Verificação: ensaio comparativo (sensor a 90° sem anteparo vs. sensor inclinado 10°–15° com fundo refletivo) medindo taxa de acerto por tipo de garrafa/líquido; checklist de alinhamento óptico e ajuste de sensibilidade (trimpot); fotos da montagem com cotas do ângulo e da distância ao fundo refletivo.
+- Dependências: HW-01, RF-26 (fixação das conexões), RF-27/RF-28 (painel/jig que garantem a geometria repetível do ângulo e da distância ao refletor).
+
 ### RF-02: Classificar tampa ausente
 
 - Ator: classificador da vista topo. Pré-condição: imagem válida e modelo carregado.
