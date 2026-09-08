@@ -17,18 +17,19 @@ Cada ficha informa ator, pré-condição, entrada, comportamento, saída, crité
 - Critério de reprovação: deslocar uma câmera ou remover uma vista deve gerar registro parcial, não sucesso completo.
 - Verificação: três imagens, log do trigger e teste de correlação. Dependências: HW-01, IF-01, DAT-01.
 
-#### RF-01.1: Garantir confiabilidade do trigger E18-D80NK independente de garrafa/líquido
+### RF-01.1: Garantir confiabilidade do trigger E18-D80NK via barreira por oclusão retrorrefletiva e ESP32
 
-- Ator: montador/nó de visão. Pré-condição: E18-D80NK instalado no rig e esteira em operação.
-- Problema: o sensor difuso E18-D80NK pode falhar em detectar de forma consistente garrafas transparentes, translúcidas ou com líquidos diferentes, pois a reflexão direta da curvatura do plástico e a variação óptica do conteúdo alteram o retorno do feixe ao receptor.
-- Entrada: feixe infravermelho emitido pelo sensor e retorno (direto ou por anteparo) ao receptor.
-- Comportamento: aplicar as duas abordagens combinadas de ajuste físico para tornar a detecção robusta a qualquer garrafa/líquido:
-  - **(A) Ajuste de ângulo de montagem:** inclinar o sensor em 10°–15° em relação à perpendicular da garrafa (em vez de 90°), evitando que o reflexo especular direto da curvatura do plástico engane o receptor e aproveitando a refração do corpo da garrafa para um retorno mais estável.
-  - **(B) Fundo refletivo em modo barreira (barreira por oclusão):** instalar um refletor ou superfície branca no lado oposto da esteira, alinhado ao eixo do sensor. O sensor é ajustado (trimpot de sensibilidade) para permanecer ativado quando "enxerga" o fundo refletivo constantemente. Qualquer garrafa que passe — mesmo transparente — bloqueia ou refrata o feixe e interrompe esse sinal de retorno constante, convertendo o sensor difuso em um sensor de barreira reflexiva, que não depende da reflectância do próprio objeto.
-- Saída: sinal de trigger estável (borda de interrupção do feixe) independente do tipo de garrafa ou líquido, alimentando RF-01.
-- Critério de reprovação: testar com garrafa vazia, garrafa cheia de líquido transparente e garrafa cheia de líquido opaco/colorido deve produzir o mesmo comportamento de disparo (mesma janela de detecção, sem falso negativo); remover o fundo refletivo ou desalinhar o sensor deve degradar mensuravelmente a taxa de detecção.
-- Verificação: ensaio comparativo (sensor a 90° sem anteparo vs. sensor inclinado 10°–15° com fundo refletivo) medindo taxa de acerto por tipo de garrafa/líquido; checklist de alinhamento óptico e ajuste de sensibilidade (trimpot); fotos da montagem com cotas do ângulo e da distância ao fundo refletivo.
-- Dependências: HW-01, RF-26 (fixação das conexões), RF-27/RF-28 (painel/jig que garantem a geometria repetível do ângulo e da distância ao refletor).
+- Ator: ESP32 / nó de hardware. Pré-condição: E18-D80NK instalado no rig com inclinação de 10°–15°, fita retrorrefletiva 3M no anteparo oposto e esteira em operação.
+- Entrada: interrupção gerada pela oclusão/refração do feixe infravermelho no sensor E18-D80NK e pulsos do encoder KY-040.
+- Comportamento:
+  - **(A) Detecção por oclusão:** a passagem de qualquer garrafa (transparente, opaca ou com líquido) refrata o feixe, interrompendo o retorno contínuo da fita retrorrefletiva.
+  - **(B) Processamento determinístico no ESP32:** o ESP32 trata o debounce (30–50 ms), captura a contagem do encoder KY-040, calcula a velocidade real da esteira e determina a janela de chegada (`tempo_chegada = distancia / velocidade`).
+  - **(C) Disparo e iluminação:** no momento exato, o ESP32 envia o sinal de trigger/timestamp para o Raspberry Pi 5 e aciona a iluminação estroboscópica.
+  - **(D) Validação pelo VL53L0X:** o sensor VL53L0X atua como validação/fallback experimental. Caso o VL53L0X gere um evento próximo ao E18-D80NK, o ESP32 correlaciona ambos para evitar duplicidade de evento.
+- Saída: timestamp determinístico, estimativa de velocidade, sinal de trigger para o Raspberry Pi 5 e pulso de iluminação estroboscópica.
+- Critério de reprovação: falsos disparos ou perda de detecção em garrafas transparentes/com líquido, ou falha de correlação entre E18 e VL53L0X gerando duplicidade de evento.
+- Verificação: ensaio comparativo em garrafas vazias, cheias e transparentes; medição do tempo de debounce no ESP32.
+- Dependências: HW-01, HW-04, IF-01, RF-26..28.
 
 ### RF-02: Classificar tampa ausente
 
@@ -283,6 +284,16 @@ Cada ficha informa ator, pré-condição, entrada, comportamento, saída, crité
 - Saída: matriz DFT ligada aos requisitos e evidências.
 - Critério de reprovação: requisito sem entrada controlável ou saída observável fica sem aceite.
 - Verificação: matriz e revisão da arquitetura. Dependências: todas as categorias.
+
+### RF-30: Acionar iluminação estroboscópica RGB sincronizada ao trigger
+
+- Ator: ESP32 / controlador de iluminação. Pré-condição: LEDs RGB alimentados e sinal de trigger válido.
+- Entrada: pulso de confirmação de presença do frasco no ponto de captura emitido pelo ESP32.
+- Comportamento: acionar simultaneamente 2 LEDs RGB de alto brilho (5 mm) configurados em potência máxima nos canais Vermelho, Verde e Azul (R, G, B via GPIO/PWM) para gerar luz branca brilhante de iluminação direta no exato instante da captura das câmeras.
+- Saída: pulso de iluminação síncrono (estroboscópio) que retorna ao estado desligado/repouso imediatamente após a janela de captura.
+- Critério de reprovação: manter a iluminação acesa continuamente, provocando superaquecimento dos LEDs, reflexos persistentes ou consumo excessivo do pacote de baterias 18650.
+- Verificação: log monotônico do tempo de pulso do PWM, monitoramento de temperatura dos LEDs e nível de carga da bateria 18650.
+- Dependências: RF-01, RF-01.1, HW-04.
 
 ## Fechamento
 
