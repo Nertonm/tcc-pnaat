@@ -167,6 +167,15 @@ Base: RNF-01 a RNF-20 em `../requisitos.md`. Nenhum item representa resultado me
 - Critério de reprovação: recalibração necessária após movimentação dentro do uso previsto ou circuito aberto falha.
 - Verificação: desenho, fotos, multímetro e calibração antes/depois. Dependências: RF-26..28, HW-01..06.
 
+### RNF-21: Lente difusora óptica para mitigação de hotspots na captura
+
+- Mede: eliminação de pontos rígidos de saturação luminosa (*hotspots*) causados por LEDs de 5 mm na superfície curva de garrafas PET e vidro.
+- Método: instalação de lente difusora em PLA branco translúcido impresso em 3D, acrílico ou papel vegetal acoplada à frente dos 2 LEDs RGB de 5 mm; análise do histograma da imagem capturada.
+- Aceite: ausência de regiões estouradas (valor de brilho máximo 255 constante) no corpo e na tampa que impeçam a extração de bordas e contornos pelos classificadores.
+- Critério de reprovação: imagens com reflexos especulares rígidos gerando falsos positivos de deformidade ou falha de rosqueamento.
+- Verificação: análise de histograma em conjunto de imagens de teste com e sem difusor.
+- Dependências: RF-30, HW-04, RNF-11.
+
 ## Promoção de estado
 
 Um RNF só pode ser considerado medido quando o método, amostra, hardware, versão do software e artefato estiverem registrados. Referência externa não substitui medição própria.
