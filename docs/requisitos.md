@@ -5,6 +5,7 @@ Especificação de requisitos do projeto de inspeção multi-view e rastreabilid
 ## 1. Requisitos funcionais
 
 - RF-01: capturar as três vistas (topo e duas laterais) do mesmo item, sincronizadas por trigger físico.
+- RF-01.1: garantir a confiabilidade do gatilho de captura via barreira por oclusão retrorrefletiva no E18-D80NK, com timing determinístico calculado pelo ESP32.
 - RF-02: classificar tampa ausente na vista de topo.
 - RF-03: classificar tampa mal rosqueada na vista de topo.
 - RF-04: classificar deformidade de corpo nas vistas laterais, com erro dimensional abaixo de 5% da referência.
@@ -33,6 +34,7 @@ Especificação de requisitos do projeto de inspeção multi-view e rastreabilid
 - RF-27: construir painel de base rígido com furos fixos para câmeras, trigger e encoder.
 - RF-28: montar suportes parafusados, jig de posicionamento e réplicas parametrizadas de deformidade.
 - RF-29: aplicar design for testability como princípio orientador da arquitetura.
+- RF-30: acionar pulso estroboscópico de LEDs RGB sincronizado ao trigger, desligando logo após a janela de captura.
 
 As fichas detalhadas de cada requisito estão em `docs/requisitos/01-funcionais.md`.
 
