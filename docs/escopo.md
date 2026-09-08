@@ -12,9 +12,9 @@ O protótipo é uma bancada de teste em escala reduzida. A extrapolação indust
 
 As posições abaixo orientam o desenvolvimento, mas permanecem abertas até a validação nas PoCs correspondentes. O registro completo de cada decisão, com opções e critérios de confirmação, está em `docs/DECISIONS.md`.
 
-1. **Bancada de teste:** trilho deslizante artesanal com carrinho em velocidade controlada, encoder KY-040 para medição física de velocidade e trigger E18-D80NK ou VL53L0X no ponto de captura. A estabilidade e a repetibilidade são validadas na PoC 3.
+1. **Bancada de teste:** trilho deslizante artesanal com carrinho em velocidade controlada, encoder KY-040 para medição física de velocidade e gatilho E18-D80NK (barreira por oclusão retrorrefletiva, fita 3M) no ponto de captura, com VL53L0X como validação/fallback experimental. A estabilidade e a repetibilidade são validadas no PoC 3.
 2. **Dataset:** fotografia própria para tampa ausente e mal rosqueada, peças 3D com deformação controlada para deformidade de corpo, e datasets públicos genéricos apenas como validação metodológica. A proveniência é documentada por imagem. O dataset próprio é a direção forte.
-3. **Câmeras:** duas CSI nativas (uma no topo) e uma USB UVC, dentro de orçamento indicativo. Captura por trigger discreto, não por streaming contínuo. Largura de banda e captura simultânea são validadas na PoC 3.
+3. **Câmeras:** duas CSI nativas (uma no topo) e uma USB UVC, dentro de orçamento indicativo. Captura por trigger discreto, não por streaming contínuo, com iluminação estroboscópica RGB sincronizada ao disparo e lente difusora para evitar hotspots de saturação na superfície da garrafa. Largura de banda e captura simultânea são validadas na PoC 3.
 4. **Fusão multi-view:** um classificador por vista e votação para a decisão final. Não concatenar imagens como canais.
 5. **Nós da demonstração:** dois sensores, um nó de visão e um hub, extensível.
 6. **Separação com análise humana:** atuador no fim do trilho ejeta o item defeituoso para análise manual, não para descarte automático. A confirmação da ejeção é feita por sensor; falha de confirmação gera evento de qualidade registrado. O ciclo é detectar, separar, analisar, corrigir e registrar. Mecanismo, timeout e parada manual são validados na PoC 7.
@@ -30,7 +30,7 @@ As posições abaixo orientam o desenvolvimento, mas permanecem abertas até a v
 11. **Auto-supervisão a partir da estrutura física e estatística:** usar o sinal que o sistema já produz (defeito sintético, discrepância professor-aluno, regras de supervisão fraca, física do rig) para reduzir dependência de anotação manual. A validação física de timestamp (esperado pela distância e velocidade do encoder) entra no núcleo; o clustering de drift de captura fica condicionado a uma camada de anomalia estável.
 12. **Rigor de processo:** testes de resiliência como experimentos com hipótese falsável e métrica definida antes da falha; revisão dos logs para cobrir combinações não exercitadas; commits estruturados desde o início.
 13. **Estabilidade mecânica:** soldar conexões críticas em headers fixos com teste de continuidade; painel de base rígido com furos fixos para câmeras, trigger e encoder; suportes parafusados, jig de posicionamento e réplicas parametrizadas de deformidade; gabinetes por último.
-14. **Design for testability como princípio orientador:** testabilidade igual a controlabilidade mais observabilidade. Ordem de execução consolidada: solda, painel, suportes, golden samples, schema e heartbeat, medida dimensional, anomalia autossupervisionada, destilação, dashboard, resiliência, relatório e commits estruturados.
+14. **Design for testability como princípio orientador:** testabilidade igual a controlabilidade mais observabilidade. Ordem de execução consolidada: solda, painel, suportes, montagem da iluminação estroboscópica e do difusor, golden samples, schema e heartbeat, medida dimensional, anomalia autossupervisionada, destilação, dashboard, resiliência, relatório e commits estruturados.
 
 ## 3. Indicadores e critérios de sucesso
 
@@ -78,7 +78,7 @@ Os protocolos completos estão em `docs/pocs/`.
 
 ### Iluminação
 
-Luz e câmera formam um sistema conjunto. No topo, silhueta por backlight quando a geometria permitir, senão campo claro difuso. Nas laterais, campo escuro com LEDs em ângulo raso para realçar a deformidade. Luz pulsada sincronizada ao trigger para reduzir desfoque. Testar ao menos duas geometrias por vista e registrar o comparativo antes de fixar a configuração.
+Luz e câmera formam um sistema conjunto. No topo, silhueta por backlight quando a geometria permitir, senão campo claro difuso. Nas laterais, campo escuro com LEDs em ângulo raso para realçar a deformidade. Luz pulsada e sincronizada ao trigger (estroboscópio RGB, RF-30) para reduzir desfoque, com lente difusora acoplada aos LEDs (RNF-21) para mitigar hotspots de saturação na superfície curva da garrafa. Testar ao menos duas geometrias por vista e registrar o comparativo antes de fixar a configuração.
 
 ### Validação estatística
 
