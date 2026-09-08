@@ -60,6 +60,7 @@ As fichas detalhadas de cada requisito estão em `docs/requisitos/01-funcionais.
 - RNF-18: validação física de timestamp com tolerância configurável.
 - RNF-19: cada teste de resiliência com hipótese e métrica definidas antes do experimento.
 - RNF-20: estabilidade mecânica sem recalibração após movimentação dentro do uso previsto.
+- RNF-21: eliminar hotspots de saturação luminosa nas imagens capturadas, usando lente difusora acoplada aos LEDs, sem regiões estouradas que prejudiquem a extração de bordas e contornos.
 
 As fichas detalhadas estão em `docs/requisitos/02-nao-funcionais.md`.
 
