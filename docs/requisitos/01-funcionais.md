@@ -21,11 +21,7 @@ Cada ficha informa ator, pré-condição, entrada, comportamento, saída, crité
 
 - Ator: ESP32 / nó de hardware. Pré-condição: E18-D80NK instalado no rig com inclinação de 10°–15°, fita retrorrefletiva 3M no anteparo oposto e esteira em operação.
 - Entrada: interrupção gerada pela oclusão/refração do feixe infravermelho no sensor E18-D80NK e pulsos do encoder KY-040.
-- Comportamento:
-  - **(A) Detecção por oclusão:** a passagem de qualquer garrafa (transparente, opaca ou com líquido) refrata o feixe, interrompendo o retorno contínuo da fita retrorrefletiva.
-  - **(B) Processamento determinístico no ESP32:** o ESP32 trata o debounce (30–50 ms), captura a contagem do encoder KY-040, calcula a velocidade real da esteira e determina a janela de chegada (`tempo_chegada = distancia / velocidade`).
-  - **(C) Disparo e iluminação:** no momento exato, o ESP32 envia o sinal de trigger/timestamp para o Raspberry Pi 5 e aciona a iluminação estroboscópica.
-  - **(D) Validação pelo VL53L0X:** o sensor VL53L0X atua como validação/fallback experimental. Caso o VL53L0X gere um evento próximo ao E18-D80NK, o ESP32 correlaciona ambos para evitar duplicidade de evento.
+- Comportamento:detectar a passagem de qualquer garrafa (transparente, opaca ou com líquido) pela interrupção do retorno da fita retrorrefletiva; aplicar debounce de 30–50 ms; calcular a velocidade real da esteira a partir do encoder e determinar a janela de chegada (`tempo_chegada = distância / velocidade`); disparar o trigger/timestamp para o Raspberry Pi 5 e acionar a iluminação estroboscópica no instante calculado; correlacionar eventos do VL53L0X (validação/fallback) com os do E18-D80NK para evitar duplicidade de evento.
 - Saída: timestamp determinístico, estimativa de velocidade, sinal de trigger para o Raspberry Pi 5 e pulso de iluminação estroboscópica.
 - Critério de reprovação: falsos disparos ou perda de detecção em garrafas transparentes/com líquido, ou falha de correlação entre E18 e VL53L0X gerando duplicidade de evento.
 - Verificação: ensaio comparativo em garrafas vazias, cheias e transparentes; medição do tempo de debounce no ESP32.
