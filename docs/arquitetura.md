@@ -8,35 +8,63 @@ Este é o desenho de referência da solução planejada. Os componentes e conex�
 
 ```mermaid
 flowchart LR
-    item[Item no trilho]
+    %% Entrada e Elementos Físicos da Esteira
+    item[Item no trilho\nPET / Vidro]
     encoder[Encoder KY-040\nvelocidade e contagem]
-    trigger[Trigger E18-D80NK ou VL53L0X\nponto de captura]
-    captura[Janela de captura\nmesmo item]
+    trigger_e18[Trigger E18-D80NK\nmodo barreira oclusiva 10°-15°]
+    fita_3m[Fita Retrorrefletiva 3M\nanteparo oposto]
+    vl53[VL53L0X\nvalidação/fallback experimental]
 
     item --> encoder
-    item --> trigger
-    trigger --> captura
+    item --> trigger_e18
+    fita_3m -. feixe IV .-> trigger_e18
+    item --> vl53
 
+    %% Nó de Controle de Tempo Real e Iluminação (ESP32)
+    subgraph esp32[Nó de controle de tempo real: ESP32]
+        interrupcao[Debounce 30-50ms &\nInterrupção por oclusão]
+        calculo_janela[Cálculo da janela de chegada\nDistância / Velocidade KY-040]
+        correlacao[Correlacionador E18 + VL53\nEvita duplicidade]
+        pulso_luz[Disparo estroboscópico PWM\n2x LEDs RGB 5mm + Lente Difusora 3D]
+
+        trigger_e18 --> interrupcao
+        encoder --> calculo_janela
+        vl53 --> correlacao
+        interrupcao --> calculo_janela
+        correlacao --> calculo_janela
+        calculo_janela --> pulso_luz
+    end
+
+    %% Nó de Visão Computacional (Raspberry Pi 5)
     subgraph visao[Nó de visão: Raspberry Pi 5]
         topo[Câmera topo\nCSI]
         lateral1[Camera lateral 1\nCSI]
         lateral2[Camera lateral 2\nUSB UVC]
+        
         modelo_topo[Classificador topo\nINT8]
         modelo_lateral1[Classificador lateral 1\nINT8]
         modelo_lateral2[Classificador lateral 2\nINT8]
+        
         fusao[Late fusion por votação\nstatus, severidade, confiança]
 
-        captura --> topo
+        captura[Janela de captura\nmesmo item] --> topo
         captura --> lateral1
         captura --> lateral2
+        
         topo --> modelo_topo
         lateral1 --> modelo_lateral1
         lateral2 --> modelo_lateral2
+        
         modelo_topo --> fusao
         modelo_lateral1 --> fusao
         modelo_lateral2 --> fusao
     end
 
+    %% Sincronismo entre ESP32 e RPi 5
+    calculo_janela -->|Sinal de Trigger + Timestamp| captura
+    pulso_luz -->|Luz branca estável via PWM| captura
+
+    %% Decisão, Atuação e Confirmação
     fusao --> decisao{Status do item}
     decisao -->|ok| registro_ok[Registrar item OK]
     decisao -->|defeito| ordem[Registrar ordem de atuação\nitem_id e tentativa]
@@ -50,6 +78,7 @@ flowchart LR
     falha --> humano
     humano --> correcao[Correção do operador\ndecisão original e corrigida]
 
+    %% Telemetria e Comunicação Paralela
     subgraph sensores[Nós de telemetria]
         heltec[Heltec WiFi LoRa 32 V3\nRTC DS3231, BME280, MQ-135, heartbeat]
         bitdog[2x BitDogLab RP2040\ncontagem ou ambiente, heartbeat]
@@ -57,6 +86,7 @@ flowchart LR
         heltec -. fallback LoRa .-> lora
     end
 
+    %% Pipeline MQTT e Hub Central
     encoder --> mqtt[MQTT\npayload versionado e idempotente]
     registro_ok --> mqtt
     fusao --> mqtt
@@ -74,14 +104,17 @@ flowchart LR
     sqlite --> relatorio[Relatório de lote PDF]
     hub --> ntfy[ntfy\ndefeito crítico ou falha crítica]
 
+    %% Estilização visual dos nós
     classDef physical fill:#fff3e0,stroke:#e65100,color:#111;
+    classDef esp fill:#f3e5f5,stroke:#7b1fa2,color:#111;
     classDef vision fill:#e3f2fd,stroke:#1565c0,color:#111;
     classDef data fill:#e8f5e9,stroke:#2e7d32,color:#111;
     classDef safety fill:#ffebee,stroke:#c62828,color:#111;
     classDef uncertain fill:#f5f5f5,stroke:#616161,color:#111,stroke-dasharray: 5 5;
 
-    class item,encoder,trigger,captura,atuador,sensor_rej physical;
-    class topo,lateral1,lateral2,modelo_topo,modelo_lateral1,modelo_lateral2,fusao,decisao vision;
+    class item,encoder,trigger_e18,fita_3m,vl53,atuador,sensor_rej physical;
+    class interrupcao,calculo_janela,correlacao,pulso_luz esp;
+    class topo,lateral1,lateral2,modelo_topo,modelo_lateral1,modelo_lateral2,fusao,decisao,captura vision;
     class mqtt,hub,sqlite,dashboard,relatorio,ntfy,registro_ok,rejeicao,ordem,correcao data;
     class confirmacao,falha,humano safety;
     class lora uncertain;
