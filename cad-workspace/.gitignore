@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.env
+exports/
+validation/*.json
+validation/*.log
+AGENTS.md
+**/AGENTS.md
+prompts/
+**/prompts/
+docs/agent/
+**/docs/agent/
+codex-*.md
+**/codex-*.md
