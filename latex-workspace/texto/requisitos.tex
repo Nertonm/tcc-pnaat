@@ -47,19 +47,22 @@ RF-05 & \field{ação observável e condição} & \field{N-xx} & \field{estado} 
 \bottomrule
 \end{longtable}
 
-\section{Requisitos não funcionais e metas}
-\begin{tabularx}{\textwidth}{@{}p{0.11\textwidth} Y p{0.16\textwidth} p{0.15\textwidth} p{0.18\textwidth}@{}}
+\section{Requisitos não funcionais}
+\instruction{Na Entrega 1, selecione apenas os RNF que mudam a viabilidade da proposta. O núcleo costuma ter de cinco a oito itens. Extensões ficam condicionadas à validação posterior.}
+\begin{tabularx}{\textwidth}{@{}p{0.07\textwidth} p{0.13\textwidth} Y p{0.15\textwidth} p{0.16\textwidth} Y p{0.12\textwidth}@{}}
 \toprule
-ID & Qualidade ou restrição & Meta/critério & Resultado observado & Método\\
+ID & Dimensão & Restrição ou qualidade & Meta/limiar & Condição/amostra & Método/evidência & Estado\\
 \midrule
-RNF-01 & \field{latência, custo, precisão ou robustez} & \field{limite e unidade} & \field{valor ou não medido} & \field{ensaio}\\
-RNF-02 & \field{qualidade} & \field{limite e unidade} & \field{valor ou não medido} & \field{ensaio}\\
-RNF-03 & \field{restrição} & \field{limite e unidade} & \field{valor ou não medido} & \field{ensaio}\\
-RNF-04 & \field{qualidade} & \field{limite e unidade} & \field{valor ou não medido} & \field{ensaio}\\
+RNF-01 & Desempenho & \field{latência, capacidade ou throughput} & \field{valor e unidade} & \field{carga e ambiente} & \field{ensaio e artefato} & \field{estado}\\
+RNF-02 & Qualidade & \field{precisão, erro ou taxa de falha} & \field{valor e unidade} & \field{população e divisão} & \field{método e evidência} & \field{estado}\\
+RNF-03 & Confiabilidade & \field{perda, duplicação ou recuperação} & \field{limite} & \field{janela e falha} & \field{log e reconciliação} & \field{estado}\\
+RNF-04 & Ambiente/recursos & \field{temperatura, energia, memória ou ruído} & \field{limite} & \field{condição de uso} & \field{medição} & \field{estado}\\
+RNF-05 & Reprodutibilidade & \field{versões, setup e proveniência} & \field{critério} & \field{ambiente limpo} & \field{comando e artefato} & \field{estado}\\
+RNF-06 & Segurança/privacidade & \field{restrição aplicável ou não aplicável} & \field{critério} & \field{cenário} & \field{inspeção ou teste} & \field{estado}\\
 \bottomrule
 \end{tabularx}
 
-\instruction{Declare população, janela, tolerância, condição de teste, evidência e estado. Não escreva “alta precisão”, “tempo real” ou “robusto” sem critério.}
+\instruction{Meta é alvo. Resultado observado é valor medido. Estado é ABERTO, PROPOSTO, EM TESTE, VALIDADO, REJEITADO ou BLOQUEADO. Um RNF VALIDADO exige método executado e evidência identificável.}
 
 \section{Dados e modelos, quando aplicável}
 \begin{tabularx}{\textwidth}{p{0.2\textwidth} Y Y}
