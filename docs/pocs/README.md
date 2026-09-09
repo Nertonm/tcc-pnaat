@@ -47,6 +47,8 @@ Uma PoC responde uma pergunta de viabilidade antes da integração. Ela não é 
 - PoC de componente não prova integração ponta a ponta.
 - Modo de teste e golden samples devem ser separados das estatísticas produtivas.
 - Alterar hardware, modelo, dataset ou limiar invalida a comparação anterior.
+- A inclusão de um componente no setup não representa sua aprovação; componentes candidatos devem possuir critério de validação, alternativa e decisão go/no-go registradas.
+- Evidência insuficiente, vista ausente ou resultado inconclusivo não pode ser convertido em aprovação por ausência de defeito detectado.
 
 ## Ordem por risco
 
@@ -54,11 +56,11 @@ Uma PoC responde uma pergunta de viabilidade antes da integração. Ela não é 
 |---|---|---|---|
 | 01 | Classificador de topo | Tampa ausente/mal rosqueada atinge o limiar preliminar? | dataset e iluminação |
 | 02 | Deformidade lateral | As laterais identificam deformidade com erro aceitável? | calibração e PoC 01 |
-| 03 | Sincronização física | As três vistas pertencem ao mesmo item na janela definida? | rig, trigger e encoder |
+| 03 | Sincronização física | O trigger e o mecanismo de medição permitem associar as três vistas ao mesmo item dentro da janela definida? | rig, E18-D80NK candidato, encoder candidato e critérios de substituição |
 | 04 | Correlação multi-nó | O hub associa eventos de 50 itens sem troca? | payload e relógios |
 | 05 | Integração de dados | Eventos chegam ao SQLite sem perda/duplicação? | MQTT e schema |
 | 06 | Resiliência | Falhas definidas recuperam sem crash e com estado observável? | PoC 05 |
-| 07 | Atuação confirmada | Defeito é separado e confirmado sem ejetar item OK? | sensor, atuador e segurança |
+| 07 | Separação confirmada | O item reprovado é direcionado e confirmado no caminho de análise manual sem separar itens normais? | atuador, sensor independente, posicionamento, timeout e segurança |
 
 ## Evidência por PoC
 
