@@ -1,7 +1,5 @@
 \chapter{Arquitetura proposta}
 
-\instruction{Desenhe o fluxo entrada, processamento e saída. Use nomes de componentes somente depois de justificar função, alternativa e estado.}
-
 \begin{figure}[htbp]
 \centering
 \resizebox{\textwidth}{!}{%
@@ -10,17 +8,17 @@
   box/.style={draw, rounded corners, align=center, minimum height=8mm, text width=29mm, font=\scriptsize},
   line/.style={-{Latex[length=2mm]}, thick}
 ]
-  \node[box] (input) {Entrada\\\scriptsize\textit{(dado/processo)}};
-  \node[box, right=of input] (capture) {Aquisição\\\scriptsize\textit{(se aplicável)}};
-  \node[box, right=of capture] (process) {Transformação\\\scriptsize\textit{(regra/modelo)}};
-  \node[box, right=of process] (decision) {Resultado\\\scriptsize\textit{(decisão/saída)}};
-  \node[box, right=of decision] (record) {Registro\\\scriptsize\textit{(se aplicável)}};
+  \node[box] (input) {Entrada\\\scriptsize\textit{(trigger E18-D80NK + validação VL53L0X)}};
+  \node[box, right=of input] (capture) {Aquisição\\\scriptsize\textit{(3 câmeras: topo, lateral1, lateral2)}};
+  \node[box, right=of capture] (process) {Transformação\\\scriptsize\textit{(classificadores por vista + fusão por votação)}};
+  \node[box, right=of process] (decision) {Resultado\\\scriptsize\textit{(status final: ok/defeito, severidade, confiança)}};
+  \node[box, right=of decision] (record) {Registro\\\scriptsize\textit{(hub/SQLite, dashboard, ntfy, atuador)}};
   \draw[line] (input) -- (capture);
   \draw[line] (capture) -- (process);
   \draw[line] (process) -- (decision);
   \draw[line] (decision) -- (record);
 \end{tikzpicture}}
-\caption{Fluxo da solução proposta. Substitua os campos entre parênteses.}
+\caption{Fluxo da solução proposta: trigger físico aciona captura sincronizada, cada vista é classificada, os resultados são fundidos por votação e o item resultante gera registro, notificação e, se defeituoso, ordem de ejeção confirmada por sensor.}
 \label{fig:arquitetura}
 \end{figure}
 
@@ -29,9 +27,13 @@
 \toprule
 Componente/placa & Função na arquitetura & Limite, alternativa e estado\\
 \midrule
-\field{componente} & \field{entrada, processamento ou saída} & \field{alternativa; estado}\\
-\field{componente} & \field{entrada, processamento ou saída} & \field{alternativa; estado}\\
-\field{componente} & \field{entrada, processamento ou saída} & \field{alternativa; estado}\\
+ESP32 + sensor E18-D80NK (barreira por oclusão retrorrefletiva) & Entrada: gera o evento de trigger que inicia a janela de captura das três câmeras, calcula a janela de chegada a partir do encoder KY-040 e dispara a iluminação estroboscópica no instante calculado & Alternativa/fallback: sensor VL53L0X correlacionado para evitar duplicidade de evento; estado: planejado, com verificação prevista por ensaio comparativo em garrafas vazias/cheias/transparentes (RF-01.1)\\
+Três câmeras (topo, lateral1, lateral2) & Aquisição: capturam imagens do mesmo item dentro da janela definida pelo trigger, identificadas pelo mesmo item\_id e timestamp & Limite: deslocamento ou remoção de uma câmera deve gerar registro parcial, nunca sucesso completo; estado: planejado, verificação por teste de correlação (RF-01)\\
+Classificadores por vista (tampa ausente, tampa mal rosqueada, deformidade de corpo) & Processamento: classificam cada vista segundo taxonomia aprovada e retornam classe, confiança e evidência & Limite: dependem de calibração pixel→mm para deformidade e referência dimensional para tampa mal rosqueada; estado: planejado, verificação por matriz de confusão com intervalo de confiança (RF-02..04, RNF-02)\\
+Agregador de fusão por votação & Processamento: combina os três resultados por vista em um status final, preservando discordâncias em vez de escolher silenciosamente uma vista & Limite: não substitui inspeção humana em caso de empate/discordância não coberta pela regra; estado: planejado, verificação por fixture com combinações de resultados (RF-05)\\
+Raspberry Pi 5 + hub/SQLite & Processamento e registro: recebe o resultado final via MQTT, persiste item e vistas, correlaciona eventos multi-nó e mantém genealogia de correções do operador & Limite: upsert deve ser idempotente para evitar duplicação em reconexão; estado: planejado, verificação por ensaio de queda/replay (RF-06/07, RNF-05/06)\\
+Atuador (servo/solenoide) + sensor de confirmação & Saída: executa a ejeção do item defeituoso para análise manual mediante ordem do hub & Limite: ordem sem confirmação do sensor gera estado de falha, nunca sucesso; estado: planejado, verificação por eventos ACT e vídeo/sensor (RF-14, ACT-01/02)\\
+Dashboard + ntfy & Saída: exibe estado vivo dos itens/nós e envia notificação de defeito crítico & Limite: notificação depende de payload com item e severidade vinculados; estado: planejado, verificação por captura de tela e payload recebido (RF-09, IF-06)\\
 \bottomrule
 \end{tabularx}
 
@@ -40,9 +42,9 @@ Componente/placa & Função na arquitetura & Limite, alternativa e estado\\
 \toprule
 Camada & Entrada & Processamento & Saída/falha tratada\\
 \midrule
-Análise ou visão, se aplicável & \field{imagem/dado} & \field{regra/modelo} & \field{decisão/confiança}\\
-Comunicação, se aplicável & \field{evento} & \field{protocolo/fila} & \field{mensagem/retry}\\
-Persistência, se aplicável & \field{registro} & \field{schema/arquivo} & \field{consulta/integridade}\\
+Visão (classificação por vista) & Imagem de topo ou lateral, associada a item\_id e timestamp & Classificação segundo taxonomia aprovada (tampa ausente/mal rosqueada, deformidade), com medida dimensional quando aplicável & Classe, confiança e evidência por vista; ausência de vista é tratada como registro parcial, não como classe negativa (RF-02..04, DAT-03)\\
+Comunicação (ESP32/nós → hub) & Evento de trigger, resultado de visão, heartbeat ou ordem de atuação & Publicação via MQTT com payload versionado contendo event\_id, item\_id (quando aplicável), nó, timestamp e qualidade & Mensagem persistida ou reenviada por retry contado; reconexão não gera duplicação de evento (DAT-07, RNF-06)\\
+Persistência (hub/SQLite) & Registro de item, vista, evento de atuação ou correção do operador & Gravação transacional com upsert idempotente e schema canônico único & Consulta consistente entre banco, dashboard e relatório; campo obrigatório ausente rejeita ou marca o registro como parcial (IF-04/05, DAT-01)\\
 \bottomrule
 \end{tabularx}
 
@@ -51,13 +53,11 @@ Persistência, se aplicável & \field{registro} & \field{schema/arquivo} & \fiel
 \toprule
 Campo & Preenchimento & Estado\\
 \midrule
-Produtor e consumidor & \field{quem gera e quem usa} & \field{estado}\\
-Identidade e versão & \field{ID, versão do payload/arquivo} & \field{estado}\\
-Dados obrigatórios & \field{timestamp, entrada, resultado e evidência} & \field{estado}\\
-Entradas inválidas & \field{tratamento e erro} & \field{estado}\\
-Timeout e retransmissão & \field{política} & \field{estado}\\
-Idempotência e integridade & \field{regra} & \field{estado}\\
+Produtor e consumidor & Nó de visão/ESP32 como produtor; hub (Raspberry Pi 5/SQLite) como consumidor; dashboard e ntfy como consumidores finais & planejado\\
+Identidade e versão & item\_id estável por evento e versão do payload MQTT (DAT-01, DAT-07) & planejado\\
+Dados obrigatórios & Timestamp com fuso, entrada (imagem ou sinal do sensor), resultado (classe/confiança) e evidência (caminho/hash do artefato) (DAT-02, DAT-08) & planejado\\
+Entradas inválidas & Payload sem versão ou sem ID é rejeitado ou marcado como não diagnosticável, sem gerar registro completo (DAT-07) & planejado\\
+Timeout e retransmissão & Ordem de atuação sem confirmação do sensor gera timeout configurável com retry contado (ACT-04) & planejado\\
+Idempotência e integridade & Reenvio da mesma mensagem não pode gerar duas ordens físicas de ejeção nem duplicar evento no banco (ACT-04, RNF-06) & planejado\\
 \bottomrule
 \end{tabularx}
-
-\instruction{Não escreva “tempo real”, “robusto” ou “inteligente” sem métrica e cenário de teste.}
