@@ -64,10 +64,10 @@ Estas fichas detalham DAT-01..08 e IF-01..07 de `../requisitos.md`. Nenhum contr
 
 ### IF-01: Trigger para captura
 
-- Entrada: sinal E18-D80NK ou VL53L0X.
+- Entrada:  sinal do E18-D80NK (barreira por oclusão retrorrefletiva), com VL53L0X como validação/fallback correlacionado.
 - Contrato: uma borda do trigger inicia a janela das três vistas.
 - Critério de reprovação: uma câmera fora da janela deve ser identificada como faltante.
-- Verificação: osciloscópio/log e três timestamps. Dependências: RF-01, HW-01.
+- Verificação: osciloscópio/log e três timestamps. Dependências:  RF-01, RF-01.1, HW-01.
 
 ### IF-02: Encoder para contagem
 
