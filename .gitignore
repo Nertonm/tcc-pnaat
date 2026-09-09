@@ -1,40 +1,62 @@
-# Env
+# Environment and credentials
 .env
 .env.*
+*.env
 !.env.example
 
-# Python
+# Python and generated builds
 __pycache__/
 *.py[cod]
 .venv/
 venv/
-
-# Build / firmware
 build/
+dist/
 managed_components/
-sdkconfig*
-*.bin
-*.uf2
-*.elf
 
-# Dados (imagens/dataset nunca no git — proveniência documentada em docs/)
+# Raw data and generated CAD outputs
 data/
 dataset/
 *.jpg
 *.jpeg
 *.png
 *.bmp
+*.webp
+*.heic
 *.npy
+*.mp4
+*.mov
+*.step
+*.stl
+*.3mf
+cad-workspace/exports/**
 
-# Análise
+# Analysis and tooling
 .ipynb_checkpoints/
 *.ipynb
-
-# OS/IDE
 .vscode/
 .idea/
 .DS_Store
 
-# Relatórios gerados
-*.pdf
-reports/
+# Evidence: metadata and READMEs are publishable; raw media is not
+evidencias/raw/**
+evidencias/fotos/**
+!evidencias/fotos/README.md
+evidencias/medicoes/**
+!evidencias/medicoes/README.md
+evidencias/videos/**
+!evidencias/videos/README.md
+
+# Local agent/process material
+AGENTS.md
+**/AGENTS.md
+prompts/
+**/prompts/
+docs/agent/
+**/docs/agent/
+codex-*.md
+**/codex-*.md
+
+# Explicitly versioned CAD G0 templates
+!cad-workspace/data/
+!cad-workspace/data/g0/
+!cad-workspace/data/g0/**
