@@ -52,7 +52,7 @@ As fichas detalhadas de cada requisito estão em `docs/requisitos/01-funcionais.
 - RNF-10: documentação reproduzível, com README, esquemático, decisões e proveniência de dataset.
 - RNF-11: calibração pixel em milímetro documentada por posição fixa.
 - RNF-12: qualidade do registro propagada aos consumidores.
-- RNF-13: confirmação de ejeção de 99% ou mais e nenhum item normal ejetado.
+- RNF-13: confirmação correta de pelo menos 99% das separações comandadas e nenhum item normal direcionado ao caminho de análise manual.
 - RNF-14: precisão dimensional da tampa dentro de 0,5 mm e nenhuma rejeição de golden sample normal.
 - RNF-15: custo da camada de descritores abaixo de 10 ms por vista, com threshold calibrado e falha natural independente.
 - RNF-16: detector de anomalia treinado apenas com itens normais, com alvo de área sob a curva na validação e latência compatível.
