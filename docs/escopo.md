@@ -73,6 +73,8 @@ Os protocolos completos estão em `docs/pocs/`.
 3. Correlação de item entre nós: relógio externo e identificador sequencial no trigger, validados na PoC 4.
 4. Ponto único de falha do hub: buffer local e monitoramento, validados na PoC 6.
 5. Dataset não representativo: estratégia mista com proveniência documentada.
+6. Confiabilidade do gatilho com garrafas variadas: material transparente, colorido ou de vidro pode degradar a detecção por oclusão; mitigada por fundo retrorrefletivo e validada na PoC 3.
+7. Hotspot de saturação na captura: reflexo especular direto dos LEDs pode gerar falso positivo de deformidade ou falha de rosqueamento; mitigado por lente difusora e validado por análise de histograma.
 
 ## 7. Metodologia
 
