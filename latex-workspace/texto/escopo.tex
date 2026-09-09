@@ -1,25 +1,27 @@
 \chapter{Escopo, limites e restrições}
 
 \section{Dentro do escopo}
-\instruction{Liste somente artefatos e comportamentos necessários para responder ao problema desta entrega. Para cada item, informe como será reconhecido como concluído.}
 \begin{tabularx}{\textwidth}{p{0.28\textwidth} Y Y}
 \toprule
 Item incluído & Necessidade atendida & Critério de conclusão\\
 \midrule
-\field{artefato ou função} & \field{relação com a dor} & \field{evidência}\\
-\field{artefato ou função} & \field{relação com a dor} & \field{evidência}\\
-\field{artefato ou função} & \field{relação com a dor} & \field{evidência}\\
+Captura multi-vista sincronizada (topo, lateral1, lateral2) com trigger via E18-D80NK e validação VL53L0X & Responde diretamente à falha de identificação prévia descrita no cenário, garantindo que toda garrafa seja avaliada antes da etapa final da linha & Concluído quando três imagens do mesmo item_id, com timestamps e log do trigger, forem geradas de forma reproduzível; remoção de uma câmera deve gerar registro parcial, nunca sucesso completo (RF-01, RF-01.1)\\
+Classificação por vista das três anomalias do cenário (tampa ausente, tampa mal rosqueada, deformidade de corpo) e fusão por votação & Atende à necessidade de distinguir os três tipos de defeito citados no cenário sem esconder casos ambíguos & Concluído quando houver matriz de confusão por classe com intervalo de confiança declarado e a regra de fusão for validada em fixture com resultados discordantes (RF-02..05, RNF-02/03)\\
+Registro rastreável do item no hub, com correlação multi-nó e genealogia de decisão & Permite auditar cada remoção de garrafa e evitar que eventos de itens diferentes sejam confundidos & Concluído quando o registro for consultável sem perda de campo e itens fora de ordem não se associarem entre si (RF-06/07/12, RNF-04)\\
+Ejeção confirmada por sensor para análise manual & Resolve a falha de remoção prévia de peças defeituosas apontada no cenário, sem interromper o fluxo da esteira & Concluído quando os estados pendente, confirmada e falha forem distintos e nenhuma ordem for registrada como sucesso sem confirmação física (RF-14, ACT-01..08)\\
+Dashboard, notificação de defeito crítico e telemetria de saúde dos nós & Dá visibilidade operacional ao estado da linha, permitindo reação antes de um travamento maior & Concluído quando um nó offline for sinalizado em menos de 10 s e a notificação crítica chegar ao dashboard e ao ntfy (RF-08/09, RNF-07)\\
 \bottomrule
 \end{tabularx}
 
 \section{Fora do escopo}
-\instruction{Use a fórmula: “Este projeto não contempla [item], porque [restrição objetiva]. A consequência é [limite aceito]. O item poderá ser retomado se [condição].”}
 \begin{tabularx}{\textwidth}{p{0.28\textwidth} Y Y}
 \toprule
 Item excluído & Motivo da exclusão & Possível extensão\\
 \midrule
-\field{funcionalidade} & \field{tempo, custo, risco ou dependência} & \field{quando faria sentido}\\
-\field{funcionalidade} & \field{tempo, custo, risco ou dependência} & \field{quando faria sentido}\\
+Detecção de anomalia desconhecida via camada one-class & Este projeto não contempla essa camada no núcleo, porque ela depende de uma PoC própria ainda não executada e de um orçamento de latência não validado no hardware alvo. A consequência é que itens fora da taxonomia conhecida não serão sinalizados nesta entrega & Poderá ser retomada se a PoC atingir o critério de latência e acurácia definido, sem substituir a votação do núcleo (RF-13, ML-05)\\
+Descritores geométricos universais, CutPaste/NSA, consistência cross-view e destilação teacher-student & Este projeto não contempla essas camadas experimentais, porque exigem dataset próprio, calibração de distribuição normal e benchmark no Pi 5 fora do prazo desta entrega. A consequência é que a generalização para objetos ou defeitos não previstos na taxonomia não será demonstrada & Poderão ser retomadas depois que o núcleo (captura, classificação, fusão, atuação) estiver medido e estável (RF-18..21, ML-04/06)\\
+Weak supervision para rotulagem semi-automática do dataset & Este projeto não contempla essa etapa, porque depende das camadas geométrica e de anomalia (RF-18/RF-19) já estarem validadas, o que não ocorre nesta entrega. A consequência é que o dataset seguirá sendo rotulado manualmente & Poderá ser retomada quando houver labeling functions versionadas e conflito de rótulo rastreável (RF-23)\\
+Generalização do classificador para objetos além de garrafas & Este projeto não contempla essa generalização, porque o modelo é treinado apenas com a taxonomia de defeitos de garrafas do cenário. A consequência é que não há garantia de desempenho fora desse escopo & Poderá ser retomada em protocolo separado, testando apenas a camada geométrica com objetos novos (ML-04)\\
 \bottomrule
 \end{tabularx}
 
@@ -28,8 +30,9 @@ Item excluído & Motivo da exclusão & Possível extensão\\
 \toprule
 Premissa adotada & Como será verificada\\
 \midrule
-\field{condição assumida} & \field{ensaio, fonte ou responsável}\\
-\field{condição assumida} & \field{ensaio, fonte ou responsável}\\
+O sensor E18-D80NK, inclinado a 10°–15° com anteparo retrorrefletivo, detecta de forma confiável garrafas transparentes, opacas e com líquido, sem depender apenas do VL53L0X & Ensaio comparativo entre os três tipos de garrafa, medindo debounce e correlacionando os eventos dos dois sensores (RF-01.1)\\
+A geometria do rig (câmeras, trigger, encoder) permanece estável após montagem em painel rígido e mounts parafusados, sem exigir recalibração a cada uso & Comparação de calibração antes e depois de movimentação, dentro de tolerância definida previamente (HW-01/03, RNF-20)\\
+A iluminação estroboscópica com lente difusora elimina hotspots o suficiente para não gerar falso positivo de deformidade ou falha de rosqueamento & Análise de histograma comparando imagens capturadas com e sem a lente difusora (RF-30, RNF-21)\\
 \bottomrule
 \end{tabularx}
 
@@ -38,7 +41,9 @@ Premissa adotada & Como será verificada\\
 \toprule
 Restrição ou questão & Impacto & Decisão/critério pendente\\
 \midrule
-\field{restrição} & \field{impacto} & \field{como decidir}\\
-\field{questão aberta} & \field{impacto} & \field{como decidir}\\
+Inferência deve rodar no Raspberry Pi 5 com modelo aluno quantizado (INT8), enquanto o teacher só roda em treino & Limita a complexidade do modelo aceito na entrega e impede usar benchmark de GPU/Jetson como resultado válido & Só será considerada atendida após benchmark real de latência no Pi 5, com runtime e resolução registrados (RF-21, ML-06)\\
+Orçamento de latência de 500 ms por item, do trigger até o registro, incluindo três inferências e fusão & Pode restringir quais camadas condicionais (RF-13, RF-18..21) chegam a entrar na versão final & Priorização das camadas experimentais será decidida somente após medir a latência do núcleo (RNF-01, RNF-15/17)\\
+Iluminação estroboscópica alimentada por bateria 18650, com risco de superaquecimento e descarga se ficar ligada continuamente & Pode comprometer a demo se o pulso de luz não retornar ao repouso imediatamente após a captura & Validação de temperatura e consumo antes de qualquer demonstração pública (RF-30, HW-06)\\
+Ausência de dataset próprio coletado até o momento desta entrega & Impede qualquer alegação de acurácia, throughput ou FPY medidos, mesmo que os requisitos já estejam documentados & Golden samples e dataset OK/defeito precisam ser coletados e ter proveniência registrada antes da fase de PoC (DAT-05, ML-01..03)\\
 \bottomrule
 \end{tabularx}
