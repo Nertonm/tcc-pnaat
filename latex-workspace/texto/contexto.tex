@@ -1,21 +1,20 @@
 \chapter{Tema, contexto e problema}
 
 \section{Tema selecionado}
-\textbf{Tema oficial:} \placeholder{nome e número oficial do tema}
+\textbf{Tema oficial:} Cenário 1.
 
-\instruction{Copie o nome oficial do tema. Não substitua o título do cenário por um nome inventado pelo grupo.}
 
 \section{Contexto de operação}
 \begin{tabularx}{\textwidth}{p{0.28\textwidth} Y}
 \toprule
 Campo & Preenchimento\\
 \midrule
-Ambiente ou processo & \field{onde o problema ocorre}\\
-Público ou equipe afetada & \field{quem executa ou sofre o processo}\\
-Situação atual & \field{como a atividade é realizada hoje}\\
-Entradas disponíveis & \field{dados, sinais, imagens ou eventos}\\
-Saídas necessárias & \field{decisão, alerta, registro ou ação}\\
-Evidência do problema & \field{observação, fonte, medição ou hipótese}\\
+Ambiente ou processo & Etapa final de uma linha de produção industrial, no ponto onde garrafas/recipientes chegam à esteira principal antes do empacotamento\\
+Público ou equipe afetada & Operadores da linha de produção e equipe de manutenção, que lidam com as paradas não programadas e o retrabalho gerado pelos defeitos}\\
+Situação atual & Garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo seguem até a etapa final sem triagem prévia, causando travamentos no maquinário e paradas não programadas\\
+Entradas disponíveis & Trigger de presença via sensor E18-D80NK (barreira por oclusão retrorrefletiva) com validação/fallback do VL53L0X; três imagens sincronizadas por item (topo, lateral1, lateral2); pulsos do encoder KY-040 para velocidade da esteira\\
+Saídas necessárias & Classificação do item (ok/defeito e tipo), ordem de ejeção para análise manual, registro do item no hub e notificação de defeito crítico via dashboard/ntfy\\
+Evidência do problema & Descrição do Cenário 1: travamentos recorrentes da esteira por chegada de garrafas com tampa ausente, tampa mal rosqueada ou deformidade estrutural, causando derramamento, desperdício de lote e queda de eficiência\\
 \bottomrule
 \end{tabularx}
 
@@ -24,53 +23,51 @@ Evidência do problema & \field{observação, fonte, medição ou hipótese}\\
 \toprule
 Condição & Valor ou hipótese & Verificação/limite\\
 \midrule
-Temperatura, poeira, vibração ou ruído & \field{condição relevante} & \field{fonte ou ensaio}\\
-Energia e montagem física & \field{alimentação, fixação e restrição} & \field{teste}\\
-Conectividade & \field{topologia, disponibilidade e pontos cegos} & \field{perda de rede e contingência}\\
-Operação offline & \field{dados armazenados localmente ou não aplicável} & \field{critério de recuperação}\\
+Temperatura, poeira, vibração ou ruído & Ambiente fabril com esteira em movimento contínuo; reflexos ópticos variáveis por garrafas transparentes, opacas ou com líquido & Ensaio comparativo do trigger em garrafas vazias, cheias e transparentes (RF-01.1)\\
+Energia e montagem física & Alimentação por bateria 18650 para iluminação estroboscópica; painel de base rígido e suportes parafusados para manter geometria de câmeras, trigger e encoder & Checklist de continuidade no multímetro e recalibração antes/depois de movimentação (RF-26..28, RNF-20)\\
+Conectividade & Comunicação entre nós de visão, ESP32, Raspberry Pi 5 e hub via MQTT & Ensaio de queda/reconexão com verificação de idempotência e ausência de duplicidade (RNF-06, IF-04)\\
+Operação offline & Eventos bufferizados localmente em cada nó até reconexão, com heartbeat sinalizando estado online/degradado/offline & Detecção de nó offline abaixo de 10 s e replay sem duplicação (RNF-07, RNF-06)\\
 \bottomrule
 \end{tabularx}
 
 \section{Dor ou problema específico}
-\instruction{Use a fórmula: “No contexto de [ambiente], [público/processo] enfrenta [problema observável], que causa [consequência]. O projeto pretende [verbo: detectar, medir, reduzir ou registrar] [efeito], nas condições [limites].”}
 
-\campoGrande{Descreva a situação-problema, seus atores, a falha observável e a consequência. Não atribua custo, ganho ou risco sem fonte.}
+\campoGrande{No contexto de uma fábrica de envase rápido, a etapa final da linha de produção enfrenta a chegada recorrente de garrafas com tampa ausente, tampa mal rosqueada ou deformidade estrutural no corpo, que causa travamentos não programados da esteira, derramamento de líquido e desperdício de lotes. O projeto pretende detectar essas anomalias antes da etapa final, por meio de captura multi-vista sincronizada (topo e duas laterais) e classificação automática, e registrar cada decisão com rastreabilidade completa (item, vista, evidência e timestamp), nas condições de esteira em operação contínua, garrafas de diferentes materiais e transparências, e ambiente fabril sujeito a variação de iluminação e vibração.}
 
 \section{Validação da necessidade}
 \begin{tabularx}{\textwidth}{p{0.25\textwidth} Y Y}
 \toprule
 Campo & Preenchimento & Estado\\
 \midrule
-Fonte ou participantes & \field{fonte, processo ou atores consultados} & \field{estado}\\
-Método de confirmação & \field{observação, entrevista, medição ou documento} & \field{estado}\\
-Amostra ou recorte & \field{quantidade, período ou condição} & \field{estado}\\
-Limitação da evidência & \field{o que a fonte não permite concluir} & \field{estado}\\
-Critério de aceitação operacional & \field{quem considera o resultado útil} & \field{estado}\\
+Fonte ou participantes & Descrição do cenário-problema fornecido pela disciplina/apostila & condicional\\
+Método de confirmação & Observação do processo descrito (garrafas com anomalias chegando à etapa final) & condicional\\
+Amostra ou recorte & Nenhuma amostra própria coletada até o momento; cenário é hipotético/de referência & ausente\\
+Limitação da evidência & O cenário não permite quantificar frequência real de falhas nem impacto financeiro sem medição própria & planejado\\
+Critério de aceitação operacional & Equipe de desenvolvimento e banca avaliadora, mediante ensaios reprodutíveis descritos nos RF/RNF & planejado\\
 \bottomrule
 \end{tabularx}
 
 \section{Objetivo e resultado pretendido}
-\instruction{Descreva o artefato ou comportamento que a solução tentará produzir. Separe resultado pretendido, resultado medido e resultado não alcançado.}
 
-\textbf{Objetivo geral:} \field{verbo + objeto + condição de uso}
+\textbf{Objetivo geral:} Detectar e classificar defeitos estruturais em garrafas (tampa ausente, tampa mal rosqueada, deformidade de corpo) em linha de produção, por meio de inspeção visual multi-vista sincronizada, com registro rastreável e ejeção de itens defeituosos para análise manual
 
-\textbf{Resultado pretendido:} \field{o que deverá existir ou acontecer ao final}
+\textbf{Resultado pretendido:}  Um sistema capaz de capturar três vistas por item, classificar cada tipo de defeito com fusão por votação, registrar o item no hub com rastreabilidade completa e acionar a ejeção confirmada por sensor, sem interromper o fluxo da esteira
 
-\textbf{Resultado medido nesta entrega:} \field{não medido / preencher somente se houver ensaio}
+\textbf{Resultado medido nesta entrega:} não medido — entrega atual corresponde à documentação de requisitos funcionais e não funcionais (RF-01 a RF-30, RNF-01 a RNF-21); ensaios de acurácia, latência e throughput ainda não foram executados
 
 \section{Proposta de valor}
-Explique como o resultado pretendido responde à dor. Impacto financeiro, desempenho operacional, economia ou segurança deve ser citado como expectativa, fonte ou medição, nunca como consequência garantida.
+O sistema responde diretamente à dor descrita no cenário: ao detectar e remover garrafas defeituosas antes da etapa final da linha, evita-se o travamento do maquinário, o derramamento de líquido e o desperdício de lotes já embalados. O ganho em continuidade operacional e redução de paradas não programadas é uma expectativa a ser validada por ensaio de throughput (RF-10, RNF-09) e por testes de resiliência (RNF-08), e não deve ser apresentado como resultado comprovado até que haja medição própria no rig.
+
 
 \section{Roteiro de comunicação}
 \begin{tabularx}{\textwidth}{p{0.25\textwidth} Y}
 \toprule
 Parte & Preenchimento\\
 \midrule
-Problema & \field{qual dor deve prender a atenção da banca}\\
-Solução & \field{como a arquitetura responde ao problema}\\
-Evidências & \field{quais medições, PoCs ou artefatos sustentam a proposta}\\
-Continuidade & \field{qual extensão depende de validação futura}\\
+Problema & Travamentos recorrentes da esteira por garrafas com tampa ausente, tampa mal rosqueada ou deformidade, causando derramamento e desperdício de lote\\
+Solução & Inspeção visual multi-vista (topo + duas laterais) com trigger físico confiável, classificação por votação, registro rastreável no hub e ejeção confirmada por sensor\\
+Evidências & PoCs de trigger (RF-01.1), calibração pixel→mm (RNF-11), matrizes de confusão por classe de defeito (RNF-02/03) e ensaios de resiliência com hipótese prévia (RNF-08/19)\\
+Continuidade & Camadas condicionais (detecção de anomalia desconhecida, descritores geométricos universais, destilação teacher-student) dependem de PoC própria e aprovação antes de entrar no núcleo\\
 \bottomrule
 \end{tabularx}
 
-\instruction{Traduza o jargão em função e benefício. Não apresente impacto esperado como resultado comprovado.}
