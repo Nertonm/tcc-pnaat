@@ -125,7 +125,11 @@ flowchart LR
 | Item do desenho | Avaliação | Ajuste ou lacuna |
 |---|---|---|
 | Item → encoder | Sim | Encoder mede contagem/velocidade em paralelo; não é etapa de captura. |
-| Item → trigger → captura | Sim | A sincronização das três vistas ainda é requisito a testar, não fato medido. |
+| Item → trigger E18-D80NK (barreira oclusiva + fita 3M) | Sim | Mecanismo definido em RF-01.1; validação empírica com garrafas transparentes, coloridas e de vidro ainda pendente. |
+| Item → VL53L0X | Parcial | Atua como validação/fallback correlacionado ao E18-D80NK, não como gatilho independente. |
+| ESP32: debounce, cálculo de janela e correlação | Sim | Timing determinístico (distância/velocidade) definido; ensaio comparativo entre garrafas vazias, cheias e transparentes ainda a realizar. |
+| ESP32 → pulso estroboscópico (LEDs RGB + lente difusora) | Sim | Mecanismo definido em RF-30/RNF-21; mitigação de hotspot ainda depende de validação por histograma. |
+| Trigger + timestamp → janela de captura | Sim | A sincronização das três vistas ainda é requisito a testar, não fato medido. |
 | Duas CSI + uma USB UVC | Parcial | É a direção preferida; compatibilidade, largura de banda e captura simultânea ainda precisam de verificação. |
 | Classificador por vista | Sim | Modelo e runtime ainda são escolha de PoC; não afirmar YOLO específico como decisão final. |
 | Late fusion | Sim | Deve conservar vista ausente, discordância e confiança; votação não pode esconder falha. |
@@ -149,11 +153,13 @@ flowchart LR
 4. Estados do atuador, timeout, retry, parada manual e bloqueio.
 5. Evidência física da confirmação: sensor, imagem/vídeo ou ambos.
 6. Tolerâncias de sincronização, calibração pixel→mm e throughput.
+7. Validação empírica do gatilho E18-D80NK: taxa de disparo falso e de detecção perdida em ensaio com garrafas vazias, cheias, transparentes, coloridas e de vidro.
+8. Validação da mitigação de hotspot: análise de histograma comparando captura com e sem lente difusora, sobre o mesmo conjunto de imagens.
 
 ## Relação com requisitos
 
-- Funcionais: RF-01 a RF-12, RF-14, RF-15, RF-17 e RF-22.
-- Qualidade: RNF-01, RNF-04 a RNF-09, RNF-12 e RNF-13.
+- Funcionais: RF-01, RF-01.1, RF-02 a RF-12, RF-14, RF-15, RF-17, RF-22 e RF-30.
+- Qualidade: RNF-01, RNF-04 a RNF-09, RNF-12, RNF-13 e RNF-21.
 - Atuação: `docs/requisitos/04-atuacao-seguranca.md`.
 - Dados e interfaces: `docs/requisitos/03-dados-interfaces.md`.
 - Hardware e modelos: `docs/requisitos/05-hardware-ml.md`.
