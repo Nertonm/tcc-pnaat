@@ -1,0 +1,99 @@
+\chapter{Requisitos e critérios de verificação}
+
+\instruction{Escreva uma ideia por requisito. Use verbos observáveis. Separe o alvo da medição e o estado da evidência.}
+
+\section{Convenção de estados}
+\begin{tabularx}{\textwidth}{p{0.2\textwidth} Y}
+\toprule
+Estado da evidência & Significado\\
+\midrule
+Aberto & decisão ou dado ainda não definido\\
+Proposto & solução registrada, ainda sem ensaio suficiente\\
+Em teste & ensaio em execução ou aguardando resultado\\
+Validado & critério atendido com evidência reproduzível\\
+Rejeitado & critério não atendido ou alternativa descartada\\
+Bloqueado & falta acesso, dependência, dado ou permissão\\
+\bottomrule
+\end{tabularx}
+
+\instruction{Meta é alvo mensurável. Não use meta como estado. O status do documento na capa é independente do estado de cada requisito.}
+
+\section{Classes e saídas}
+\begin{tabularx}{\textwidth}{p{0.23\textwidth} Y Y}
+\toprule
+Classe ou condição & Evidência observável & Saída esperada\\
+\midrule
+\field{classe/condição} & \field{o que é observado} & \field{decisão ou registro}\\
+\field{classe/condição} & \field{o que é observado} & \field{decisão ou registro}\\
+\field{condição normal} & \field{o que confirma normalidade} & \field{saída normal}\\
+\bottomrule
+\end{tabularx}
+
+\section{Requisitos funcionais}
+\instruction{Use: “O sistema deve [verbo observável] [objeto] sob [condição], verificado por [método].” Para eventos: “Quando [evento], o sistema deve [resposta].”}
+\begin{longtable}{@{}p{0.1\textwidth} p{0.39\textwidth} p{0.15\textwidth} p{0.15\textwidth} p{0.18\textwidth}@{}}
+\caption{Requisitos funcionais.}\label{tab:rf}\\
+\toprule ID & Requisito & Origem & Estado & Verificação \\
+\midrule
+\endfirsthead
+\toprule ID & Requisito & Origem & Estado & Verificação \\
+\midrule
+\endhead
+RF-01 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
+RF-02 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
+RF-03 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
+RF-04 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
+RF-05 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
+\bottomrule
+\end{longtable}
+
+\section{Requisitos não funcionais e metas}
+\begin{tabularx}{\textwidth}{@{}p{0.11\textwidth} Y p{0.16\textwidth} p{0.15\textwidth} p{0.18\textwidth}@{}}
+\toprule
+ID & Qualidade ou restrição & Meta/critério & Resultado observado & Método\\
+\midrule
+RNF-01 & \field{latência, custo, precisão ou robustez} & \field{limite e unidade} & \field{valor ou não medido} & \field{ensaio}\\
+RNF-02 & \field{qualidade} & \field{limite e unidade} & \field{valor ou não medido} & \field{ensaio}\\
+RNF-03 & \field{restrição} & \field{limite e unidade} & \field{valor ou não medido} & \field{ensaio}\\
+RNF-04 & \field{qualidade} & \field{limite e unidade} & \field{valor ou não medido} & \field{ensaio}\\
+\bottomrule
+\end{tabularx}
+
+\instruction{Declare população, janela, tolerância, condição de teste, evidência e estado. Não escreva “alta precisão”, “tempo real” ou “robusto” sem critério.}
+
+\section{Dados e modelos, quando aplicável}
+\begin{tabularx}{\textwidth}{p{0.2\textwidth} Y Y}
+\toprule
+Campo & Preenchimento & Estado\\
+\midrule
+Fonte e proveniência dos dados & \field{origem, licença, versão ou não aplicável} & \field{estado}\\
+Classes e rótulos & \field{taxonomia observável} & \field{estado}\\
+Divisão dos dados & \field{treino, validação, teste e unidade de separação} & \field{estado}\\
+Prevenção de vazamento & \field{regra por peça, sessão ou origem} & \field{estado}\\
+Modelo e versão & \field{modelo, runtime e hash ou não aplicável} & \field{estado}\\
+Ambiente-alvo & \field{hardware e restrições} & \field{estado}\\
+Métrica por população & \field{métrica, unidade, amostra e limite} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+\section{Critérios de sucesso}
+\begin{tabularx}{\textwidth}{@{}p{0.07\textwidth} Y p{0.12\textwidth} p{0.17\textwidth} Y p{0.1\textwidth} p{0.12\textwidth}@{}}
+\toprule
+ID & Resultado observado & Métrica & Condição/amostra & Método/evidência & Tipo & Estado\\
+\midrule
+CS-01 & \field{resultado} & \field{métrica} & \field{população/janela} & \field{procedimento/artefato} & \field{meta/observado} & \field{estado}\\
+CS-02 & \field{resultado} & \field{métrica} & \field{população/janela} & \field{procedimento/artefato} & \field{meta/observado} & \field{estado}\\
+CS-03 & \field{resultado} & \field{métrica} & \field{população/janela} & \field{procedimento/artefato} & \field{meta/observado} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+\section{Matriz de rastreabilidade}
+\begin{tabularx}{\textwidth}{@{}p{0.12\textwidth} p{0.18\textwidth} p{0.17\textwidth} Y p{0.16\textwidth} p{0.12\textwidth}@{}}
+\toprule
+Necessidade & Requisito & PoC/teste & Evidência & Critério de aceite & Estado\\
+\midrule
+N-01 & RF-01 & PoC-01 & \field{log/foto/vídeo} & \field{critério} & \field{estado}\\
+N-02 & RNF-01 & PoC-02 & \field{artefato} & \field{critério} & \field{estado}\\
+\field{N-xx} & \field{RF/RNF} & \field{teste} & \field{artefato} & \field{critério} & \field{estado}\\
+\bottomrule
+\end{tabularx}

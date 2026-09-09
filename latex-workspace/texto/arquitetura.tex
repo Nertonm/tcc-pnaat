@@ -1,0 +1,63 @@
+\chapter{Arquitetura proposta}
+
+\instruction{Desenhe o fluxo entrada, processamento e saída. Use nomes de componentes somente depois de justificar função, alternativa e estado.}
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=7mm and 5mm,
+  box/.style={draw, rounded corners, align=center, minimum height=8mm, text width=29mm, font=\scriptsize},
+  line/.style={-{Latex[length=2mm]}, thick}
+]
+  \node[box] (input) {Entrada\\\scriptsize\textit{(dado/processo)}};
+  \node[box, right=of input] (capture) {Aquisição\\\scriptsize\textit{(se aplicável)}};
+  \node[box, right=of capture] (process) {Transformação\\\scriptsize\textit{(regra/modelo)}};
+  \node[box, right=of process] (decision) {Resultado\\\scriptsize\textit{(decisão/saída)}};
+  \node[box, right=of decision] (record) {Registro\\\scriptsize\textit{(se aplicável)}};
+  \draw[line] (input) -- (capture);
+  \draw[line] (capture) -- (process);
+  \draw[line] (process) -- (decision);
+  \draw[line] (decision) -- (record);
+\end{tikzpicture}}
+\caption{Fluxo da solução proposta. Substitua os campos entre parênteses.}
+\label{fig:arquitetura}
+\end{figure}
+
+\section{Papéis dos componentes}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.22\textwidth} Y Y}
+\toprule
+Componente/placa & Função na arquitetura & Limite, alternativa e estado\\
+\midrule
+\field{componente} & \field{entrada, processamento ou saída} & \field{alternativa; estado}\\
+\field{componente} & \field{entrada, processamento ou saída} & \field{alternativa; estado}\\
+\field{componente} & \field{entrada, processamento ou saída} & \field{alternativa; estado}\\
+\bottomrule
+\end{tabularx}
+
+\section{Funções de software, IoT e processamento}
+\begin{tabularx}{\textwidth}{p{0.24\textwidth} Y Y Y}
+\toprule
+Camada & Entrada & Processamento & Saída/falha tratada\\
+\midrule
+Análise ou visão, se aplicável & \field{imagem/dado} & \field{regra/modelo} & \field{decisão/confiança}\\
+Comunicação, se aplicável & \field{evento} & \field{protocolo/fila} & \field{mensagem/retry}\\
+Persistência, se aplicável & \field{registro} & \field{schema/arquivo} & \field{consulta/integridade}\\
+\bottomrule
+\end{tabularx}
+
+\section{Contrato de interface}
+\begin{tabularx}{\textwidth}{p{0.2\textwidth} Y Y}
+\toprule
+Campo & Preenchimento & Estado\\
+\midrule
+Produtor e consumidor & \field{quem gera e quem usa} & \field{estado}\\
+Identidade e versão & \field{ID, versão do payload/arquivo} & \field{estado}\\
+Dados obrigatórios & \field{timestamp, entrada, resultado e evidência} & \field{estado}\\
+Entradas inválidas & \field{tratamento e erro} & \field{estado}\\
+Timeout e retransmissão & \field{política} & \field{estado}\\
+Idempotência e integridade & \field{regra} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+\instruction{Não escreva “tempo real”, “robusto” ou “inteligente” sem métrica e cenário de teste.}

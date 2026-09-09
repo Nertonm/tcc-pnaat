@@ -1,0 +1,79 @@
+\chapter{PoCs, integração e visão crítica}
+
+\section{PoC principal}
+\instruction{A PoC deve isolar uma premissa que pode inviabilizar o projeto. Não descreva a implementação completa.}
+\textbf{PoC-\placeholder{ID}: \placeholder{nome}}
+
+\textbf{Dor ou requisito atendido:} \field{ID e relação com o problema}
+
+\textbf{Risco técnico isolado:} \field{qual premissa pode falhar?}
+
+\textbf{Pergunta binária:} A abordagem \field{abordagem} atinge \field{critério} sob \field{condições}? \textbf{Sim / Não / Inconclusivo}
+
+\textbf{Variável isolada:} \field{variável}
+
+\textbf{O que fica fora do teste:} \field{componentes periféricos}
+
+\textbf{Construir:} \field{artefato mínimo produzido}
+
+\textbf{Medir:} \field{procedimento, entradas, amostra, métrica e unidade}
+
+\textbf{Aprender:} \field{interpretação e próxima decisão}
+
+\textbf{Critério go/no-go:} \field{limiar definido antes do ensaio}
+
+\textbf{Resultado observado:} \field{valor e unidade, ou não executado}
+
+\textbf{Decisão:} \field{go/no-go/repetir/adaptar}
+
+\textbf{Impacto no plano:} \field{nenhum/mudança proposta/mudança aprovada}
+
+\textbf{Reprodutibilidade:} \field{commit, comando, ambiente e evidência}
+
+\section{Plano de PoCs}
+\begin{tabularx}{\textwidth}{p{0.1\textwidth} Y p{0.18\textwidth} Y Y}
+\toprule
+PoC & Pergunta binária & Critério de passagem & Resultado/decisão & Próxima ação\\
+\midrule
+PoC-01 & \field{premissa mais arriscada} & \field{limiar} & \field{valor e go/no-go} & \field{ação}\\
+PoC-02 & \field{premissa seguinte} & \field{limiar} & \field{valor e go/no-go} & \field{ação}\\
+PoC-03 & \field{premissa seguinte} & \field{limiar} & \field{valor e go/no-go} & \field{ação}\\
+\bottomrule
+\end{tabularx}
+
+Cada PoC deve registrar hipótese, setup, medida, resultado, decisão e próxima ação. O ciclo é construir, medir e aprender. Uma falha orienta a revisão de componente, limiar ou arquitetura.
+
+\section{Integração incremental}
+\begin{tabularx}{\textwidth}{p{0.18\textwidth} Y Y Y p{0.15\textwidth}}
+\toprule
+Camada ou interface & Elementos envolvidos & Interface & Teste & Estado\\
+\midrule
+\field{física, dados ou processo} & \field{elementos} & \field{entrada/saída} & \field{teste isolado} & \field{estado}\\
+\field{comunicação, se aplicável} & \field{elementos} & \field{mensagem/contrato} & \field{teste isolado} & \field{estado}\\
+\field{aplicação ou modelo} & \field{elementos} & \field{API/arquivo} & \field{teste integrado} & \field{estado}\\
+\field{operação e usuário} & \field{elementos} & \field{fluxo} & \field{teste de aceite} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+A ordem deve seguir as dependências do projeto. Uma camada só pode avançar quando a interface anterior tiver evidência de funcionamento.
+
+\section{Riscos e visão crítica}
+\begin{tabularx}{\textwidth}{p{0.17\textwidth} p{0.14\textwidth} p{0.16\textwidth} Y p{0.14\textwidth} p{0.13\textwidth}}
+\toprule
+Risco & Causa & Impacto & Teste ou PoC & Contingência & Estado\\
+\midrule
+\field{risco} & \field{causa} & \field{efeito} & \field{métrica e evidência} & \field{alternativa} & \field{estado}\\
+\field{risco} & \field{causa} & \field{efeito} & \field{métrica e evidência} & \field{alternativa} & \field{estado}\\
+\field{risco} & \field{causa} & \field{efeito} & \field{métrica e evidência} & \field{alternativa} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+\section{Justificativas tecnológicas}
+\begin{tabularx}{\textwidth}{p{0.18\textwidth} Y p{0.2\textwidth} p{0.18\textwidth}}
+\toprule
+Escolha ou alternativa & Necessidade atendida & Evidência ou fonte & Decisão/estado\\
+\midrule
+\field{componente/abordagem} & \field{necessidade} & \field{datasheet, teste ou fonte} & \field{decisão e estado}\\
+\field{componente/abordagem} & \field{necessidade} & \field{datasheet, teste ou fonte} & \field{decisão e estado}\\
+\bottomrule
+\end{tabularx}

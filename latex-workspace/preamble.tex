@@ -1,0 +1,37 @@
+\usepackage{fontspec}
+\usepackage[brazilian]{babel}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage[
+  backend=biber,
+  style=authoryear
+]{biblatex}
+\usepackage[
+  left=2.5cm,
+  right=2.0cm,
+  top=2.5cm,
+  bottom=2.5cm
+]{geometry}
+\usepackage{xcolor}
+\setlength{\tabcolsep}{3pt}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{pnaatblue}{HTML}{163A5F}
+\definecolor{pnaatgreen}{HTML}{3C7A57}
+\definecolor{lightgray}{HTML}{F2F4F5}
+\hypersetup{colorlinks=true, linkcolor=pnaatblue, urlcolor=pnaatgreen, citecolor=pnaatblue}
+\setkomafont{chapter}{\normalfont\Large\bfseries\color{pnaatblue}}
+\setkomafont{section}{\normalfont\large\bfseries\color{pnaatblue}}
+\setkomafont{subsection}{\normalfont\normalsize\bfseries\color{pnaatblue}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\status}[1]{\textit{[#1]}}
+\newcommand{\placeholder}[1]{\textcolor{blue}{[PREENCHER: #1]}}
+\newcommand{\instruction}[1]{\par\smallskip{\footnotesize\color{gray}\textit{Orientação: #1}}\par\smallskip}
+\newcommand{\field}[1]{\textcolor{blue}{[#1]}}
+\newcommand{\campoGrande}[1]{\fbox{\parbox{0.94\textwidth}{\textcolor{blue}{#1}}}}

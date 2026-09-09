@@ -1,0 +1,26 @@
+\documentclass[
+  11pt,
+  a4paper,
+  oneside,
+  open=any,
+  parskip=half,
+  headings=normal
+]{scrreprt}
+
+\input{preamble}
+\addbibresource{referencias.bib}
+
+\begin{document}
+\input{texto/capa}
+\pagenumbering{arabic}
+
+\input{texto/contexto}
+\input{texto/escopo}
+\input{texto/arquitetura}
+\input{texto/requisitos}
+\input{texto/validacao}
+\input{texto/aceite}
+
+\nocite{pnaat-tcc-apostila}
+\printbibliography
+\end{document}
