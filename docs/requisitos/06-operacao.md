@@ -51,7 +51,7 @@
 
 ### DOC-04: Esquemático do rig
 
-- Critério: diagrama mostra alimentação, interfaces, trigger, câmeras, encoder, atuador, confirmação e fluxo MQTT.
+- Critério: diagrama mostra alimentação, interfaces, trigger, iluminação estroboscópica com difusor, câmeras, encoder, atuador, confirmação e fluxo MQTT.
 - Critério de reprovação: diagrama omite componente necessário ao teste. Evidência: revisão cruzada com BOM.
 
 ### DOC-05: Registro de PoC
