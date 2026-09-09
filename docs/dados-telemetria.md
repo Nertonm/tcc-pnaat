@@ -49,6 +49,7 @@ CREATE TABLE item (
   lote_id TEXT REFERENCES lote(lote_id),
   timestamp_trigger TEXT NOT NULL,
   velocidade_rig_mm_s REAL,
+  fonte_trigger TEXT CHECK(fonte_trigger IN ('e18_d80nk','vl53l0x','ambos_correlacionados')),
   status_final TEXT CHECK(status_final IN ('ok','defeito','erro_processamento')),
   qualidade_registro TEXT CHECK(qualidade_registro IN ('completo','parcial_1_vista_faltante','timestamp_divergente')),
   is_golden INTEGER DEFAULT 0,
@@ -65,6 +66,7 @@ CREATE TABLE inspecao_vista (
   timestamp_captura TEXT,
   latencia_ms INTEGER,
   medida_mm REAL,
+  pixels_saturados_pct REAL,
   score_cutpaste REAL,
   score_ts REAL
 );
@@ -134,6 +136,8 @@ A coluna `qualidade_registro` liga a confiabilidade do nó ao dado final. O regi
 7. Latência média e máxima de decisão por vista.
 8. Itens com correção manual, para auditoria.
 9. Rejeições não confirmadas, como evento de qualidade.
+10. Taxa de disparo falso ou perda de detecção do gatilho, por fonte (E18-D80NK vs VL53L0X vs correlacionado).
+11. Percentual de pixels saturados por vista, comparando capturas com e sem lente difusora.
 
 As consultas SQL estão detalhadas junto ao schema no histórico do repositório.
 
