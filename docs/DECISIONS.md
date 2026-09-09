@@ -169,6 +169,16 @@ Registro de posições de decisão. Nenhuma posição está fechada: cada item a
 - Direção forte: Opção B.
 - Justificativa: Isola tarefas determinísticas de tempo real e debounce no ESP32, mantendo a capacidade computacional do Raspberry Pi 5 focada exclusivamente na inferência dos modelos de visão computacional e gerenciamento do hub.
 
+## D-20: Modo de detecção do E18-D80NK
+
+- Opções:
+  - A: modo difuso padrão, sensor perpendicular à esteira, dependendo da reflexão da própria garrafa.
+  - B: modo barreira por oclusão, sensor inclinado 10°–15°, com fundo de fita retrorrefletiva 3M no anteparo oposto; a garrafa interrompe o retorno do feixe em vez de precisar refleti-lo.
+- Direção forte: B.
+- Justificativa: o modo difuso falha com garrafas transparentes/translúcidas, já que boa parte da luz atravessa o plástico em vez de refletir; o modo barreira depende apenas da oclusão do feixe, funcionando de forma equivalente para garrafas transparentes, coloridas, opacas ou de vidro.
+- A decidir: sensibilidade do potenciômetro, ângulo final e material exato da fita, validados na PoC 3.
+- Alternativa descartada: A, por não atender de forma confiável a garrafas transparentes com líquido.
+
 ## Regra de atualização
 
 Uma posição só sai do estado "a decidir" quando houver evidência de PoC, medição ou revisão registrada no repositório. O registro de cada revisão entra como novo item, sem apagar o histórico da posição anterior.
