@@ -33,11 +33,15 @@
 \section{Plano de PoCs}
 \begin{tabularx}{\textwidth}{p{0.1\textwidth} Y p{0.18\textwidth} Y Y}
 \toprule
-PoC & Pergunta binária & Critério de passagem & Resultado/decisão & Próxima ação\\
+PoC & Pergunta & Passagem & Resultado & Próxima ação\\
 \midrule
-PoC-01 & \field{premissa mais arriscada} & \field{limiar} & \field{valor e go/no-go} & \field{ação}\\
-PoC-02 & \field{premissa seguinte} & \field{limiar} & \field{valor e go/no-go} & \field{ação}\\
-PoC-03 & \field{premissa seguinte} & \field{limiar} & \field{valor e go/no-go} & \field{ação}\\
+01 & Tampa atinge metas? & 95\%/90\% & Não executado & Revisar ou congelar setup\\
+02 & Corpo atinge meta? & $\ge$ 90\%; erro < 5\% & Não executado & Fechar regra lateral\\
+03 & Vistas são do mesmo item? & Janela estável & Não executado & Congelar trigger\\
+04 & Hub associa 50 itens? & $\ge$ 98\% & Não executado & Liberar dados\\
+05 & Registro mantém integridade? & $\ge$ 99\%/30 min & Não executado & Liberar resiliência\\
+06 & Reconecta sem duplicar? & 100\% do buffer & Não executado & Congelar retry\\
+07 & Separa sem ejetar normal? & $\ge$ 99\%; zero normal & Não executado & Fechar mecanismo\\
 \bottomrule
 \end{tabularx}
 
@@ -46,12 +50,12 @@ Cada PoC deve registrar hipótese, setup, medida, resultado, decisão e próxima
 \section{Integração incremental}
 \begin{tabularx}{\textwidth}{p{0.18\textwidth} Y Y Y p{0.15\textwidth}}
 \toprule
-Camada ou interface & Elementos envolvidos & Interface & Teste & Estado\\
+Camada & Elementos & Interface & Teste & Estado\\
 \midrule
-\field{física, dados ou processo} & \field{elementos} & \field{entrada/saída} & \field{teste isolado} & \field{estado}\\
-\field{comunicação, se aplicável} & \field{elementos} & \field{mensagem/contrato} & \field{teste isolado} & \field{estado}\\
-\field{aplicação ou modelo} & \field{elementos} & \field{API/arquivo} & \field{teste integrado} & \field{estado}\\
-\field{operação e usuário} & \field{elementos} & \field{fluxo} & \field{teste de aceite} & \field{estado}\\
+Física & Trilho, sensores, câmeras e luz & Sinal/posição & PoC-03 & Em teste\\
+Comunicação & ESP32, Pi, broker e hub & MQTT & PoCs 04--06 & Proposto\\
+Modelo & Captura, classificadores e fusão & Imagens/resultados & PoCs 01/02 & Proposto\\
+Operação & Dashboard e atuação & Fluxo do item & PoC-07 & Aberto\\
 \bottomrule
 \end{tabularx}
 
@@ -60,11 +64,14 @@ A ordem deve seguir as dependências do projeto. Uma camada só pode avançar qu
 \section{Riscos e visão crítica}
 \begin{tabularx}{\textwidth}{p{0.17\textwidth} p{0.14\textwidth} p{0.16\textwidth} Y p{0.14\textwidth} p{0.13\textwidth}}
 \toprule
-Risco & Causa & Impacto & Teste ou PoC & Contingência & Estado\\
+Risco & Causa & Impacto & Teste & Contingência & Estado\\
 \midrule
-\field{risco} & \field{causa} & \field{efeito} & \field{métrica e evidência} & \field{alternativa} & \field{estado}\\
-\field{risco} & \field{causa} & \field{efeito} & \field{métrica e evidência} & \field{alternativa} & \field{estado}\\
-\field{risco} & \field{causa} & \field{efeito} & \field{métrica e evidência} & \field{alternativa} & \field{estado}\\
+Trigger instável & Transparência/reflexo & Captura ausente/duplicada & PoC-03 & Outro sensor & Em teste\\
+Dessincronização & CSI/USB & Fusão incorreta & PoC-03 & Ajustar janela/velocidade & Proposto\\
+Desfoque/saturação & Movimento/reflexo & Erro visual & PoCs 01--03 & Luz pulsada/difusor & Proposto\\
+Dataset fraco & Poucos exemplares & Métrica otimista & PoCs 01/02 & Coleta própria & Proposto\\
+Sobrecarga & Três inferências & Latência alta & Ensaio & Modelo leve & Proposto\\
+Falha de atuação & Mecanismo/sensor & Reprovado não separado & PoC-07 & Estado seguro & Aberto\\
 \bottomrule
 \end{tabularx}
 
@@ -82,9 +89,14 @@ Sinal que revelou a falha & Falha observada & Evidência e impacto & Decisão pe
 \section{Justificativas tecnológicas}
 \begin{tabularx}{\textwidth}{p{0.18\textwidth} Y p{0.2\textwidth} p{0.18\textwidth}}
 \toprule
-Escolha ou alternativa & Necessidade atendida & Evidência ou fonte & Decisão/estado\\
+Escolha & Necessidade & Fonte/evidência & Estado\\
 \midrule
-\field{componente/abordagem} & \field{necessidade} & \field{datasheet, teste ou fonte} & \field{decisão e estado}\\
-\field{componente/abordagem} & \field{necessidade} & \field{datasheet, teste ou fonte} & \field{decisão e estado}\\
+Três vistas & Cobrir tampa e corpo & Arquitetura e PoCs & Proposto\\
+Fusão por domínios & Não cancelar defeito & Decisão D-04 revisada & Adotado\\
+Pi 5 & Processamento local & Product Brief e ensaio & Proposto\\
+ESP32 & Timing e sensores & Datasheet/PoC-03 & Proposto\\
+MQTT & Eventos desacoplados & Especificação MQTT & Proposto\\
+SQLite & Persistência local & Documentação SQLite & Proposto\\
+Peças 3D & Repetibilidade & Plano FreeCAD & Proposto\\
 \bottomrule
 \end{tabularx}
