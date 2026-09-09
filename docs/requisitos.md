@@ -72,11 +72,11 @@ O diagrama e a revisão dos componentes estão em `docs/arquitetura.md`. O desen
 
 | Funcionalidade | Dor que alivia | Benefício |
 |---|---|---|
-| Inspeção multi-view | Garrafas defeituosas chegam ao fim do processo | Reduz envio de itens defeituosos e devolução de lote |
-| Rastreabilidade por item | Causa raiz desconhecida e recall de lote inteiro | Recall cirúrgico com evidência fotográfica |
-| Telemetria e micro-paradas | Paradas invisíveis mascaram a eficiência | Dado real de disponibilidade e desempenho |
+| Inspeção multi-view | Garrafas defeituosas chegam ao fim do processo | Pode reduzir o envio de itens defeituosos e a devolução de lote |
+| Rastreabilidade por item | Causa raiz desconhecida e recall de lote inteiro | Pode apoiar recall seletivo com evidência fotográfica |
+| Telemetria e micro-paradas | Paradas invisíveis mascaram a eficiência | Pode produzir dados de disponibilidade e desempenho |
 | Detecção de anomalia | Defeitos novos passam despercebidos | Camada extra de segurança |
-| Separação com análise humana | Defeituosos misturados ao lote bom | Loop de qualidade fechado |
+| Separação com análise humana | Defeituosos misturados ao lote bom | Pode apoiar um ciclo de qualidade com análise humana |
 
 ## 5. Esqueleto do pitch
 

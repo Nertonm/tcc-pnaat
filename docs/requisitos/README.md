@@ -16,13 +16,12 @@ Cada ficha deve responder:
 
 ## Arquivos
 
-- `01-funcionais.md`: RF-01 a RF-29.
-- `02-nao-funcionais.md`: RNF-01 a RNF-20.
+- `01-funcionais.md`: RF-01 a RF-30, incluindo RF-01.1.
+- `02-nao-funcionais.md`: RNF-01 a RNF-21.
 - `03-dados-interfaces.md`: dados, contratos MQTT, interfaces e rastreabilidade.
 - `04-atuacao-seguranca.md`: atuação, controlabilidade, observabilidade e segurança operacional.
 - `05-hardware-ml.md`: rig, elétrica, iluminação, dataset e modelos.
-- `06-operacao-documentacao.md`: operação, manutenção, documentação e reprodutibilidade.
-- `07-aceite-calendario.md`: aceite, matriz de evidência e prazos.
+- `06-operacao.md`: operação, manutenção, documentação e reprodutibilidade.
 
 ## Regra de status
 
