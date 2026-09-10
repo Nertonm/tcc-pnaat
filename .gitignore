@@ -60,3 +60,6 @@ codex-*.md
 !cad-workspace/data/
 !cad-workspace/data/g0/
 !cad-workspace/data/g0/**
+
+# Vendor external snapshots (not publishable)
+cad-workspace/references/vendor/**
