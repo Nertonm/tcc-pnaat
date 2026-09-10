@@ -13,3 +13,10 @@ generate:
 
 validate-mesh:
 	$(PY) scripts/validate_mesh.py exports/canary/canary.stl
+
+.PHONY: generate-optical-rig validate-optical-rig
+generate-optical-rig:
+	$(PY) cad/cadquery/concepts/optical-rig-r01/rig.py
+
+validate-optical-rig:
+	$(PY) scripts/validate_optical_rig.py

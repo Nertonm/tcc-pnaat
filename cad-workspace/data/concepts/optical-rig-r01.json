@@ -1,0 +1,16 @@
+{
+  "status": "REFERENCE_ONLY",
+  "fabrication_allowed": false,
+  "measured": false,
+  "assumption": "All values are concept assumptions in mm/degrees, not conveyor measurements or approved cable specifications.",
+  "camera_count": 3,
+  "camera_spacing": 400,
+  "working_distance": 180,
+  "product_envelope": [80, 80, 240],
+  "cable_length": 2200,
+  "top_height": 420,
+  "side_angle": 0,
+  "dock_width": 140,
+  "cable_bend_radius": 25,
+  "cable_service_allowance": 100
+}
