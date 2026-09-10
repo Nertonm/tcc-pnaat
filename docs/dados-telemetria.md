@@ -50,8 +50,12 @@ CREATE TABLE item (
   timestamp_trigger TEXT NOT NULL,
   velocidade_rig_mm_s REAL,
   fonte_trigger TEXT CHECK(fonte_trigger IN ('e18_d80nk','vl53l0x','ambos_correlacionados')),
-  status_final TEXT CHECK(status_final IN ('ok','defeito','erro_processamento')),
-  qualidade_registro TEXT CHECK(qualidade_registro IN ('completo','parcial_1_vista_faltante','timestamp_divergente')),
+  status_tampa TEXT CHECK(status_tampa IN ('ok','defeito','inconclusivo','erro_processamento')),
+  status_corpo TEXT CHECK(status_corpo IN ('ok','defeito','inconclusivo','erro_processamento')),
+  discordancia_lateral INTEGER DEFAULT 0 CHECK(discordancia_lateral IN (0,1)),
+  status_final TEXT CHECK(status_final IN ('ok','defeito','inconclusivo','erro_processamento')),
+  motivo_inconclusivo TEXT,
+  qualidade_registro TEXT CHECK(qualidade_registro IN ('completo','parcial_1_vista_faltante','timestamp_divergente','evidencia_insuficiente','invalido')),
   is_golden INTEGER DEFAULT 0,
   score_consistencia REAL
 );
@@ -60,6 +64,10 @@ CREATE TABLE inspecao_vista (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   item_id TEXT REFERENCES item(item_id),
   vista TEXT CHECK(vista IN ('topo','lateral1','lateral2')),
+  dominio TEXT CHECK(dominio IN ('tampa','corpo')),
+  vista_disponivel INTEGER DEFAULT 1 CHECK(vista_disponivel IN (0,1)),
+  qualidade_imagem TEXT CHECK(qualidade_imagem IN ('adequada','baixa','invalida','nao_avaliada')),
+  status_vista TEXT CHECK(status_vista IN ('ok','defeito','inconclusivo','erro_processamento')),
   codigo_defeito TEXT REFERENCES taxonomia_defeito(codigo),
   confianca REAL,
   caminho_evidencia TEXT,
@@ -101,9 +109,12 @@ CREATE TABLE correcao_operador (
 CREATE TABLE evento_rejeicao (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   item_id TEXT REFERENCES item(item_id),
+  tentativa INTEGER DEFAULT 1,
   timestamp_ordenado TEXT NOT NULL,
   timestamp_confirmado TEXT,
-  status TEXT CHECK(status IN ('pendente','confirmada','falha')),
+  timestamp_timeout TEXT,
+  status_ordem TEXT CHECK(status_ordem IN ('pendente','emitida','falha')),
+  status TEXT CHECK(status IN ('pendente','confirmada','falha','timeout')),
   via_sensor TEXT
 );
 
@@ -123,7 +134,11 @@ CREATE INDEX idx_inspecao_item ON inspecao_vista(item_id);
 CREATE INDEX idx_heartbeat_ponto_tempo ON heartbeat_no(ponto_id, timestamp);
 ```
 
-A coluna `qualidade_registro` liga a confiabilidade do nó ao dado final. O registro de atuação precisa ser revisado antes da implementação para cobrir tentativa, timeout, retry, estado do atuador e evidência; a definição está em `docs/requisitos/04-atuacao-seguranca.md`.
+A coluna `qualidade_registro` liga a confiabilidade das evidências ao dado final. As colunas `status_tampa` e `status_corpo` preservam as decisões dos dois domínios, sem maioria global entre as três câmeras.
+
+O `status_final` deve ser `defeito` quando qualquer domínio detectar defeito. Quando nenhum defeito for detectado, mas a evidência necessária estiver ausente, inválida ou abaixo dos critérios mínimos, o resultado deve ser `inconclusivo`.
+
+A tabela `evento_rejeicao` mantém seu nome por compatibilidade documental, mas representa a separação do item reprovado para análise manual. Ordem emitida, confirmação e timeout devem permanecer distinguíveis. Os detalhes de retry, estado do atuador e segurança continuam definidos em `docs/requisitos/04-atuacao-seguranca.md`.
 
 ## 3. Consultas analíticas
 
@@ -135,11 +150,15 @@ A coluna `qualidade_registro` liga a confiabilidade do nó ao dado final. O regi
 6. Saúde dos nós na última hora.
 7. Latência média e máxima de decisão por vista.
 8. Itens com correção manual, para auditoria.
-9. Rejeições não confirmadas, como evento de qualidade.
-10. Taxa de disparo falso ou perda de detecção do gatilho, por fonte (E18-D80NK vs VL53L0X vs correlacionado).
-11. Percentual de pixels saturados por vista, comparando capturas com e sem lente difusora.
+9. Separações não confirmadas ou encerradas por timeout, como evento de qualidade.
+10. Taxa de disparo falso ou perda de detecção do gatilho, por fonte configurada.
+11. Percentual de pixels saturados por vista e configuração de iluminação.
+12. Itens inconclusivos por lote e motivo.
+13. Distribuição das decisões dos domínios da tampa e do corpo.
+14. Frequência de discordância entre `lateral1` e `lateral2`.
 
 As consultas SQL estão detalhadas junto ao schema no histórico do repositório.
+As consultas devem preservar a diferença entre `ok`, `defeito`, `inconclusivo` e `erro_processamento`. Registros inconclusivos não podem ser contabilizados como itens aprovados.
 
 ## 4. Taxonomia de defeitos
 
@@ -155,11 +174,12 @@ Referência conceitual: lógica de nível de qualidade aceitável (AQL), sem imp
 
 ## 5. Recomendações de implementação
 
-1. Schema relacional, taxonomia e dashboard com notificação transformam o conjunto em sistema de dados analisável.
+1. O schema, a taxonomia e o dashboard devem preservar as decisões dos domínios da tampa e do corpo, o estado inconclusivo, a qualidade por vista e a confirmação da separação para análise manual.
 2. Detecção one-class como camada de anomalia desconhecida, isolada em PoC com go/no-go de latência.
 3. Augmentação leve do dataset de peças 3D e detecção simples de drift.
 4. Qualidade de dados e heartbeat integrados ao dashboard, para que a resiliência seja métrica.
 5. Alternativas avaliadas e descartadas documentadas com justificativa.
+6. O E18-D80NK e o KY-040 devem permanecer identificados como componentes candidatos nos textos e consultas relacionados às PoCs; sua presença no schema ou no setup não representa validação.
 
 ## 6. Fora do escopo
 
