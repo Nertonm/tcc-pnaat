@@ -1,14 +1,14 @@
-# Template LaTeX: Entrega 1 PNAAT
+# Documento LaTeX: Entrega 1 PNAAT
 
-Formulário técnico para o Levantamento de Requisitos. O arquivo não contém uma solução pronta: o grupo preenche os campos azuis, remove as orientações e mantém apenas decisões, metas e evidências próprias.
+Documento final do Levantamento de Requisitos do TCC PNAAT. O PDF formaliza o Cenário 1, o contexto, o escopo, os requisitos técnicos e as PoCs propostas para validar cada ideia e a conjectura integrada.
 
-## Estado
+## Estado do artefato
 
-- Documento: PNAAT-TCC-REQ-001
-- Estado: template em revisão
-- Classe: KOMA-Script `scrreprt`
-- Compilador: LuaLaTeX + Biber + latexmk
-- Objetivo: organizar problema, escopo, requisitos, PoCs, integração, reprodutibilidade e aceite
+- PDF publicado: `PNAAT-TCC-REQ-001-template.pdf`
+- Compilador: LuaLaTeX + latexmk
+- Estrutura: contexto, escopo, arquitetura, requisitos, PoCs, visão crítica e próximos passos
+- Estado das decisões: `Proposto` até que a PoC correspondente produza evidência
+- Escopo: observação, classificação, rastreabilidade e dashboard; sem controle da velocidade da esteira ou atuação física
 
 ## Build
 
@@ -16,57 +16,31 @@ Formulário técnico para o Levantamento de Requisitos. O arquivo não contém u
 make all
 ```
 
-Para limpar artefatos:
+Para limpar artefatos de compilação:
 
 ```bash
 make clean
 ```
 
-Para conferir se o documento ainda tem campos de formulário:
+Para verificar campos vazios e marcadores antes da entrega:
 
 ```bash
 make check-final
 ```
 
-Esse comando deve falhar enquanto houver campos azuis ou instruções. Isso é esperado no template e impede exportar um PDF incompleto.
+O gate deve terminar sem placeholders, instruções ou marcadores de trabalho.
 
-## Estados
+## Organização
 
-Use os estados de evidência de forma consistente:
+- `main.tex`: composição do documento.
+- `preamble.tex`: pacotes, estilos, colunas e macros de links PoC.
+- `texto/capa.tex`: identificação e integrantes.
+- `texto/contexto.tex`: Cenário 1, dor, resultado pretendido e operação.
+- `texto/escopo.tex`: dentro/fora do escopo, premissas e restrições.
+- `texto/arquitetura.tex`: papéis, interfaces e expansão multi-nó.
+- `texto/requisitos.tex`: RF, RNF, critérios e rastreabilidade.
+- `texto/validacao.tex`: PoCs, riscos, integração e justificativas.
+- `texto/aceite.tex`: próximos passos de execução.
+- `figuras/`: documentação dos diagramas autocontidos.
 
-- `ABERTO`: decisão ou dado ainda não definido;
-- `PROPOSTO`: solução registrada, sem ensaio suficiente;
-- `EM TESTE`: ensaio em execução ou aguardando resultado;
-- `VALIDADO`: critério atendido com evidência reproduzível;
-- `REJEITADO`: critério não atendido ou alternativa descartada;
-- `BLOQUEADO`: falta acesso, dependência, dado ou permissão.
-
-`META` é um alvo mensurável, não um estado. `RESULTADO OBSERVADO` é o valor medido. `ACEITE` é a decisão tomada contra o critério.
-
-- campos azuis (`\placeholder`, `\field`, `\campoGrande`) são obrigatórios ou orientações;
-- substituir placeholders por fatos, decisões ou hipóteses identificadas;
-- remover as linhas de `\instruction` antes da entrega;
-- não deixar `PREENCHER`, `TODO`, `???` ou campos azuis no PDF final;
-- usar verbos observáveis e métricas com unidade, população, condição e método;
-- distinguir proposta, meta, resultado medido e resultado não alcançado;
-- não inserir hardware, modelo, protocolo ou número só porque aparece em um exemplo externo.
-
-## Arquitetura de arquivos
-
-- `main.tex`: composição.
-- `preamble.tex`: classe, pacotes e macros de preenchimento.
-- `texto/`: seções preenchíveis.
-- `tabelas/`: tabelas que crescerem além do corpo.
-- `figuras/`: fontes editáveis dos diagramas.
-- `referencias.bib`: fontes verificadas.
-
-## Gate antes da entrega
-
-1. Tema oficial, grupo, integrantes e data preenchidos.
-2. Dor descrita com situação, afetados, consequência e evidência.
-3. Dentro/fora do escopo e premissas separados.
-4. RF/RNF rastreáveis a PoC, evidência e aceite.
-5. Software, IoT, captura e processamento descritos por função.
-6. Nenhuma meta apresentada como resultado.
-7. Nenhum placeholder ou instrução no PDF final.
-8. Build limpo e revisão visual do PDF.
+A Entrega 1 não apresenta desempenho medido. Cada PoC define a métrica, o critério e a evidência que serão usados na etapa de validação.

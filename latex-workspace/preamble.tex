@@ -8,30 +8,49 @@
 \usepackage{tabularx}
 \usepackage{longtable}
 \usepackage{array}
-\usepackage[
-  backend=biber,
-  style=authoryear
-]{biblatex}
+\usepackage{etoolbox}
 \usepackage[
   left=2.5cm,
   right=2.0cm,
   top=2.5cm,
   bottom=2.5cm
 ]{geometry}
-\usepackage{xcolor}
-\setlength{\tabcolsep}{3pt}
+\usepackage[table]{xcolor}
+\setlength{\tabcolsep}{2.5pt}
+\raggedbottom
+\setlength{\emergencystretch}{2em}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\renewcommand{\arraystretch}{1.22}
+\AtBeginEnvironment{tabularx}{\small}
 \usepackage[hidelinks]{hyperref}
 
 \definecolor{pnaatblue}{HTML}{163A5F}
 \definecolor{pnaatgreen}{HTML}{3C7A57}
 \definecolor{lightgray}{HTML}{F2F4F5}
-\hypersetup{colorlinks=true, linkcolor=pnaatblue, urlcolor=pnaatgreen, citecolor=pnaatblue}
+\definecolor{bodytext}{HTML}{1C1C1E}
+\definecolor{pnaatgray}{HTML}{54595F}
+\hypersetup{colorlinks=true, linkcolor=pnaatblue, urlcolor=pnaatblue, citecolor=pnaatblue}
 \setkomafont{chapter}{\normalfont\Large\bfseries\color{pnaatblue}}
 \setkomafont{section}{\normalfont\large\bfseries\color{pnaatblue}}
 \setkomafont{subsection}{\normalfont\normalsize\bfseries\color{pnaatblue}}
+\setkomafont{pagenumber}{\color{pnaatblue}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
-\newcommand{\status}[1]{\textit{[#1]}}
-\newcommand{\placeholder}[1]{\textcolor{blue}{[PREENCHER: #1]}}
-\newcommand{\instruction}[1]{\par\smallskip{\footnotesize\color{gray}\textit{Orientação: #1}}\par\smallskip}
-\newcommand{\field}[1]{\textcolor{blue}{[#1]}}
-\newcommand{\campoGrande}[1]{\fbox{\parbox{0.94\textwidth}{\textcolor{blue}{#1}}}}
+\newcommand{\campoGrande}[1]{\noindent\fcolorbox{pnaatblue!70}{pnaatblue!8}{\parbox{0.94\textwidth}{\raggedright\textcolor{pnaatblue}{#1}}}}
+
+\newcommand{\pocref}[2]{\hyperlink{#1}{#2}}
+
+
+% Blocos continuam em fluxo; flush diante apenas no fim do documento.
+\makeatletter
+\let\latexclearpage\clearpage
+\let\clearpage\relax
+\AtEndDocument{\let\clearpage\latexclearpage\clearpage}
+\makeatother
+
+\newcommand{\tblhdr}[1]{\cellcolor{pnaatblue!18}\textcolor{pnaatblue}{\textbf{#1}}}
+\arrayrulecolor{pnaatblue!40}
+
+\AtBeginDocument{\color{bodytext}}
+
+\setkomafont{captionlabel}{\bfseries\color{pnaatblue}}

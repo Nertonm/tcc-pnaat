@@ -1,102 +1,129 @@
 \chapter{Requisitos e critérios de verificação}
 
-\instruction{Escreva uma ideia por requisito. Use verbos observáveis. Separe o alvo da medição e o estado da evidência.}
-
-\section{Convenção de estados}
-\begin{tabularx}{\textwidth}{p{0.2\textwidth} Y}
-\toprule
-Estado da evidência & Significado\\
-\midrule
-Aberto & decisão ou dado ainda não definido\\
-Proposto & solução registrada, ainda sem ensaio suficiente\\
-Em teste & ensaio em execução ou aguardando resultado\\
-Validado & critério atendido com evidência reproduzível\\
-Rejeitado & critério não atendido ou alternativa descartada\\
-Bloqueado & falta acesso, dependência, dado ou permissão\\
-\bottomrule
-\end{tabularx}
-
-\instruction{Meta é alvo mensurável. Não use meta como estado. O status do documento na capa é independente do estado de cada requisito.}
+Os requisitos abaixo são propostas de engenharia. O núcleo define a Entrega 1 e suas PoCs iniciais. As expansões permanecem registradas para preservar rastreabilidade, mas só entram após a condição de entrada correspondente.
 
 \section{Classes e saídas}
-\begin{tabularx}{\textwidth}{p{0.23\textwidth} Y Y}
+\begin{tabularx}{\dimexpr\textwidth-12pt\relax}{p{0.23\textwidth} Y Y}
 \toprule
-Classe ou condição & Evidência observável & Saída esperada\\
+\tblhdr{Classe/condição} & \tblhdr{Observação} & \tblhdr{Saída prevista}\\
 \midrule
-\field{classe/condição} & \field{o que é observado} & \field{decisão ou registro}\\
-\field{classe/condição} & \field{o que é observado} & \field{decisão ou registro}\\
-\field{condição normal} & \field{o que confirma normalidade} & \field{saída normal}\\
+Tampa ausente & Vistas disponíveis do item & Defeito, confiança e evidência\\
+Tampa mal rosqueada & Vistas superior e laterais na composição multi-view & Defeito, severidade e evidência\\
+Deformidade do corpo & Vistas laterais e referência pixel a milímetro & Defeito, erro e evidência\\
+Condição normal & Item dentro da referência & Normal, sem alerta de defeito\\
 \bottomrule
 \end{tabularx}
 
-\section{Requisitos funcionais}
-\instruction{Use: “O sistema deve [verbo observável] [objeto] sob [condição], verificado por [método].” Para eventos: “Quando [evento], o sistema deve [resposta].”}
-\begin{longtable}{@{}p{0.1\textwidth} p{0.39\textwidth} p{0.15\textwidth} p{0.15\textwidth} p{0.18\textwidth}@{}}
-\caption{Requisitos funcionais.}\label{tab:rf}\\
-\toprule ID & Requisito & Origem & Estado & Verificação \\
+\section{Requisitos funcionais do núcleo}
+\begingroup\small
+\begin{longtable}{@{}p{0.1\textwidth} p{0.62\textwidth} p{0.18\textwidth}@{}}
+\caption{Requisitos funcionais do núcleo.}\label{tab:rf-core}\\
+\toprule \tblhdr{ID} & \tblhdr{Requisito proposto} & \tblhdr{Verificação}\\
 \midrule
 \endfirsthead
-\toprule ID & Requisito & Origem & Estado & Verificação \\
+\toprule \tblhdr{ID} & \tblhdr{Requisito proposto} & \tblhdr{Verificação}\\
 \midrule
 \endhead
-RF-01 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
-RF-02 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
-RF-03 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
-RF-04 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
-RF-05 & \field{ação observável e condição} & \field{N-xx} & \field{estado} & \field{teste} \\
+RF-01 & Capturar mais de uma vista do mesmo item após o evento de presença, com timestamp e identificador de captura. & \pocref{poc-01}{PoC-01}/04\\
+RF-01.1 & Verificar confiabilidade do trigger de captura por sensor de presença, com timing determinístico do microcontrolador. & \pocref{poc-01}{PoC-01}\\
+RF-02 & Classificar tampa ausente nas vistas disponíveis. & \pocref{poc-02}{PoC-02}\\
+RF-03 & Classificar tampa mal rosqueada usando a composição multi-view. & \pocref{poc-02}{PoC-02}\\
+RF-04 & Classificar deformidade do corpo nas vistas laterais e preservar a medida de referência. & \pocref{poc-03}{PoC-03}\\
+RF-05 & Combinar resultados das vistas e produzir classe, confiança e resultado do item. & \pocref{poc-04}{PoC-04}\\
+RF-06 & Registrar evento com identificador, timestamp, localização, defeito, evidência, confiança, vista e qualidade. & \pocref{poc-05}{PoC-05}\\
+RF-08 & Emitir telemetria de saúde do nó: heartbeat, fila, latência e falha. & \pocref{poc-06}{PoC-06}\\
+RF-09 & Apresentar dashboard com itens, defeitos, localização, recorrência e saúde do nó. & \pocref{poc-07}{PoC-07}\\
 \bottomrule
 \end{longtable}
+\endgroup
 
-\section{Requisitos não funcionais}
-\instruction{Na Entrega 1, selecione apenas os RNF que mudam a viabilidade da proposta. O núcleo costuma ter de cinco a oito itens. Extensões ficam condicionadas à validação posterior.}
-\begin{tabularx}{\textwidth}{@{}p{0.07\textwidth} p{0.13\textwidth} Y p{0.15\textwidth} p{0.16\textwidth} Y p{0.12\textwidth}@{}}
-\toprule
-ID & Dimensão & Restrição ou qualidade & Meta/limiar & Condição/amostra & Método/evidência & Estado\\
+\section{Requisitos funcionais de expansão}
+\begingroup\footnotesize\color{pnaatgray}
+\begin{longtable}{@{}p{0.1\textwidth} p{0.62\textwidth} p{0.18\textwidth}@{}}
+\caption{\color{pnaatgray}Requisitos funcionais de expansão.}\label{tab:rf-expansion}\\
+\toprule \tblhdr{ID} & \tblhdr{Requisito proposto} & \tblhdr{Condição de entrada}\\
 \midrule
-RNF-01 & Desempenho & \field{latência, capacidade ou throughput} & \field{valor e unidade} & \field{carga e ambiente} & \field{ensaio e artefato} & \field{estado}\\
-RNF-02 & Qualidade & \field{precisão, erro ou taxa de falha} & \field{valor e unidade} & \field{população e divisão} & \field{método e evidência} & \field{estado}\\
-RNF-03 & Confiabilidade & \field{perda, duplicação ou recuperação} & \field{limite} & \field{janela e falha} & \field{log e reconciliação} & \field{estado}\\
-RNF-04 & Ambiente/recursos & \field{temperatura, energia, memória ou ruído} & \field{limite} & \field{condição de uso} & \field{medição} & \field{estado}\\
-RNF-05 & Reprodutibilidade & \field{versões, setup e proveniência} & \field{critério} & \field{ambiente limpo} & \field{comando e artefato} & \field{estado}\\
-RNF-06 & Segurança/privacidade & \field{restrição aplicável ou não aplicável} & \field{critério} & \field{cenário} & \field{inspeção ou teste} & \field{estado}\\
-\bottomrule
-\end{tabularx}
-
-\instruction{Meta é alvo. Resultado observado é valor medido. Estado é ABERTO, PROPOSTO, EM TESTE, VALIDADO, REJEITADO ou BLOQUEADO. Um RNF VALIDADO exige método executado e evidência identificável.}
-
-\section{Dados e modelos, quando aplicável}
-\begin{tabularx}{\textwidth}{p{0.2\textwidth} Y Y}
-\toprule
-Campo & Preenchimento & Estado\\
+\endfirsthead
+\toprule \tblhdr{ID} & \tblhdr{Requisito proposto} & \tblhdr{Condição de entrada}\\
 \midrule
-Fonte e proveniência dos dados & \field{origem, licença, versão ou não aplicável} & \field{estado}\\
-Classes e rótulos & \field{taxonomia observável} & \field{estado}\\
-Divisão dos dados & \field{treino, validação, teste e unidade de separação} & \field{estado}\\
-Prevenção de vazamento & \field{regra por peça, sessão ou origem} & \field{estado}\\
-Modelo e versão & \field{modelo, runtime e hash ou não aplicável} & \field{estado}\\
-Ambiente-alvo & \field{hardware e restrições} & \field{estado}\\
-Métrica por população & \field{métrica, unidade, amostra e limite} & \field{estado}\\
+\endhead
+RF-07 & Correlacionar eventos de uma futura expansão multi-nó por identificador e origem. & PoCs de identidade e comunicação\\
+RF-10 & Medir taxa de eventos da bancada sem controlar a velocidade da esteira. & Instrumentação de referência\\
+RF-11 & Identificar intervalos sem evento acima do limite definido e registrá-los para análise. & Linha de base de eventos\\
+RF-12 & Registrar correção do operador preservando decisão original, correção, responsável e horário. & Interface de correção definida\\
+RF-13 & Avaliar detector opcional de anomalia desconhecida como camada adicional. & Dataset e orçamento de latência\\
+RF-14 & Registrar encaminhamento de item para análise humana, sem comandar atuação física. & Processo humano definido\\
+RF-15 & Medir altura da tampa em milímetros quando a calibração estiver disponível. & Calibração pixel a milímetro\\
+RF-16 & Manter golden samples com defeito conhecido, isolados das estatísticas operacionais. & Amostras físicas rastreáveis\\
+RF-17 & Gerar relatório de lote com indicadores, severidade, evidências e tendência. & Registro local validado\\
+RF-18 & Calcular descritores geométricos por vista e score de anomalia sobre conjunto normal. & Dataset normal representativo\\
+RF-19 & Avaliar detecção autossupervisionada com imagens de itens normais e anomalias sintéticas. & Dataset normal e protocolo definido\\
+RF-20 & Avaliar consistência entre vistas pelo score conjunto dos classificadores. & Classificadores por vista validados\\
+RF-21 & Avaliar destilação de modelo para execução no hardware alvo. & Modelo base e benchmark local\\
+RF-22 & Comparar timestamp previsto e observado quando houver referência de deslocamento disponível. & Referência de deslocamento disponível\\
+RF-23 & Avaliar expansão do dataset por supervisão fraca, documentando incerteza. & Regras e conjunto inicial rotulado\\
+RF-26 & Verificar continuidade de conexões críticas do rig. & Rig montado\\
+RF-27 & Planejar base rígida e pontos de fixação para captura. & Geometria do rig definida\\
+RF-28 & Planejar suportes e gabaritos para posicionamento e deformidades controladas. & Dimensões e materiais definidos\\
+RF-30 & Avaliar iluminação pulsada e difusa para reduzir saturação nas imagens. & Fonte de luz e amostra de imagens\\
 \bottomrule
-\end{tabularx}
+\end{longtable}
+\endgroup
 
-\section{Critérios de sucesso}
-\begin{tabularx}{\textwidth}{@{}p{0.07\textwidth} Y p{0.12\textwidth} p{0.17\textwidth} Y p{0.1\textwidth} p{0.12\textwidth}@{}}
-\toprule
-ID & Resultado observado & Métrica & Condição/amostra & Método/evidência & Tipo & Estado\\
+\section{Requisitos não funcionais do núcleo}
+\begingroup\small
+\begin{longtable}{@{}p{0.1\textwidth} p{0.62\textwidth} p{0.18\textwidth}@{}}
+\caption{Requisitos não funcionais do núcleo.}\label{tab:rnf-core}\\
+\toprule \tblhdr{ID} & \tblhdr{Qualidade ou restrição proposta} & \tblhdr{Verificação}\\
 \midrule
-CS-01 & \field{resultado} & \field{métrica} & \field{população/janela} & \field{procedimento/artefato} & \field{meta/observado} & \field{estado}\\
-CS-02 & \field{resultado} & \field{métrica} & \field{população/janela} & \field{procedimento/artefato} & \field{meta/observado} & \field{estado}\\
-CS-03 & \field{resultado} & \field{métrica} & \field{população/janela} & \field{procedimento/artefato} & \field{meta/observado} & \field{estado}\\
+\endfirsthead
+\toprule \tblhdr{ID} & \tblhdr{Qualidade ou restrição proposta} & \tblhdr{Verificação}\\
+\midrule
+\endhead
+RNF-01 & Latência de registro por item menor que 500 ms, sob condição declarada. & Timestamps do fluxo\\
+RNF-02 & Acurácia com intervalo de confiança: tampa ausente 95\% ou mais, tampa mal rosqueada 90\% ou mais e deformidade 90\% ou mais. & Matriz de confusão\\
+RNF-03 & Falsos positivos até 2\% para tampa ausente e 5\% para as demais classes. & Matriz de confusão\\
+RNF-05 & Integridade do registro de 99\% ou mais em 30 minutos de estresse. & Consulta e log\\
+RNF-08 & Resiliência do canal local a sensor nulo, debounce, watchdog e reenvio de mensagem não registrada, sem interrupção silenciosa. & Falha injetada\\
+RNF-10 & Documentação reproduzível com README, decisões e proveniência de dataset. & Revisão do repositório\\
+RNF-12 & Qualidade do registro propagada aos consumidores do dashboard. & Consulta do evento\\
+RNF-19 & Cada teste de resiliência possui hipótese e métrica antes do experimento. & Protocolo da PoC\\
 \bottomrule
-\end{tabularx}
+\end{longtable}
+\endgroup
 
-\section{Matriz de rastreabilidade}
-\begin{tabularx}{\textwidth}{@{}p{0.12\textwidth} p{0.18\textwidth} p{0.17\textwidth} Y p{0.16\textwidth} p{0.12\textwidth}@{}}
-\toprule
-Necessidade & Requisito & PoC/teste & Evidência & Critério de aceite & Estado\\
+\section{Requisitos não funcionais de expansão}
+\begingroup\footnotesize\color{pnaatgray}
+\begin{longtable}{@{}p{0.1\textwidth} p{0.62\textwidth} p{0.18\textwidth}@{}}
+\caption{\color{pnaatgray}Requisitos não funcionais de expansão.}\label{tab:rnf-expansion}\\
+\toprule \tblhdr{ID} & \tblhdr{Qualidade ou restrição proposta} & \tblhdr{Condição de entrada}\\
 \midrule
-N-01 & RF-01 & PoC-01 & \field{log/foto/vídeo} & \field{critério} & \field{estado}\\
-N-02 & RNF-01 & PoC-02 & \field{artefato} & \field{critério} & \field{estado}\\
-\field{N-xx} & \field{RF/RNF} & \field{teste} & \field{artefato} & \field{critério} & \field{estado}\\
+\endfirsthead
+\toprule \tblhdr{ID} & \tblhdr{Qualidade ou restrição proposta} & \tblhdr{Condição de entrada}\\
+\midrule
+\endhead
+RNF-04 & Correlação multi-nó de 98\% ou mais em ensaio de 50 itens. & Expansão multi-nó\\
+RNF-06 & Em expansão multi-nó, retransmissão de 100\% dos eventos bufferizados após reconexão, sem duplicação. & Log e reconciliação\\
+RNF-07 & Em expansão multi-nó, detecção de nó indisponível abaixo de 10 segundos. & Log de estado\\
+RNF-09 & Taxa de eventos da bancada registrada junto da qualidade da captura. & Instrumentação de referência\\
+RNF-11 & Calibração pixel a milímetro documentada por posição fixa. & Referência dimensional\\
+RNF-13 & Caso exista encaminhamento físico futuro, confirmação correta de 99\% e nenhum item normal encaminhado. & Fluxo físico seguro\\
+RNF-14 & Precisão dimensional da tampa dentro de 0,5 mm e nenhuma rejeição de golden sample normal. & Calibração e golden samples\\
+RNF-15 & Custo da camada de descritores abaixo de 10 ms por vista. & Descritores implementados\\
+RNF-16 & Detector de anomalia treinado apenas com itens normais, com validação e latência compatíveis. & Dataset normal e modelo definido\\
+RNF-17 & Modelo aluno validado no hardware alvo com fallback documentado. & Modelo base e benchmark local\\
+RNF-18 & Validação de timestamp com tolerância configurável, quando a referência estiver disponível. & Referência de deslocamento\\
+RNF-20 & Estabilidade mecânica sem recalibração indevida após movimentação prevista. & Rig físico montado\\
+RNF-21 & Iluminação difusa sem saturação que prejudique a extração de contornos. & Fonte de luz e imagens de ensaio\\
 \bottomrule
-\end{tabularx}
+\end{longtable}
+\endgroup
+
+\section{Requisitos de processo}
+\begingroup\small
+\begin{itemize}
+\item RF-24: conduzir testes de resiliência com hipótese, métrica e impacto definidos antes do ensaio, avaliados na \pocref{poc-06}{PoC-06}.
+\item RF-25: manter histórico de decisões e mudanças do projeto, revisado na \pocref{poc-final}{PoC-Final}.
+\item RF-29: aplicar design for testability, com entradas controláveis e saídas observáveis em todas as PoCs.
+\end{itemize}
+\endgroup

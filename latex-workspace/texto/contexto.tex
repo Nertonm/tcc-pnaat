@@ -1,73 +1,53 @@
 \chapter{Tema, contexto e problema}
 
-\section{Tema selecionado}
-\textbf{Tema oficial:} Cenário 1.
-
 
 \section{Contexto de operação}
-\begin{tabularx}{\textwidth}{p{0.28\textwidth} Y}
+\begin{tabularx}{\dimexpr\textwidth-12pt\relax}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth} Y@{}}
 \toprule
-Campo & Preenchimento\\
+\tblhdr{Campo} & \tblhdr{Descrição}\\
 \midrule
-Ambiente ou processo & Etapa final de uma linha de produção industrial, no ponto onde garrafas/recipientes chegam à esteira principal antes do empacotamento\\
-Público ou equipe afetada & Operadores da linha de produção e equipe de manutenção, que lidam com as paradas não programadas e o retrabalho gerado pelos defeitos}\\
-Situação atual & Garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo seguem até a etapa final sem triagem prévia, causando travamentos no maquinário e paradas não programadas\\
-Entradas disponíveis & Trigger de presença via sensor E18-D80NK (barreira por oclusão retrorrefletiva) com validação/fallback do VL53L0X; três imagens sincronizadas por item (topo, lateral1, lateral2); pulsos do encoder KY-040 para velocidade da esteira\\
-Saídas necessárias & Classificação do item (ok/defeito e tipo), ordem de ejeção para análise manual, registro do item no hub e notificação de defeito crítico via dashboard/ntfy\\
-Evidência do problema & Descrição do Cenário 1: travamentos recorrentes da esteira por chegada de garrafas com tampa ausente, tampa mal rosqueada ou deformidade estrutural, causando derramamento, desperdício de lote e queda de eficiência\\
+Ambiente ou processo & Fábrica de envase rápido, na etapa final da linha de produção, antes do empacotamento. A equipe observa a operação, mas não controla a velocidade nem a lógica da esteira existente.\\
+Público previsto & Operadores, manutenção e qualidade, que precisam saber quando uma anomalia ocorreu, qual defeito foi identificado, em qual esteira e com qual evidência.\\
+Situação atual & A identificação de anomalias ocorre sem visibilidade por item e sem histórico consolidado. Esta é a interpretação de projeto que será validada a partir do cenário fornecido.\\
+Entradas previstas & Imagens de mais de uma vista por item, evento de presença, identificador da esteira, identificador do nó, timestamp, localização da captura, vista de origem e sinais de saúde. A velocidade da esteira é uma condição externa.\\
+Saídas necessárias & Evento de inspeção com tipo de defeito, confiança, vistas associadas, timestamp, localização, esteira, nó de origem e qualidade do registro; dashboard com histórico, recorrência, estado do nó e notificações.\\
+Evidência do problema & O Cenário 1 descreve gargalos constantes na esteira principal causados por garrafas ou recipientes com tampa ausente, tampa mal rosqueada ou deformidades no corpo.\\
 \bottomrule
 \end{tabularx}
 
 \section{Condições de operação}
-\begin{tabularx}{\textwidth}{p{0.28\textwidth} Y Y}
+\begin{tabularx}{\dimexpr\textwidth-12pt\relax}{@{}>{\raggedright\arraybackslash}p{0.21\textwidth} >{\raggedright\arraybackslash}p{0.34\textwidth} Y@{}}
 \toprule
-Condição & Valor ou hipótese & Verificação/limite\\
+\tblhdr{Condição} & \tblhdr{Hipótese de projeto} & \tblhdr{Verificação proposta}\\
 \midrule
-Temperatura, poeira, vibração ou ruído & Ambiente fabril com esteira em movimento contínuo; reflexos ópticos variáveis por garrafas transparentes, opacas ou com líquido & Ensaio comparativo do trigger em garrafas vazias, cheias e transparentes (RF-01.1)\\
-Energia e montagem física & Alimentação por bateria 18650 para iluminação estroboscópica; painel de base rígido e suportes parafusados para manter geometria de câmeras, trigger e encoder & Checklist de continuidade no multímetro e recalibração antes/depois de movimentação (RF-26..28, RNF-20)\\
-Conectividade & Comunicação entre nós de visão, ESP32, Raspberry Pi 5 e hub via MQTT & Ensaio de queda/reconexão com verificação de idempotência e ausência de duplicidade (RNF-06, IF-04)\\
-Operação offline & Eventos bufferizados localmente em cada nó até reconexão, com heartbeat sinalizando estado online/degradado/offline & Detecção de nó offline abaixo de 10 s e replay sem duplicação (RNF-07, RNF-06)\\
+Iluminação e aparência & Garrafas podem ser transparentes, opacas ou conter líquido, com reflexos variáveis. & Comparar imagens por condição e registrar a qualidade da captura (\pocref{poc-01}{PoC-01}).\\
+Posição das câmeras & As câmeras serão fixadas em suporte conhecido; a esteira e sua velocidade pertencem ao ambiente externo. & Verificar associação das vistas e registrar falhas de captura (\pocref{poc-02}{PoC-02}).\\
+Conectividade & Um nó de observação envia eventos ao registro local; a expansão para múltiplos nós fica como extensão. & Testar fila, reconexão, duplicidade e estado do nó (\pocref{poc-04}{PoC-04}).\\
+Operação distribuída & O nó registra origem, localização, vistas, timestamp e qualidade da captura; o dashboard consolida os eventos. & Validar identidade e origem no registro consolidado (\pocref{poc-05}{PoC-05}).\\
 \bottomrule
 \end{tabularx}
 
 \section{Dor ou problema específico}
-
-\campoGrande{No contexto de uma fábrica de envase rápido, a etapa final da linha de produção enfrenta a chegada recorrente de garrafas com tampa ausente, tampa mal rosqueada ou deformidade estrutural no corpo, que causa travamentos não programados da esteira, derramamento de líquido e desperdício de lotes. O projeto pretende detectar essas anomalias antes da etapa final, por meio de captura multi-vista sincronizada (topo e duas laterais) e classificação automática, e registrar cada decisão com rastreabilidade completa (item, vista, evidência e timestamp), nas condições de esteira em operação contínua, garrafas de diferentes materiais e transparências, e ambiente fabril sujeito a variação de iluminação e vibração.}
+\campoGrande{Este documento formaliza a proposta de uma camada de observação para o Cenário 1. Em uma fábrica de envase rápido, garrafas e recipientes podem chegar à etapa final da linha com tampa ausente, tampa mal rosqueada ou deformidade no corpo. O problema tratado nesta Entrega 1 é a falta de visibilidade organizada sobre essas ocorrências: sem um registro por evento, torna-se difícil relacionar o defeito ao momento, à localização, à esteira, à vista de origem e à recorrência. A solução proposta não controla a velocidade da esteira nem executa atuação física; ela produz informação rastreável para operação, manutenção e qualidade.}
 
 \section{Validação da necessidade}
-\begin{tabularx}{\textwidth}{p{0.25\textwidth} Y Y}
+\begin{tabularx}{\dimexpr\textwidth-12pt\relax}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth} Y@{}}
 \toprule
-Campo & Preenchimento & Estado\\
+\tblhdr{Campo} & \tblhdr{Descrição}\\
 \midrule
-Fonte ou participantes & Descrição do cenário-problema fornecido pela disciplina/apostila & condicional\\
-Método de confirmação & Observação do processo descrito (garrafas com anomalias chegando à etapa final) & condicional\\
-Amostra ou recorte & Nenhuma amostra própria coletada até o momento; cenário é hipotético/de referência & ausente\\
-Limitação da evidência & O cenário não permite quantificar frequência real de falhas nem impacto financeiro sem medição própria & planejado\\
-Critério de aceitação operacional & Equipe de desenvolvimento e banca avaliadora, mediante ensaios reprodutíveis descritos nos RF/RNF & planejado\\
+Fonte do problema & Cenário 1 do enunciado oficial: fábrica de envase rápido com anomalias em tampas e no corpo dos recipientes, associadas a paradas não programadas na esteira.\\
+Necessidade derivada & Tornar cada ocorrência consultável por tipo de defeito, momento, localização, esteira, nó de origem, vista e evidência. Essa é uma interpretação de projeto a ser validada.\\
+Recorte da proposta & Um nó de observação e um dashboard como configuração inicial. A expansão para múltiplos nós, linhas ou esteiras fica condicionada às PoCs de integração.\\
+Limitação da evidência & O enunciado caracteriza a dor, mas não fornece frequência de falhas, volume de eventos, impacto financeiro ou dados próprios da linha. Esses valores não serão inventados nesta entrega.\\
 \bottomrule
 \end{tabularx}
 
 \section{Objetivo e resultado pretendido}
+\textbf{Objetivo geral:} Propor uma camada descentralizada de observação para identificar anomalias visuais e organizar eventos rastreáveis sem assumir controle sobre a esteira, sua velocidade ou seu mecanismo de atuação.
 
-\textbf{Objetivo geral:} Detectar e classificar defeitos estruturais em garrafas (tampa ausente, tampa mal rosqueada, deformidade de corpo) em linha de produção, por meio de inspeção visual multi-vista sincronizada, com registro rastreável e ejeção de itens defeituosos para análise manual
+\textbf{Resultado pretendido:} Um sistema que associe cada observação a um tipo de defeito, timestamp, localização, esteira, nó, vistas, confiança e qualidade do registro, consolidando essas informações em dashboard e notificações para apoiar operação, manutenção e qualidade.
 
-\textbf{Resultado pretendido:}  Um sistema capaz de capturar três vistas por item, classificar cada tipo de defeito com fusão por votação, registrar o item no hub com rastreabilidade completa e acionar a ejeção confirmada por sensor, sem interromper o fluxo da esteira
-
-\textbf{Resultado medido nesta entrega:} não medido — entrega atual corresponde à documentação de requisitos funcionais e não funcionais (RF-01 a RF-30, RNF-01 a RNF-21); ensaios de acurácia, latência e throughput ainda não foram executados
+\textbf{Resultado medido nesta entrega:} A Entrega 1 formaliza a proposta, os requisitos e as PoCs de validação. Os valores de acurácia, latência, correlação e continuidade operacional serão definidos como metas e critérios de validação, não como resultados já obtidos.
 
 \section{Proposta de valor}
-O sistema responde diretamente à dor descrita no cenário: ao detectar e remover garrafas defeituosas antes da etapa final da linha, evita-se o travamento do maquinário, o derramamento de líquido e o desperdício de lotes já embalados. O ganho em continuidade operacional e redução de paradas não programadas é uma expectativa a ser validada por ensaio de throughput (RF-10, RNF-09) e por testes de resiliência (RNF-08), e não deve ser apresentado como resultado comprovado até que haja medição própria no rig.
-
-
-\section{Roteiro de comunicação}
-\begin{tabularx}{\textwidth}{p{0.25\textwidth} Y}
-\toprule
-Parte & Preenchimento\\
-\midrule
-Problema & Travamentos recorrentes da esteira por garrafas com tampa ausente, tampa mal rosqueada ou deformidade, causando derramamento e desperdício de lote\\
-Solução & Inspeção visual multi-vista (topo + duas laterais) com trigger físico confiável, classificação por votação, registro rastreável no hub e ejeção confirmada por sensor\\
-Evidências & PoCs de trigger (RF-01.1), calibração pixel→mm (RNF-11), matrizes de confusão por classe de defeito (RNF-02/03) e ensaios de resiliência com hipótese prévia (RNF-08/19)\\
-Continuidade & Camadas condicionais (detecção de anomalia desconhecida, descritores geométricos universais, destilação teacher-student) dependem de PoC própria e aprovação antes de entrar no núcleo\\
-\bottomrule
-\end{tabularx}
-
+A proposta transforma ocorrências isoladas em informação operacional consultável. A equipe poderá investigar qual defeito ocorreu, em que momento, em qual esteira, em qual nó e com qual evidência. A decisão de atuação física, caso necessária, permanece fora desta entrega; o núcleo é visibilidade, rastreabilidade e apoio à decisão.

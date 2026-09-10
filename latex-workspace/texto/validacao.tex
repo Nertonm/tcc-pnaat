@@ -1,102 +1,76 @@
 \chapter{PoCs, integração e visão crítica}
 
-\section{PoC principal}
-\instruction{A PoC deve isolar uma premissa que pode inviabilizar o projeto. Não descreva a implementação completa.}
-\textbf{PoC-\placeholder{ID}: \placeholder{nome}}
+\section{Estratégia de validação}
+A Entrega 1 apresenta propostas de PoC. Cada PoC isola uma ideia que pode inviabilizar parte da solução, define uma pergunta binária, um critério de passagem e a evidência que deverá ser produzida. O estado documental é Proposto e a execução pertence à etapa seguinte. Imagens, classes, divisão por item, ambiente e proveniência serão registrados nas PoCs; requisitos do núcleo são avaliados de \pocref{poc-01}{PoC-01} a \pocref{poc-final}{PoC-Final}, e cada expansão exige a condição de entrada declarada.
 
-\textbf{Dor ou requisito atendido:} \field{ID e relação com o problema}
-
-\textbf{Risco técnico isolado:} \field{qual premissa pode falhar?}
-
-\textbf{Pergunta binária:} A abordagem \field{abordagem} atinge \field{critério} sob \field{condições}? \textbf{Sim / Não / Inconclusivo}
-
-\textbf{Variável isolada:} \field{variável}
-
-\textbf{O que fica fora do teste:} \field{componentes periféricos}
-
-\textbf{Construir:} \field{artefato mínimo produzido}
-
-\textbf{Medir:} \field{procedimento, entradas, amostra, métrica e unidade}
-
-\textbf{Aprender:} \field{interpretação e próxima decisão}
-
-\textbf{Critério go/no-go:} \field{limiar definido antes do ensaio}
-
-\textbf{Resultado observado:} \field{valor e unidade, ou não executado}
-
-\textbf{Decisão:} \field{go/no-go/repetir/adaptar}
-
-\textbf{Impacto no plano:} \field{nenhum/mudança proposta/mudança aprovada}
-
-\textbf{Reprodutibilidade:} \field{commit, comando, ambiente e evidência}
-
-\section{Plano de PoCs}
-\begin{tabularx}{\textwidth}{p{0.1\textwidth} Y p{0.18\textwidth} Y Y}
+\section{PoCs das ideias}
+\begin{tabularx}{\dimexpr\textwidth-12pt\relax}{p{0.22\textwidth} Y}
 \toprule
-PoC & Pergunta & Passagem & Resultado & Próxima ação\\
+\tblhdr{PoC e ideia} & \tblhdr{Proposta de validação e evidência esperada}\\
 \midrule
-01 & Tampa atinge metas? & 95\%/90\% & Não executado & Revisar ou congelar setup\\
-02 & Corpo atinge meta? & $\ge$ 90\%; erro < 5\% & Não executado & Fechar regra lateral\\
-03 & Vistas são do mesmo item? & Janela estável & Não executado & Congelar trigger\\
-04 & Hub associa 50 itens? & $\ge$ 98\% & Não executado & Liberar dados\\
-05 & Registro mantém integridade? & $\ge$ 99\%/30 min & Não executado & Liberar resiliência\\
-06 & Reconecta sem duplicar? & 100\% do buffer & Não executado & Congelar retry\\
-07 & Separa sem ejetar normal? & $\ge$ 99\%; zero normal & Não executado & Fechar mecanismo\\
+\hypertarget{poc-01}{PoC-01}: captura multi-view & Pergunta: o evento de presença abre janela para mais de uma vista por item, sem duplicidade? Passa com identidade e timestamps associados. Evidência: imagens, timestamps e log.\\
+\hypertarget{poc-02}{PoC-02}: classificação de tampa & Pergunta: as vistas disponíveis separam tampa ausente e mal rosqueada? Passa com metas do RNF-02. Evidência: matriz de confusão por classe.\\
+\hypertarget{poc-03}{PoC-03}: deformidade lateral & Pergunta: as vistas laterais tornam a deformidade mensurável? Passa com meta de acurácia e erro dimensional. Evidência: calibração e matriz.\\
+\hypertarget{poc-04}{PoC-04}: identidade e fusão & Pergunta: a fusão preserva defeito quando vistas discordam? Passa com regra determinística e identidade preservada. Evidência: fixture e log.\\
+\hypertarget{poc-05}{PoC-05}: registro local & Pergunta: o evento chega ao registro com origem, localização e qualidade? Passa sem perda ou duplicação. Evidência: consulta, log e reconciliação.\\
+\hypertarget{poc-06}{PoC-06}: resiliência & Pergunta: o nó mantém estado explícito após falha de comunicação local ou captura? Passa com replay e alerta. Evidência: falha injetada e log.\\
+\hypertarget{poc-07}{PoC-07}: dashboard & Pergunta: a equipe localiza defeito, momento, esteira e evidência? Passa com evento completo e consulta rastreável. Evidência: dashboard, evento e notificação.\\
+\hypertarget{poc-final}{PoC-Final}: conjectura integrada & Pergunta: o conjunto observa, classifica, registra e apresenta o evento de forma rastreável? Passa se os RF/RNF do núcleo forem avaliados no mesmo ensaio. Evidência: pacote completo do ensaio.\\
 \bottomrule
 \end{tabularx}
 
-Cada PoC deve registrar hipótese, setup, medida, resultado, decisão e próxima ação. O ciclo é construir, medir e aprender. Uma falha orienta a revisão de componente, limiar ou arquitetura.
-
-\section{Integração incremental}
-\begin{tabularx}{\textwidth}{p{0.18\textwidth} Y Y Y p{0.15\textwidth}}
+\section{Integração proposta}
+\begin{tabularx}{\dimexpr\textwidth-12pt\relax}{p{0.18\textwidth} Y Y Y}
 \toprule
-Camada & Elementos & Interface & Teste & Estado\\
+\tblhdr{Camada} & \tblhdr{Elementos} & \tblhdr{Interface} & \tblhdr{PoC}\\
 \midrule
-Física & Trilho, sensores, câmeras e luz & Sinal/posição & PoC-03 & Em teste\\
-Comunicação & ESP32, Pi, broker e hub & MQTT & PoCs 04--06 & Proposto\\
-Modelo & Captura, classificadores e fusão & Imagens/resultados & PoCs 01/02 & Proposto\\
-Operação & Dashboard e atuação & Fluxo do item & PoC-07 & Aberto\\
+Física & detecção de presença, câmeras e luz & sinal e posição & PoC-01/03\\
+Visão & captura, classificadores e fusão & imagens e resultado & PoC-02/04\\
+Dados & nó de observação e registro local & evento versionado & PoC-05/06\\
+Visibilidade & eventos, dashboard e notificações & estado do item & PoC-07\\
+Conjectura & fluxo completo e rastreabilidade & pacote de evidências & PoC-Final\\
 \bottomrule
 \end{tabularx}
-
-A ordem deve seguir as dependências do projeto. Uma camada só pode avançar quando a interface anterior tiver evidência de funcionamento.
 
 \section{Riscos e visão crítica}
-\begin{tabularx}{\textwidth}{p{0.17\textwidth} p{0.14\textwidth} p{0.16\textwidth} Y p{0.14\textwidth} p{0.13\textwidth}}
+\begin{tabularx}{\dimexpr\textwidth-12pt\relax}{p{0.24\textwidth} Y}
 \toprule
-Risco & Causa & Impacto & Teste & Contingência & Estado\\
+\tblhdr{Risco} & \tblhdr{Impacto, validação e contingência}\\
 \midrule
-Trigger instável & Transparência/reflexo & Captura ausente/duplicada & PoC-03 & Outro sensor & Em teste\\
-Dessincronização & CSI/USB & Fusão incorreta & PoC-03 & Ajustar janela/velocidade & Proposto\\
-Desfoque/saturação & Movimento/reflexo & Erro visual & PoCs 01--03 & Luz pulsada/difusor & Proposto\\
-Dataset fraco & Poucos exemplares & Métrica otimista & PoCs 01/02 & Coleta própria & Proposto\\
-Sobrecarga & Três inferências & Latência alta & Ensaio & Modelo leve & Proposto\\
-Falha de atuação & Mecanismo/sensor & Reprovado não separado & PoC-07 & Estado seguro & Aberto\\
+Captura instável & Transparência e reflexo podem gerar imagem ausente ou duplicada. Validar na \pocref{poc-01}{PoC-01}; comparar sensor e janela.\\
+Dessincronização & Interfaces de captura podem gerar fusão incorreta. Validar na \pocref{poc-04}{PoC-04}; reduzir vistas ou ajustar janela.\\
+Dataset insuficiente & Poucos exemplares podem produzir métrica otimista. Validar nas \pocref{poc-02}{PoC-02}/\pocref{poc-03}{PoC-03}; ampliar coleta e limitar conclusão.\\
+Sobrecarga & Múltiplas inferências podem aumentar a latência. Validar na \pocref{poc-final}{PoC-Final}; reduzir resolução ou retirar extensão.\\
+Falha de visibilidade & Origem ou comunicação podem deixar o evento sem rastreabilidade. Validar na \pocref{poc-07}{PoC-07}; registrar estado de qualidade.\\
 \bottomrule
 \end{tabularx}
 
-\section{Falhas detectadas e decisões posteriores}
-\instruction{Registre a falha como observação, não como conclusão. A decisão pode permanecer aberta até haver evidência suficiente.}
-\begin{tabularx}{\textwidth}{p{0.16\textwidth} p{0.18\textwidth} Y p{0.16\textwidth} p{0.14\textwidth}}
-\toprule
-Sinal que revelou a falha & Falha observada & Evidência e impacto & Decisão pendente & Próximo teste/estado\\
-\midrule
-\field{métrica, log, evento ou trace} & \field{o que ocorreu} & \field{ID/path/data e impacto} & \field{qual escolha precisa ser feita} & \field{teste e estado}\\
-\field{métrica, log, evento ou trace} & \field{o que ocorreu} & \field{ID/path/data e impacto} & \field{qual escolha precisa ser feita} & \field{teste e estado}\\
-\bottomrule
-\end{tabularx}
+\section{Decisões posteriores}
+As decisões posteriores serão tomadas a partir do resultado de cada PoC. Um critério não atendido orienta ajuste de componente, limiar ou escopo; não será tratado como aprovação implícita. A PoC-Final só deve ser executada depois que as PoCs de captura, visão, integração e dashboard tiverem critérios de passagem definidos.
 
 \section{Justificativas tecnológicas}
-\begin{tabularx}{\textwidth}{p{0.18\textwidth} Y p{0.2\textwidth} p{0.18\textwidth}}
+\begingroup\small
+\hyphenpenalty=10000 \exhyphenpenalty=10000
+\begin{tabularx}{\dimexpr\textwidth-12pt\relax}{p{0.30\textwidth} Y}
 \toprule
-Escolha & Necessidade & Fonte/evidência & Estado\\
+\tblhdr{Escolha} & \tblhdr{Justificativa e critério de validação}\\
 \midrule
-Três vistas & Cobrir tampa e corpo & Arquitetura e PoCs & Proposto\\
-Fusão por domínios & Não cancelar defeito & Decisão D-04 revisada & Adotado\\
-Pi 5 & Processamento local & Product Brief e ensaio & Proposto\\
-ESP32 & Timing e sensores & Datasheet/PoC-03 & Proposto\\
-MQTT & Eventos desacoplados & Especificação MQTT & Proposto\\
-SQLite & Persistência local & Documentação SQLite & Proposto\\
-Peças 3D & Repetibilidade & Plano FreeCAD & Proposto\\
+Multi-view & Observa tampa e corpo sem fixar cardinalidade antes da PoC. Alternativas: uma única vista ou reconstrução 3D densa. Critério: \pocref{poc-01}{PoC-01}, \pocref{poc-02}{PoC-02} e \pocref{poc-03}{PoC-03}.\\
+Classificação por vista e fusão & Processa cada vista separadamente e funde por regra determinística, pois tampa ausente, mal rosqueada e deformidade aparecem em vistas diferentes e uma imagem composta misturaria perspectiva e enfraqueceria a evidência. Alternativa: classificar a imagem composta. Critério: \pocref{poc-02}{PoC-02}, \pocref{poc-03}{PoC-03} e \pocref{poc-04}{PoC-04}.\\
+Detecção de presença & Associa captura ao evento observado sem depender da classificação. Alternativa: iniciar por imagem. Critério: \pocref{poc-01}{PoC-01} e log de timestamp.\\
+Nó de observação local & Preserva origem, localização e qualidade antes da expansão multi-nó. Alternativa: centralizar captura desde o início. Critério: \pocref{poc-05}{PoC-05} e \pocref{poc-06}{PoC-06}.\\
+Registro versionado & Rastreia tipo, momento, localização e evidência; evita logs sem contrato. Critério: \pocref{poc-05}{PoC-05} e RNF-03/04/05.\\
+Dashboard e alertas & Torna defeitos, recorrência e estado consultáveis sem depender de logs brutos. Critério: \pocref{poc-07}{PoC-07} e \pocref{poc-final}{PoC-Final}.\\
+Persistência local & Conserva histórico para auditoria e reconciliação. Alternativa: descarte após visualização. Critério: \pocref{poc-05}{PoC-05}.\\
+Comunicação local & Transporta o evento do microcontrolador ao registro com origem, localização e timestamp, sem depender de infraestrutura de rede no núcleo; MQTT e múltiplos nós são expansão para reduzir os pressupostos do ensaio inicial. Alternativa: adotar MQTT já no núcleo. Critério: \pocref{poc-05}{PoC-05} e \pocref{poc-06}{PoC-06}.\\
 \bottomrule
 \end{tabularx}
+\endgroup
+
+\section{Próximos passos de execução}
+\begin{enumerate}
+\item executar as PoCs de captura e visão: \pocref{poc-01}{PoC-01}, \pocref{poc-02}{PoC-02} e \pocref{poc-03}{PoC-03};
+\item executar as PoCs de fusão, registro, resiliência e dashboard: \pocref{poc-04}{PoC-04} a \pocref{poc-07}{PoC-07};
+\item executar a \pocref{poc-final}{PoC-Final} para avaliar a conjectura integrada;
+\item registrar em cada PoC a métrica, a evidência e a decisão de escopo correspondente.
+\end{enumerate}
