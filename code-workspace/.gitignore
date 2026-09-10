@@ -1,0 +1,11 @@
+# venv e artefatos
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+data/
+*.jpg
+*.jpeg
+*.png
+*.step
+*.stl
