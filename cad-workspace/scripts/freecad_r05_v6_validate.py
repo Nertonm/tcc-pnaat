@@ -43,7 +43,7 @@ for o in physical:
     fit.append({'name':o.Name,'role':o.Role,'assembly_bbox_mm':dims,'print_axes':perms[0] if perms else None,'oriented_bbox_mm':[dims[k] for k in perms[0]] if perms else None,'pass':bool(perms)})
 height=D.REF_TOP_CM3_Wide.LensFrontCenter.z
 routes=[]
-for name in ['TOP','SIDE']:
+for name in ['TOP','LEFT','RIGHT']:
     o=D.getObject('FPC_ROUTE_'+name)
     points=list(o.Waypoints)
     length=sum((b-a).Length for a,b in zip(points,points[1:]))
@@ -57,9 +57,10 @@ G={
 '5_continuous_FPC':{'pass':len(probe.Solids)==1 and probe.isValid() and all(r['volume_mm3']<=TOL for r in fpc),'probe_solid_count':len(probe.Solids),'probe_valid':probe.isValid(),'section_mm':[20,10],'measurements':fpc,'note':'Connected clearance volume through all module shoulders; high case detour if needed is explicitly included in geometry.'},
 '6_replaceable_grip':{'pass':baseblock<=TOL and all(r['blocked_mm3']<=TOL for r in holes),'central_through_opening_mm':[20,10],'opening_blocked_mm3':baseblock,'four_hole_pattern_mm':[60,44],'hole_diameter_mm':4.4,'holes':holes,'grip_specific_adapter':'GRIP_STANDARD_ADAPTER','jaw_opening_mm':float(D.Parameters.get('B8'))},
 '7_K1C':{'pass':all(r['pass'] for r in fit),'envelope_mm':[220,220,250],'parts':fit,'note':'Orthogonal bounding-box placement only; no supports or slicing'},
-'8_high_Pi_short_cables':{'pass':len(routes)==2 and all(r['pass'] for r in routes) and D.REF_PI5_OFFICIAL.Shape.BoundBox.ZMin>370,'Pi_bbox_mm':bbox(D.REF_PI5_OFFICIAL.Shape),'routes':routes,'short_cable_criterion':'At most 500 mm per cable, including 50 mm service allowance; geometric routing only, not electrical operation or bend-life validation'}
+'8_high_Pi_and_three_camera_routes':{'pass':len(routes)==3 and all(r['pass'] for r in routes) and D.REF_PI5_OFFICIAL.Shape.BoundBox.ZMin>370,'Pi_bbox_mm':bbox(D.REF_PI5_OFFICIAL.Shape),'routes':routes,'route_criterion':'CSI FPC routes at most 500 mm including 50 mm service allowance; USB-C/UVC route must be selected against the procured camera cable. Geometric routing only, not electrical operation or bend-life validation'},
+'9_three_view_datums':{'pass':all(D.getObject(n) for n in ['C_TOP','C_LEFT','C_RIGHT']),'camera_names':['C_TOP','C_LEFT','C_RIGHT'],'USB_C_camera_status':D.C_RIGHT.Status}
 }
-result={'document':D.Name,'object_count':len(D.Objects),'physical_part_count':len(physical),'printed_part_count':len(printed),'camera_count':2,'camera_names':['C_TOP','C_SIDE'],'gates':G,'all_gates_pass':all(g['pass'] for g in G.values()),'units':'mm','intersection_tolerance_mm3':TOL,'all_pairs':pairs,'not_evaluated':['FOV','load','safety','electrical camera operation','slicing'],'parameter_mode':'Spreadsheet aliases record rebuild inputs; BRep geometry changes require rerunning builder and audit, not a live assembly constraint solver.'}
+result={'document':D.Name,'object_count':len(D.Objects),'physical_part_count':len(physical),'printed_part_count':len(printed),'camera_count':3,'camera_names':['C_TOP','C_LEFT','C_RIGHT'],'gates':G,'all_gates_pass':all(g['pass'] for g in G.values()),'units':'mm','intersection_tolerance_mm3':TOL,'all_pairs':pairs,'not_evaluated':['FOV','load','safety','electrical camera operation','slicing','USB-C/UVC camera procurement fit'],'parameter_mode':'Spreadsheet aliases record rebuild inputs; BRep geometry changes require rerunning builder and audit, not a live assembly constraint solver.'}
 path=OUT+'/validation.json'
 if os.path.exists(path):
     previous=json.load(open(path))

@@ -19,7 +19,10 @@ for x,y in hole_xy:
     plate=plate.fuse(cyl(2,3.22548,x,y,3.77452))
     plate=plate.cut(cyl(1.1,8,x,y,3))
 plate=plate.removeSplitter()
-camera_sets=[('TOP',V(0,0,545),App.Rotation(), 'CM3_Wide'),('SIDE',V(55,-165,340),App.Rotation(V(1,0,0),90),'CM3_Std')]
+camera_sets=[
+    ('TOP',V(0,0,545),App.Rotation(), 'CM3_Wide'),
+    ('LEFT',V(0,-165,245),App.Rotation(V(1,0,0),90),'CM3_Std'),
+]
 for name,origin,rot,key in camera_sets:
     mat=App.Placement(origin,rot).toMatrix()
     add('C_'+name+'_PAN_TILT_CRADLE',cradle.transformGeometry(mat),(0.36,0.39,0.45),source=source)
@@ -40,6 +43,12 @@ for name,origin,rot,key in camera_sets:
     o=add('REF_'+name+'_'+key,ref,(0.2,0.5,0.25),'reference',source='official Raspberry Pi '+key+' STEP')
     o.addProperty('App::PropertyVector','LensFrontCenter')
     o.LensFrontCenter=origin+rot.multVec(V(0,0,3.805+(-8.805 if key=='CM3_Wide' else -7.65)))
+# The USB-C/UVC camera is deliberately an envelope rather than an invented
+# vendor STEP.  Procurement must select the exact module and connector before
+# this reference is promoted to a manufactured mount.
+usb=box(-30,150,230,60,30,30)
+o=add('REF_RIGHT_USB_C_UVC',usb,(0.55,0.25,0.75),'reference',source='USB-C/UVC camera envelope; exact model BLOCKED')
+o.addProperty('App::PropertyVector','LensFrontCenter'); o.LensFrontCenter=V(0,165,245)
 # Official Pi body as a reference, aligned with the standing vendor case axes.
 pi=official['Pi5'].copy()
 pi.translate(V(-45,-28,0))

@@ -1,3 +1,4 @@
+from pathlib import Path
 import FreeCAD as App, FreeCADGui as Gui, Part, Mesh
 ROOT=str(Path(__file__).resolve().parents[1])
 if 'R05ColumnV6' in App.listDocuments():
@@ -93,6 +94,19 @@ for i in range(4):
     o.addProperty('App::PropertyLength','Pitch'); o.setExpression('Pitch','Parameters.module_h')
     o.addProperty('App::PropertyLength','Engagement'); o.Engagement=12
     bolt_x('JointM4_%d'%i,z+6)
+# Three-camera upgrade: the bridge stays above the 370 mm product envelope and
+# drops mounts outside the 190 mm nominal belt.  C_LEFT/C_RIGHT look toward the
+# product from opposite sides; their camera bodies remain reference envelopes
+# until the exact USB-C/UVC model is selected.
+bridge=box(-20,-216,390,40,432,16).fuse(box(-20,-216,245,40,32,161)).fuse(box(-20,184,245,40,32,161))
+bridge=bridge.cut(channel(389,18))
+add('SIDE_CAMERA_BRIDGE_3CAM',bridge.removeSplitter(),(0.2,0.5,0.72))
+left_mount=box(-30,-192,229,60,20,32).fuse(box(-30,-180,245,60,32,16))
+right_mount=box(-30,160,229,60,20,32).fuse(box(-30,148,245,60,32,16))
+for name,shape in [('MOUNT_C_LEFT',left_mount),('MOUNT_C_RIGHT_USB_C',right_mount)]:
+    add(name,shape.removeSplitter(),(0.88,0.55,0.19))
+add('REF_C_LEFT_CM3',box(-25,-175,233,50,24,24),(0.2,0.5,0.25),'reference',source='Raspberry Pi Camera Module 3 envelope; official STEP applied during refine')
+add('REF_C_RIGHT_USB_C_UVC',box(-30,151,230,60,30,30),(0.55,0.25,0.75),'reference',source='USB-C/UVC camera envelope only; procurement model required before fabrication')
 # Socket and seating cup below case; upper collar rests on real vendor case rim.
 lower=box(-20,-216,400,40,32,16).fuse(box(-37,-220.5,416,74,41,29)).cut(box(-32.92,-216.77,420,65.84,33.54,26))
 lower=lower.cut(female(400)).cut(channel(399,48)).cut(crosshole(406))
@@ -114,6 +128,26 @@ add('BACKLIGHT_BEHIND_BOTTLE',box(-80,100,20,160,8,360),(0.95,0.92,0.65),'refere
 datum=d.addObject('App::FeaturePython','C_TOP'); datum.addProperty('App::PropertyVector','OpticalCenter'); datum.OpticalCenter=V(0,0,540)
 datum.addProperty('App::PropertyVector','LookDirection'); datum.LookDirection=V(0,0,-1)
 datum.addProperty('App::PropertyString','Status'); datum.Status='Target datum; official CM3 refinement after gates'
+for name,center,direction,status in [
+    ('C_LEFT',V(0,-165,245),V(0,1,0),'Raspberry Pi CSI Camera Module 3; official STEP refinement after gates'),
+    ('C_RIGHT',V(0,165,245),V(0,-1,0),'USB-C/UVC envelope only; freeze procurement model before fabrication')]:
+    dcam=d.addObject('App::FeaturePython',name)
+    dcam.addProperty('App::PropertyVector','OpticalCenter'); dcam.OpticalCenter=center
+    dcam.addProperty('App::PropertyVector','LookDirection'); dcam.LookDirection=direction
+    dcam.addProperty('App::PropertyString','Status'); dcam.Status=status
+# Routes are centre-lines plus explicit length allowances.  The final validator
+# audits their geometry after the camera reference models are added in refine.
+for name,points,length in [
+    ('TOP',[V(0,-200,477),V(0,-200,540)],200),
+    ('LEFT',[V(0,-200,477),V(0,-190,390),V(0,-165,245)],300),
+    ('RIGHT',[V(0,-200,477),V(0,190,390),V(0,165,245)],650)]:
+    route=d.addObject('Part::Feature','FPC_ROUTE_'+name)
+    route.Shape=Part.makePolygon(points)
+    route.addProperty('App::PropertyVectorList','Waypoints'); route.Waypoints=points
+    route.addProperty('App::PropertyLength','ServiceAllowance'); route.ServiceAllowance=50
+    route.addProperty('App::PropertyLength','CableLength'); route.CableLength=length
+    route.addProperty('App::PropertyString','CableType'); route.CableType='FPC CSI' if name in ('TOP','LEFT') else 'USB-C/UVC'
+    route.addProperty('App::PropertyString','Role'); route.Role='reference'
 probe=channel(8,588).fuse(box(-10,-205,582,20,186,10)).fuse(box(-10,-29,548,20,10,47))
 add('FPC_PROBE_20x10',probe,(1.0,0.25,0.7),'reference').ViewObject.Visibility=False
 d.recompute(); Gui.activeDocument().activeView().viewAxonometric(); Gui.activeDocument().activeView().fitAll()

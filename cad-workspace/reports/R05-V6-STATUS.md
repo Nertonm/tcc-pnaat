@@ -1,4 +1,10 @@
-# R05 v6 — estado consolidado (2 câmeras, Pi vertical)
+# R05 v6 — estado histórico (2 câmeras, Pi vertical)
+
+> **Substituído para o escopo do TCC por R05 v7.** O requisito confirmado é
+> três câmeras: `C_TOP` e `C_LEFT` Raspberry Pi CSI, além de `C_RIGHT`
+> USB-C/UVC no lado oposto. Consultar `R05-V7-3CAM-NOMINAL.md` e o contrato
+> `data/concepts/optical-rig-r05-contract.json`. Este arquivo preserva o
+> registro da tentativa v6 de duas câmeras; não é a fonte de escopo atual.
 
 Status: CONCEPT_REVISED / OPEN. Geometria estrutural construída no FreeCAD MCP; gates volumétricos finais pendentes (MCP travou em `common`).
 

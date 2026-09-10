@@ -30,7 +30,10 @@ Cada módulo ≤ 220×220×250mm (cabe K1C). Encaixe recursivo: 1 interface infe
 ## Optica — decisões
 
 - C_TOP = CM3 WIDE (DFOV 120°/102°H/67°V, f=2.75mm, Z=12.4mm) => menor altura massiva.
-- C_LEFT/C_RIGHT = CM3 STANDARD (DFOV 75°/66°H/41°V, f=4.74mm) ou Wide (decisão: Standard).
+- Histórico v5: C_LEFT/C_RIGHT = CM3 STANDARD (DFOV 75°/66°H/41°V, f=4.74mm)
+  ou Wide (decisão: Standard). Para o escopo vigente R05 v7, C_LEFT permanece
+  Raspberry Pi CSI e C_RIGHT passa a USB-C/UVC, ainda como envelope até a
+  seleção de compra; ver `R05-V7-3CAM-NOMINAL.md`.
 - Backlighting obrigatório p/ PET transparente; corredor traseiro 100% desobstruído.
 
 ## Parâmetros congelados (contrato ~7def7953)

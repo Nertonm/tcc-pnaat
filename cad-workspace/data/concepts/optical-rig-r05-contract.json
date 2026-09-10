@@ -1,6 +1,6 @@
 {
   "status": "CONTRACT_REVISION",
-  "release_class": "OPTICAL_RIG_R05_v6",
+  "release_class": "OPTICAL_RIG_R05_v7_3CAM",
   "coordinate_system": {"+X": "transport downstream", "+Y": "transverse", "+Z": "up"},
   "belt_plane_z": 0,
   "inspection_plane_x": 0,
@@ -17,13 +17,24 @@
       {"volume_ml": 200,  "height_cm": [13.0, 14.0], "diameter_base_cm": [5.0, 5.5]}
     ]
   },
-  "camera_views": {
-    "count": 2,
-    "C_TOP": {"role": "cap", "axis": [0,0,-1], "height": "above tallest bottle ~Z420-480, Pi high on column"},
-    "C_SIDE": {"role": "body", "axis": [0,1,0], "note": "single lateral camera, Pi high so it reaches top+tendra"}
+  "conveyor_reference": {
+    "status": "REFERENCE_ONLY_USER_DECLARED",
+    "model": "IN 150 compact",
+    "belt_width_mm": 190,
+    "length_mm": 1500,
+    "guide_travel_mm": 150,
+    "side_clearance_mm": 80,
+    "note": "Approximate values supplied by the project team. They are not a substitute for G0 measurements of the physical conveyor interface."
   },
-  "pi_placement": "HIGH on the column (near top), so both C_TOP and C_SIDE reach with short cables",
-  "grip": "agnostic clamp (light-clamp ISC), replaceable foot",
-  "fabrication": "3D print K1C 220x220x250 PETG; conveyor not printed",
-  "assumptions": true
+  "camera_views": {
+    "count": 3,
+    "C_TOP": {"role": "cap", "connection": "Raspberry Pi CSI", "axis": [0,0,-1], "height": "above tallest bottle; nominal lens-front Z540"},
+    "C_LEFT": {"role": "body left", "connection": "Raspberry Pi CSI", "axis": [0,1,0], "nominal_lens_center": [0,-175,245]},
+    "C_RIGHT": {"role": "body right", "connection": "USB-C/UVC", "axis": [0,-1,0], "nominal_lens_center": [0,175,245], "model_status": "envelope only; exact USB camera model and connector are pending"}
+  },
+  "pi_placement": "HIGH on the column (near top), so the two CSI cameras reach with short FPC cables; the USB-C/UVC route is independently strain-relieved",
+  "grip": "third-party G-clamp candidate with a 1/4-20 tripod interface; use only a project-designed adapter and do not vendor the third-party model without its license",
+  "fabrication": "3D print K1C 220x220x250 PETG; conveyor not printed; physical clamp interface remains blocked pending G0",
+  "assumptions": true,
+  "fabrication_allowed": false
 }
