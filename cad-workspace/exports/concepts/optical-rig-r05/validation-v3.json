@@ -1,0 +1,1703 @@
+{
+  "status": "BLOCKED",
+  "revision": "v3",
+  "source_document": "R05Refs",
+  "method": "FreeCAD MCP execute_code; native Part/OCCT read, common, distToShape and slices; no CadQuery",
+  "input": "exports/concepts/optical-rig-r05/optical-rig-r05-column-modules-v3.step",
+  "input_sha256": "8bbe3efa18f55fad7d70c533b3bbbe8728e58f23018dcea812911642cff35741",
+  "contract_sha256": "7def7953657ceeec6c6e21b9d571aac35c402df4803c71c992d56a10be6baa90",
+  "volume_tolerance_mm3": 1e-05,
+  "coordinate_assumption": "Original STEP coordinates; bottle center X=Y=0, base Z=0; physical envelope only, no FOV test. Solid names assigned from bounds and STEP order.",
+  "gates": {
+    "interference": {
+      "status": "FAIL",
+      "bottle_subgate": "PASS",
+      "bottle_min_distance_mm": 100.0,
+      "column_y_mm": [
+        -240,
+        -160
+      ],
+      "pair_checks": [
+        {
+          "a": "PLINTH",
+          "b": "MODULE_1_BODY",
+          "distance_mm": 0.0,
+          "common_mm3": 11591.999999999749
+        },
+        {
+          "a": "PLINTH",
+          "b": "MODULE_1_SHOULDER",
+          "distance_mm": 91.36139722555713,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "PLINTH",
+          "b": "MODULE_2_BODY",
+          "distance_mm": 48.42478704134898,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "PLINTH",
+          "b": "MODULE_2_SHOULDER",
+          "distance_mm": 190.64864254173446,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "PLINTH",
+          "b": "MODULE_3_BODY",
+          "distance_mm": 148.13831374765948,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "PLINTH",
+          "b": "MODULE_3_SHOULDER",
+          "distance_mm": 290.42538612009463,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "PLINTH",
+          "b": "MODULE_4_BODY",
+          "distance_mm": 248.0825669006188,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "PLINTH",
+          "b": "MODULE_4_SHOULDER",
+          "distance_mm": 390.31641638932643,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "PLINTH",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 391.1382875659196,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "PLINTH",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 409.5762084885097,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "MODULE_1_SHOULDER",
+          "distance_mm": 42.1070065428546,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "MODULE_2_BODY",
+          "distance_mm": 0.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "MODULE_2_SHOULDER",
+          "distance_mm": 142.03168660548954,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "MODULE_3_BODY",
+          "distance_mm": 100.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "MODULE_3_SHOULDER",
+          "distance_mm": 242.0185943269649,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "MODULE_4_BODY",
+          "distance_mm": 200.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "MODULE_4_SHOULDER",
+          "distance_mm": 342.01315764163223,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 343.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_BODY",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 361.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_SHOULDER",
+          "b": "MODULE_2_BODY",
+          "distance_mm": 3.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_SHOULDER",
+          "b": "MODULE_2_SHOULDER",
+          "distance_mm": 84.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_SHOULDER",
+          "b": "MODULE_3_BODY",
+          "distance_mm": 42.1070065428546,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_SHOULDER",
+          "b": "MODULE_3_SHOULDER",
+          "distance_mm": 184.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_SHOULDER",
+          "b": "MODULE_4_BODY",
+          "distance_mm": 142.03168660548954,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_SHOULDER",
+          "b": "MODULE_4_SHOULDER",
+          "distance_mm": 284.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_SHOULDER",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 285.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_1_SHOULDER",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 303.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_BODY",
+          "b": "MODULE_2_SHOULDER",
+          "distance_mm": 42.1070065428546,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_BODY",
+          "b": "MODULE_3_BODY",
+          "distance_mm": 0.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_BODY",
+          "b": "MODULE_3_SHOULDER",
+          "distance_mm": 142.03168660548954,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_BODY",
+          "b": "MODULE_4_BODY",
+          "distance_mm": 100.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_BODY",
+          "b": "MODULE_4_SHOULDER",
+          "distance_mm": 242.0185943269649,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_BODY",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 243.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_BODY",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 261.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_SHOULDER",
+          "b": "MODULE_3_BODY",
+          "distance_mm": 3.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_SHOULDER",
+          "b": "MODULE_3_SHOULDER",
+          "distance_mm": 84.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_SHOULDER",
+          "b": "MODULE_4_BODY",
+          "distance_mm": 42.1070065428546,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_SHOULDER",
+          "b": "MODULE_4_SHOULDER",
+          "distance_mm": 184.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_SHOULDER",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 185.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_2_SHOULDER",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 203.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_BODY",
+          "b": "MODULE_3_SHOULDER",
+          "distance_mm": 42.1070065428546,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_BODY",
+          "b": "MODULE_4_BODY",
+          "distance_mm": 0.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_BODY",
+          "b": "MODULE_4_SHOULDER",
+          "distance_mm": 142.03168660548954,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_BODY",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 143.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_BODY",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 161.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_SHOULDER",
+          "b": "MODULE_4_BODY",
+          "distance_mm": 3.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_SHOULDER",
+          "b": "MODULE_4_SHOULDER",
+          "distance_mm": 84.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_SHOULDER",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 85.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_3_SHOULDER",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 103.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_4_BODY",
+          "b": "MODULE_4_SHOULDER",
+          "distance_mm": 42.1070065428546,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_4_BODY",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 43.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_4_BODY",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 61.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "MODULE_4_SHOULDER",
+          "b": "CROSSBAR_BAR",
+          "distance_mm": 0.0,
+          "common_mm3": 41440.0
+        },
+        {
+          "a": "MODULE_4_SHOULDER",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 3.0,
+          "common_mm3": 0.0
+        },
+        {
+          "a": "CROSSBAR_BAR",
+          "b": "CROSSBAR_PLATFORM",
+          "distance_mm": 4.0,
+          "common_mm3": 0.0
+        }
+      ],
+      "product_checks": [
+        {
+          "name": "PLINTH",
+          "common_mm3": 0.0,
+          "distance_mm": 100.0
+        },
+        {
+          "name": "MODULE_1_BODY",
+          "common_mm3": 0.0,
+          "distance_mm": 105.0
+        },
+        {
+          "name": "MODULE_1_SHOULDER",
+          "common_mm3": 0.0,
+          "distance_mm": 113.0
+        },
+        {
+          "name": "MODULE_2_BODY",
+          "common_mm3": 0.0,
+          "distance_mm": 105.0
+        },
+        {
+          "name": "MODULE_2_SHOULDER",
+          "common_mm3": 0.0,
+          "distance_mm": 113.0
+        },
+        {
+          "name": "MODULE_3_BODY",
+          "common_mm3": 0.0,
+          "distance_mm": 105.0
+        },
+        {
+          "name": "MODULE_3_SHOULDER",
+          "common_mm3": 0.0,
+          "distance_mm": 113.0
+        },
+        {
+          "name": "MODULE_4_BODY",
+          "common_mm3": 0.0,
+          "distance_mm": 105.0
+        },
+        {
+          "name": "MODULE_4_SHOULDER",
+          "common_mm3": 0.0,
+          "distance_mm": 118.00423721205946
+        },
+        {
+          "name": "CROSSBAR_BAR",
+          "common_mm3": 0.0,
+          "distance_mm": 125.0
+        },
+        {
+          "name": "CROSSBAR_PLATFORM",
+          "common_mm3": 0.0,
+          "distance_mm": 122.10241602851272
+        }
+      ],
+      "reason": "Plinth/body1 and shoulder4/crossbar have positive common volumes; adjacent bodies touch without volumetric overlap."
+    },
+    "height": {
+      "status": "FAIL",
+      "platform_z_mm": [
+        423,
+        433
+      ],
+      "contract_z_mm": [
+        520,
+        560
+      ],
+      "missing_mm": [
+        87,
+        127
+      ],
+      "net_module_pitch_mm": 100,
+      "additional_modules_estimate": 1,
+      "estimated_platform_z_with_one_module_mm": 533,
+      "reason": "Platform height only. Contract refers to C_TOP optical point; final CM3 mounting offset remains unmeasured."
+    },
+    "engagement": {
+      "status": "FAIL",
+      "body_z_mm": [
+        [
+          -38,
+          62
+        ],
+        [
+          62,
+          162
+        ],
+        [
+          162,
+          262
+        ],
+        [
+          262,
+          362
+        ]
+      ],
+      "shoulder_z_mm": [
+        [
+          104,
+          120
+        ],
+        [
+          204,
+          220
+        ],
+        [
+          304,
+          320
+        ],
+        [
+          404,
+          420
+        ]
+      ],
+      "body_to_own_shoulder_axial_gap_mm": 42,
+      "body_joint_engagement_mm": 0,
+      "body4_to_crossbar_gap_mm": 43,
+      "bar_to_platform_gap_mm": 4,
+      "shoulder4_to_platform_gap_mm": 3,
+      "m4_nominal_cut_diameter_mm": 4.4,
+      "m4_nominal_radial_clearance_mm": 0.2,
+      "reason": "Shoulders are detached; body interfaces are butt contacts. Cylindrical cuts exist in v3 bodies and shoulders, but are partial arcs/open notches, not a demonstrated assembled screw joint. Nominal diameter clearance does not establish shoulder fit."
+    },
+    "fpc_channel": {
+      "status": "FAIL",
+      "probe_xy_mm": [
+        -10,
+        -205,
+        10,
+        -195
+      ],
+      "probe_section_mm": [
+        20,
+        10
+      ],
+      "samples": [
+        {
+          "z_mm": -5,
+          "occupied_area_mm2": 199.9999999999993
+        },
+        {
+          "z_mm": 1,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 7,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 20,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 61.95,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 100,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 110,
+          "occupied_area_mm2": 199.99999999998863
+        },
+        {
+          "z_mm": 120,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 161.95,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 210,
+          "occupied_area_mm2": 199.99999999998857
+        },
+        {
+          "z_mm": 261.95,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 310,
+          "occupied_area_mm2": 200.00000000004542
+        },
+        {
+          "z_mm": 350,
+          "occupied_area_mm2": 0.0
+        },
+        {
+          "z_mm": 410,
+          "occupied_area_mm2": 200.0000000000454
+        },
+        {
+          "z_mm": 425,
+          "occupied_area_mm2": 200.00000000004542
+        }
+      ],
+      "reason": "Central passage is fully occupied by shoulders at Z110/210/310/410 and platform at Z425. Body interfaces at Z62/162/262 are locally clear. Probe is diagnostic, not a specified cable/connector envelope; no alternative route demonstrated."
+    },
+    "interchangeable_grip": {
+      "status": "FAIL",
+      "reason": "No matching adapter/receiver for exchangeable foot in supplied v3 STEP. Live LIGHTCLAMP references lie at Y[-25,0], separated at least 135 mm in Y from plinth Y[-240,-160]. Plinth bottom section Z-5 is a closed 120x80 rectangle with no through openings; existing upper cylindrical cuts are diameter 7.2, not proof of a mating interchangeable interface. No new grip geometry was inferred from v1."
+    }
+  },
+  "pieces": [
+    {
+      "index": 0,
+      "name": "PLINTH",
+      "bounds_mm": [
+        -60.0,
+        -240.0,
+        -6.0,
+        60.0,
+        -160.0,
+        14.0
+      ],
+      "volume_mm3": 88533.40419394172,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 3.6,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -55.0,
+            -234.0,
+            0.0
+          ],
+          "angular_span_rad": 6.28318530718,
+          "bounds_mm": [
+            -58.6,
+            -237.6,
+            6.0,
+            -51.4,
+            -230.4,
+            14.0
+          ]
+        },
+        {
+          "radius_mm": 3.6,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            55.0,
+            -234.0,
+            0.0
+          ],
+          "angular_span_rad": 6.28318530718,
+          "bounds_mm": [
+            51.4,
+            -237.6,
+            6.0,
+            58.6,
+            -230.4,
+            14.0
+          ]
+        },
+        {
+          "radius_mm": 3.6,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -55.0,
+            -166.0,
+            0.0
+          ],
+          "angular_span_rad": 6.28318530718,
+          "bounds_mm": [
+            -58.6,
+            -169.6,
+            6.0,
+            -51.4,
+            -162.4,
+            14.0
+          ]
+        },
+        {
+          "radius_mm": 3.6,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            55.0,
+            -166.0,
+            0.0
+          ],
+          "angular_span_rad": 6.28318530718,
+          "bounds_mm": [
+            51.4,
+            -169.6,
+            6.0,
+            58.6,
+            -162.4,
+            14.0
+          ]
+        },
+        {
+          "radius_mm": 3.6,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            55.0,
+            -166.0,
+            0.0
+          ],
+          "angular_span_rad": 0.7002852833473536,
+          "bounds_mm": [
+            51.541677,
+            -168.993326,
+            0.0,
+            53.0,
+            -167.0,
+            2.0
+          ]
+        },
+        {
+          "radius_mm": 3.6,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -55.0,
+            -166.0,
+            0.0
+          ],
+          "angular_span_rad": 0.7002852833483006,
+          "bounds_mm": [
+            -53.0,
+            -168.993326,
+            0.0,
+            -51.541677,
+            -167.0,
+            2.0
+          ]
+        },
+        {
+          "radius_mm": 3.6,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            55.0,
+            -234.0,
+            0.0
+          ],
+          "angular_span_rad": 0.7002852833605804,
+          "bounds_mm": [
+            51.541677,
+            -233.0,
+            0.0,
+            53.0,
+            -231.006674,
+            2.0
+          ]
+        },
+        {
+          "radius_mm": 3.6,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -55.0,
+            -234.0,
+            0.0
+          ],
+          "angular_span_rad": 0.7002852833608113,
+          "bounds_mm": [
+            -53.0,
+            -233.0,
+            0.0,
+            -51.541677,
+            -231.006674,
+            2.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "MODULE_1_BODY",
+      "bounds_mm": [
+        -45.0,
+        -235.0,
+        -38.0,
+        45.0,
+        -165.0,
+        62.0
+      ],
+      "volume_mm3": 129462.99258390488,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -176.0,
+            12.0
+          ],
+          "angular_span_rad": 0.859399332303,
+          "bounds_mm": [
+            40.0,
+            -176.916515,
+            12.0,
+            40.2,
+            -175.083485,
+            62.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -176.0,
+            12.0
+          ],
+          "angular_span_rad": 0.8593993323062858,
+          "bounds_mm": [
+            -40.2,
+            -176.916515,
+            12.0,
+            -40.0,
+            -175.083485,
+            62.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -224.0,
+            12.0
+          ],
+          "angular_span_rad": 0.8593993323062858,
+          "bounds_mm": [
+            -40.2,
+            -224.916515,
+            12.0,
+            -40.0,
+            -223.083485,
+            62.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "MODULE_1_SHOULDER",
+      "bounds_mm": [
+        -37.0,
+        -227.0,
+        104.0,
+        37.0,
+        -173.0,
+        120.0
+      ],
+      "volume_mm3": 63721.007927291845,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -224.0,
+            12.0
+          ],
+          "angular_span_rad": 2.197868979045224,
+          "bounds_mm": [
+            35.8,
+            -225.959592,
+            104.0,
+            37.0,
+            -222.040408,
+            120.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -176.0,
+            12.0
+          ],
+          "angular_span_rad": 2.197868979045224,
+          "bounds_mm": [
+            35.8,
+            -177.959592,
+            104.0,
+            37.0,
+            -174.040408,
+            120.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -176.0,
+            12.0
+          ],
+          "angular_span_rad": 2.197868979046088,
+          "bounds_mm": [
+            -37.0,
+            -177.959592,
+            104.0,
+            -35.8,
+            -174.040408,
+            120.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -224.0,
+            12.0
+          ],
+          "angular_span_rad": 2.197868979031,
+          "bounds_mm": [
+            -37.0,
+            -225.959592,
+            104.0,
+            -35.8,
+            -222.040408,
+            120.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "MODULE_2_BODY",
+      "bounds_mm": [
+        -45.0,
+        -235.0,
+        62.0,
+        45.0,
+        -165.0,
+        162.0
+      ],
+      "volume_mm3": 129462.99258390488,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -176.0,
+            112.0
+          ],
+          "angular_span_rad": 0.859399332303,
+          "bounds_mm": [
+            40.0,
+            -176.916515,
+            112.0,
+            40.2,
+            -175.083485,
+            162.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -176.0,
+            112.0
+          ],
+          "angular_span_rad": 0.8593993323062858,
+          "bounds_mm": [
+            -40.2,
+            -176.916515,
+            112.0,
+            -40.0,
+            -175.083485,
+            162.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -224.0,
+            112.0
+          ],
+          "angular_span_rad": 0.8593993323062858,
+          "bounds_mm": [
+            -40.2,
+            -224.916515,
+            112.0,
+            -40.0,
+            -223.083485,
+            162.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "name": "MODULE_2_SHOULDER",
+      "bounds_mm": [
+        -37.0,
+        -227.0,
+        204.0,
+        37.0,
+        -173.0,
+        220.0
+      ],
+      "volume_mm3": 63721.007927291845,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -224.0,
+            112.0
+          ],
+          "angular_span_rad": 2.197868979045224,
+          "bounds_mm": [
+            35.8,
+            -225.959592,
+            204.0,
+            37.0,
+            -222.040408,
+            220.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -176.0,
+            112.0
+          ],
+          "angular_span_rad": 2.197868979045224,
+          "bounds_mm": [
+            35.8,
+            -177.959592,
+            204.0,
+            37.0,
+            -174.040408,
+            220.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -176.0,
+            112.0
+          ],
+          "angular_span_rad": 2.197868979046088,
+          "bounds_mm": [
+            -37.0,
+            -177.959592,
+            204.0,
+            -35.8,
+            -174.040408,
+            220.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -224.0,
+            112.0
+          ],
+          "angular_span_rad": 2.197868979031,
+          "bounds_mm": [
+            -37.0,
+            -225.959592,
+            204.0,
+            -35.8,
+            -222.040408,
+            220.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "name": "MODULE_3_BODY",
+      "bounds_mm": [
+        -45.0,
+        -235.0,
+        162.0,
+        45.0,
+        -165.0,
+        262.0
+      ],
+      "volume_mm3": 129462.99258390488,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -176.0,
+            212.0
+          ],
+          "angular_span_rad": 0.859399332303,
+          "bounds_mm": [
+            40.0,
+            -176.916515,
+            212.0,
+            40.2,
+            -175.083485,
+            262.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -176.0,
+            212.0
+          ],
+          "angular_span_rad": 0.8593993323062858,
+          "bounds_mm": [
+            -40.2,
+            -176.916515,
+            212.0,
+            -40.0,
+            -175.083485,
+            262.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -224.0,
+            212.0
+          ],
+          "angular_span_rad": 0.8593993323062858,
+          "bounds_mm": [
+            -40.2,
+            -224.916515,
+            212.0,
+            -40.0,
+            -223.083485,
+            262.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "name": "MODULE_3_SHOULDER",
+      "bounds_mm": [
+        -37.0,
+        -227.0,
+        304.0,
+        37.0,
+        -173.0,
+        320.0
+      ],
+      "volume_mm3": 63721.007927291845,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -224.0,
+            212.0
+          ],
+          "angular_span_rad": 2.197868979045224,
+          "bounds_mm": [
+            35.8,
+            -225.959592,
+            304.0,
+            37.0,
+            -222.040408,
+            320.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -176.0,
+            212.0
+          ],
+          "angular_span_rad": 2.197868979045224,
+          "bounds_mm": [
+            35.8,
+            -177.959592,
+            304.0,
+            37.0,
+            -174.040408,
+            320.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -176.0,
+            212.0
+          ],
+          "angular_span_rad": 2.197868979046088,
+          "bounds_mm": [
+            -37.0,
+            -177.959592,
+            304.0,
+            -35.8,
+            -174.040408,
+            320.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -224.0,
+            212.0
+          ],
+          "angular_span_rad": 2.197868979031,
+          "bounds_mm": [
+            -37.0,
+            -225.959592,
+            304.0,
+            -35.8,
+            -222.040408,
+            320.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "name": "MODULE_4_BODY",
+      "bounds_mm": [
+        -45.0,
+        -235.0,
+        262.0,
+        45.0,
+        -165.0,
+        362.0
+      ],
+      "volume_mm3": 129462.99258390488,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -176.0,
+            312.0
+          ],
+          "angular_span_rad": 0.859399332303,
+          "bounds_mm": [
+            40.0,
+            -176.916515,
+            312.0,
+            40.2,
+            -175.083485,
+            362.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -176.0,
+            312.0
+          ],
+          "angular_span_rad": 0.8593993323062858,
+          "bounds_mm": [
+            -40.2,
+            -176.916515,
+            312.0,
+            -40.0,
+            -175.083485,
+            362.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -224.0,
+            312.0
+          ],
+          "angular_span_rad": 0.8593993323062858,
+          "bounds_mm": [
+            -40.2,
+            -224.916515,
+            312.0,
+            -40.0,
+            -223.083485,
+            362.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "name": "MODULE_4_SHOULDER",
+      "bounds_mm": [
+        -37.0,
+        -227.0,
+        404.0,
+        37.0,
+        -173.0,
+        420.0
+      ],
+      "volume_mm3": 63721.007927291845,
+      "valid": true,
+      "cylindrical_faces": [
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -224.0,
+            312.0
+          ],
+          "angular_span_rad": 2.197868979045224,
+          "bounds_mm": [
+            35.8,
+            -225.959592,
+            404.0,
+            37.0,
+            -222.040408,
+            420.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            38.0,
+            -176.0,
+            312.0
+          ],
+          "angular_span_rad": 2.197868979045224,
+          "bounds_mm": [
+            35.8,
+            -177.959592,
+            404.0,
+            37.0,
+            -174.040408,
+            420.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -176.0,
+            312.0
+          ],
+          "angular_span_rad": 2.197868979046088,
+          "bounds_mm": [
+            -37.0,
+            -177.959592,
+            404.0,
+            -35.8,
+            -174.040408,
+            420.0
+          ]
+        },
+        {
+          "radius_mm": 2.2,
+          "axis": [
+            -0.0,
+            -0.0,
+            -1.0
+          ],
+          "center": [
+            -38.0,
+            -224.0,
+            312.0
+          ],
+          "angular_span_rad": 2.197868979031,
+          "bounds_mm": [
+            -37.0,
+            -225.959592,
+            404.0,
+            -35.8,
+            -222.040408,
+            420.0
+          ]
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "name": "CROSSBAR_BAR",
+      "bounds_mm": [
+        -55.0,
+        -220.0,
+        405.0,
+        55.0,
+        -180.0,
+        419.0
+      ],
+      "volume_mm3": 61600.0,
+      "valid": true,
+      "cylindrical_faces": []
+    },
+    {
+      "index": 10,
+      "name": "CROSSBAR_PLATFORM",
+      "bounds_mm": [
+        -30.0,
+        -230.0,
+        423.0,
+        30.0,
+        -170.0,
+        433.0
+      ],
+      "volume_mm3": 36000.0,
+      "valid": true,
+      "cylindrical_faces": []
+    }
+  ],
+  "reference_meshes": [
+    {
+      "name": "PIPIECE_CASE",
+      "label": "PIPIECE_CASE",
+      "visibility": true,
+      "bounds_mm": [
+        -57.099998,
+        -31.969999,
+        102.5,
+        47.75,
+        33.470001,
+        135.639999
+      ],
+      "solid_mesh": false
+    },
+    {
+      "name": "PIPIECE_CAM_TOP",
+      "label": "PIPIECE_CAM_TOP",
+      "visibility": false,
+      "bounds_mm": [
+        -55.0,
+        -47.780002,
+        25.05,
+        -10.0,
+        6.72,
+        32.5
+      ],
+      "solid_mesh": true
+    },
+    {
+      "name": "PIPIECE_CAM_BOT",
+      "label": "PIPIECE_CAM_BOT",
+      "visibility": false,
+      "bounds_mm": [
+        -32.5,
+        -20.530001,
+        -18.629999,
+        12.5,
+        33.970001,
+        -12.63
+      ],
+      "solid_mesh": true
+    },
+    {
+      "name": "LIGHTCLAMP_BODY",
+      "label": "LIGHTCLAMP_BODY",
+      "visibility": true,
+      "bounds_mm": [
+        -38.0,
+        -25.0,
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "solid_mesh": false
+    },
+    {
+      "name": "LIGHTCLAMP_CLAMP",
+      "label": "LIGHTCLAMP_CLAMP",
+      "visibility": true,
+      "bounds_mm": [
+        -9.5,
+        -25.0,
+        150.0,
+        9.5,
+        0.0,
+        200.0
+      ],
+      "solid_mesh": false
+    },
+    {
+      "name": "PICAMMOUNT_BOTTOM",
+      "label": "PICAMMOUNT_BOTTOM",
+      "visibility": false,
+      "bounds_mm": [
+        -33.0,
+        -15.0,
+        -33.0,
+        33.0,
+        39.0,
+        33.0
+      ],
+      "solid_mesh": true
+    },
+    {
+      "name": "PICAMMOUNT_BOTTOM001",
+      "label": "MOUNT_C_TOP",
+      "visibility": false,
+      "bounds_mm": [
+        -33.0,
+        -33.0,
+        415.0,
+        33.0,
+        33.0,
+        469.0
+      ],
+      "solid_mesh": true
+    },
+    {
+      "name": "PICAMMOUNT_BOTTOM002",
+      "label": "MOUNT_C_LEFT",
+      "visibility": false,
+      "bounds_mm": [
+        -15.0,
+        -33.0,
+        117.0,
+        39.0,
+        33.0,
+        183.0
+      ],
+      "solid_mesh": true
+    },
+    {
+      "name": "PICAMMOUNT_BOTTOM003",
+      "label": "MOUNT_C_RIGHT",
+      "visibility": false,
+      "bounds_mm": [
+        -39.0,
+        -33.0,
+        117.0,
+        15.0,
+        33.0,
+        183.0
+      ],
+      "solid_mesh": true
+    },
+    {
+      "name": "MOUNT_C_TOP",
+      "label": "MOUNT_C_TOP001",
+      "visibility": true,
+      "bounds_mm": [
+        -33.0,
+        -33.0,
+        415.0,
+        33.0,
+        33.0,
+        469.0
+      ],
+      "solid_mesh": true
+    },
+    {
+      "name": "MOUNT_C_LEFT",
+      "label": "MOUNT_C_LEFT001",
+      "visibility": true,
+      "bounds_mm": [
+        -75.0,
+        -33.0,
+        117.0,
+        -21.0,
+        33.0,
+        183.0
+      ],
+      "solid_mesh": true
+    },
+    {
+      "name": "MOUNT_C_RIGHT",
+      "label": "MOUNT_C_RIGHT001",
+      "visibility": true,
+      "bounds_mm": [
+        -99.0,
+        -33.0,
+        117.0,
+        -45.0,
+        33.0,
+        183.0
+      ],
+      "solid_mesh": true
+    }
+  ],
+  "refinement_performed": false,
+  "excluded": [
+    "FOV",
+    "loads",
+    "safety"
+  ],
+  "v1_results_reused": false
+}
