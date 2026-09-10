@@ -19,9 +19,10 @@ se encaixa em qualquer esteira: o mesmo sistema se desloca entre linhas ou
 - Trilhos deslizantes com trava (T-slot nuts + parafuso de fixação) permitem
   ajustar **largura** (entre laterais), **altura** (travessa superior) e
   **distância ao item** (profundidade): sem trocar peças.
-- 3 câmeras em suportes ajustáveis: topo (CSI V1.3) na travessa superior +
-  2 laterais (CSI/USB) nas colunas, cada uma com ajuste fino de ângulo
-  (pivot com trava) antes da fixação final.
+- 3 câmeras em suportes ajustáveis: `C_TOP` e `C_LEFT` são câmeras Raspberry
+  Pi por CSI; `C_RIGHT` é uma câmera USB-C/UVC. `C_TOP` fica na travessa
+  superior e as laterais ficam em lados opostos da esteira, cada uma com
+  ajuste fino de ângulo (pivot com trava) antes da fixação final.
 - Trigger E18-D80NK/VL53L0X + encoder KY-040 montados no mesmo grip, alinhados
   à linha de captura; strobing LED integrado à travessa.
 - Cabos organizados por canaleta/esteira de cabo no perfil: nada solto ao
@@ -55,6 +56,21 @@ se encaixa em qualquer esteira: o mesmo sistema se desloca entre linhas ou
   laser (mais barato/rápido). Decisão de S1 com o laboratório disponível.
 
 ## Mecanismo de fixação à esteira: duas opções
+
+### Interface de clamp/tripé candidata (2026-09-10)
+
+O time considera imprimir o modelo externo “G-clamp tripod”, publicado no
+Cults3D. Ele pode ser um bom **protótipo de fixação removível**, pois combina
+uma garra mecânica e uma interface de tripé. Contudo, o modelo não é fonte
+canônica deste repositório: não foi copiado, redistribuído nem convertido em
+peça de produção porque sua licença e o arquivo de origem precisam ser
+confirmados pelo time antes de qualquer inclusão.
+
+O CAD do projeto deve usar somente um adaptador próprio, paramétrico, entre a
+coluna e uma interface de tripé **1/4-20**, com quatro parafusos M4 no lado da
+coluna, alívio de torque e ponto para retenção secundária. A garra não pode
+ser considerada segura ou compatível com a IN 150 até que espessura, formato e
+resistência do ponto real de contato sejam medidos no G0.
 
 ### Opção A: Garra com parafuso M6/M8 + manípulo (preferida)
 
