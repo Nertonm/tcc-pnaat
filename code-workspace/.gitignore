@@ -9,3 +9,5 @@ data/
 *.png
 *.step
 *.stl
+
+*.egg-info/
