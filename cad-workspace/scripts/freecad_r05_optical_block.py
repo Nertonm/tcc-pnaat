@@ -95,7 +95,7 @@ plate=plate.cut(box(7,-10,6.9,18,20,4))
 for x,y in [(-12.4,-10.5),(0.1,-10.5),(-12.4,10.5),(0.1,10.5)]: plate=plate.cut(cyl(1.1,6,V(x,y,6)))
 # Cassette is derived from PiPiece CameraCase: back wall, discrete pads, ribbon cut.
 cassette=box(-15,-24,5.5,30,48,1.5)
-cassette=cassette.cut(box(4,-11,5.4,22,22,2))
+cassette=cassette.cut(box(4,-12,5.4,22,24,2))
 holes=[(-12.4,-10.5),(0.1,-10.5),(-12.4,10.5),(0.1,10.5)]
 for x,y in holes:
     cassette=cassette.fuse(cyl(2,1.72548,V(x,y,3.77452)))

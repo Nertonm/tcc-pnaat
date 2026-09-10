@@ -25,6 +25,11 @@ if raw.Volume<0:raw.reverse()
 assert raw.isValid()
 o=doc.addObject('PartDesign::Feature','Pipiece_Source'); o.Shape=raw.removeSplitter(); o.Visibility=False
 App.setActiveDocument(doc.Name)
-for stage in ['block','cables','finish','validate','save']:
+for stage in ['block','cables','finish']:
+    path=ROOT+'/scripts/freecad_r05_optical_'+stage+'.py'
+    exec(compile(open(path).read(),path,'exec'))
+# Persist the deliverables before potentially expensive verification.
+evidence={'document':d.Name,'overall':'FAIL','gates':{f'G{i}':{'status':'FAIL','reason':'Not yet verified'} for i in range(1,7)}}
+for stage in ['save','validate','save']:
     path=ROOT+'/scripts/freecad_r05_optical_'+stage+'.py'
     exec(compile(open(path).read(),path,'exec'))

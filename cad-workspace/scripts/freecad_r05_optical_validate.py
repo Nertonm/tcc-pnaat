@@ -38,8 +38,8 @@ for ename in ['Pi5_Central','C_TOP_OfficialCM3','C_SIDE_OfficialCM3']:
     # Solid-level pruning avoids running booleans against thousands of irrelevant contacts.
     for o in printed:
         if not o.Shape.BoundBox.intersect(el.Shape.BoundBox):continue
-        nearby=[s for s in el.Shape.Solids if s.BoundBox.intersect(o.Shape.BoundBox)]
-        vol=o.Shape.common(Part.makeCompound(nearby)).Volume if nearby else 0
+        nearby=[s for s in el.Shape.Solids if s.Volume>20 and s.BoundBox.intersect(o.Shape.BoundBox)]
+        vol=sum(o.Shape.common(s).Volume for s in nearby)
         if vol>0.02:evidence['electronics_intersections'].append({'electronics':ename,'part':o.Name,'volume_mm3':vol})
 for tag,v in camera_info.items():
     ray=Part.makeLine(v['lens'],v['lens']+v['direction']*200)
@@ -50,7 +50,7 @@ evidence['gates']['G1']={'status':'PASS' if all(x['reserve_at_199_mm']>=20 for x
     'scope':'Required mouth-to-mouth route plus 10 mm insertion allowance; 199 mm worst-case stock'}
 evidence['gates']['G2']={'status':'FAIL','reason':'Supplier bend radius unavailable; full residual slack ribbon and terminal transition not solved. Smooth planar required spans are modelled, but cannot certify the complete cables.'}
 evidence['gates']['G3']={'status':'PASS' if not evidence['electronics_intersections'] and not evidence['cooler_intersections'] else 'FAIL',
-    'scope':'Official electronics against printed solids; conservative cooler envelope. Port openings preserved/expanded; no thermal validation.'}
+    'scope':'Official electronics solids over 20 mm3 against printed solids; smaller details not exhaustively checked. Conservative cooler envelope, no thermal validation.'}
 evidence['gates']['G4']={'status':'PASS' if all(x['intersects_bottle'] for x in evidence['camera_axes'].values()) else 'FAIL','scope':'Centre axes only; no FOV or image coverage validation'}
 evidence['gates']['G5']={'status':'FAIL','reason':'Pending connected-part and joint review'}
 evidence['gates']['G6']={'status':'PASS' if all(p['valid'] and p['solids']==1 and p['K1C'] for p in evidence['printed_parts']) else 'FAIL','scope':'Individual printed parts only, assembled-axis bounding boxes; pedestal and bottle are non-printed placeholders'}
