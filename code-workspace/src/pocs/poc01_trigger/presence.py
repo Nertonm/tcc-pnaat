@@ -12,7 +12,7 @@ E18_D80NK_ACTIVE_LOW = True
 
 
 def present_from_sensor(level: int, active_low: bool = E18_D80NK_ACTIVE_LOW) -> bool:
-    """Converte o nivel logico do E18-D80NK em 'tampo presente'.
+    """Converte o nivel logico do E18-D80NK em 'presente (objeto dentro do alcance)'.
 
     E18-D80NK: saida LOW indica deteccao (ativo em nivel baixo).
     """
@@ -47,7 +47,7 @@ class PresenceTrigger:
         self._counter = 0
 
     def update(self, present: bool) -> Optional[CaptureRun]:
-        """Alimenta com a presenca jah convertida. Retorna a abertura so na borda de subida."""
+        """Alimenta com a presenca ja convertida (LOW = presente). Retorna a abertura so na borda de subida."""
         if present:
             self._hits += 1
             self._misses = 0
