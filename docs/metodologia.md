@@ -8,7 +8,7 @@ Apostila do Trabalho de Conclusão da Capacitação, PNAAT 2026, FIT. O material
 
 ### Unidade 1: Engenharia de requisitos e escopo
 
-Parte-se de uma dor industrial real, levantam-se requisitos, delimita-se o escopo e definem-se critérios de sucesso testáveis. No projeto, isso resulta na inspeção de envase, nos requisitos numerados, nos indicadores e nos limites explícitos.
+Parte-se de uma dor industrial real, levantam-se requisitos, delimita-se o escopo e definem-se critérios de sucesso testáveis. No projeto, isso resulta na inspeção de produção, nos requisitos numerados, nos indicadores e nos limites explícitos.
 
 ### Unidade 2: Prototipagem rápida e prova de conceito
 
@@ -24,11 +24,11 @@ Firmware, hardware e modelos precisam integrar-se com critérios de aceite, test
 
 ## Cenários de origem
 
-O programa oferece cenários industriais de referência. A direção preferida é o cenário de inspeção de envase, sujeito a confirmação: garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo chegam ao fim do processo e causam paradas, retrabalho e perda de rastreabilidade.
+O programa oferece cenários industriais de referência. A direção preferida é o cenário de inspeção de produção, sujeito a confirmação: garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo chegam ao fim do processo e causam paradas, retrabalho e perda de rastreabilidade.
 
 ## Direção do projeto (a confirmar)
 
-A direção adotada é o cenário de inspeção de envase, sujeita a confirmação nas provas de conceito: garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo chegam ao fim do processo e causam paradas, retrabalho e perda de rastreabilidade.
+A direção adotada é o cenário de inspeção de produção, sujeita a confirmação nas provas de conceito: garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo chegam ao fim do processo e causam paradas, retrabalho e perda de rastreabilidade.
 
 Camadas adicionais de anomalia, como detecção autossupervisionada, descritores geométricos e destilação professor-aluno, são condicionais: só entram no sistema se a prova de conceito atingir a métrica e o custo definidos.
 

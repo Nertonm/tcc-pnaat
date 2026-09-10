@@ -2,7 +2,7 @@
 
 ## Cenário e problema
 
-Tema selecionado: Cenário 1, Inspeção de envase.
+Tema selecionado: Cenário 1, Inspeção de produção.
 
 O Cenário 1 descreve gargalos na esteira principal quando recipientes com tampa ausente, tampa mal rosqueada ou deformidade no corpo chegam à etapa final da linha. Esta entrega trata a falta de visibilidade organizada sobre essas ocorrências: qual defeito ocorreu, quando, em qual esteira, em qual localização, com qual evidência e com que recorrência.
 

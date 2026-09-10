@@ -2,7 +2,7 @@ schema_version: reference-envelope.v1
 reference_id: conveyor-a-in150-market-envelope-r01
 status: reference_only
 fabrication_allowed: false
-source: vendor_listing_search_2026-09-08
+source: vendor_listing_search_2026-09-08_plus_project_team_approximation_2026-09-10
 units: mm
 coordinate_system:
   x: transport
@@ -56,6 +56,8 @@ reference_scenario:
     conveyor_length_mm: 1500
     belt_top_z_mm: 0
     side_clearance_mm: 80
+    guide_travel_mm: 150
+    selection_basis: project-team approximate values; reference only, not G0 measured
   envelopes_mm:
     bottle: {width: 60, depth: 60, height: 220}
     camera_top: {width: 60, depth: 60, height: 40}
@@ -69,6 +71,11 @@ reference_scenario:
 provenance:
   measured: false
   fabrication_allowed: false
+  project_team_declared_approximation:
+    date: 2026-09-10
+    compact: {length_mm: 1500, belt_width_mm: 190, speed_max_m_min: 21, motor_power_w: 60, mass_kg: 20}
+    large: {length_mm: 1470, belt_width_mm: 300, overall_height_mm: 750, speed_max_m_min: 21, motor_power_w: 120, mass_kg: 24}
+    note: Dimensions of the actual chassis, rail and clamp contact surface remain blocked until G0 collection.
   source_urls:
     - https://www.casadodatador.com/datadores-ink-jet/esteira-transportadora-em-inox-para-datadores-inkjet-modelo-in-150
     - https://www.casadodatador.com/datadores-ink-jet/esteira-transportadora-em-inox-202-para-datadores-inkjet-modelo-in-150-large-220v

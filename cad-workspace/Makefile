@@ -14,9 +14,12 @@ generate:
 validate-mesh:
 	$(PY) scripts/validate_mesh.py exports/canary/canary.stl
 
-.PHONY: generate-optical-rig validate-optical-rig
+.PHONY: generate-optical-rig validate-optical-rig check-r05-contract
 generate-optical-rig:
 	$(PY) cad/cadquery/concepts/optical-rig-r01/rig.py
 
 validate-optical-rig:
 	$(PY) scripts/validate_optical_rig.py
+
+check-r05-contract:
+	$(PY) scripts/validate_r05_contract.py data/concepts/optical-rig-r05-contract.json

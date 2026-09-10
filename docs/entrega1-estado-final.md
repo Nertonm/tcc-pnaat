@@ -13,7 +13,7 @@ Documento de encerramento da sessão de 2026-09-09. Repositório canônico: `git
 Veredito: Nível Avançado, 1.5 pontos.
 
 - Identificação: capa p.1 (título, grupo; 4 integrantes).
-- Escolha do tema: capa, "Cenário 1: Inspeção de envase".
+- Escolha do tema: capa, "Cenário 1: Inspeção de produção".
 - Escopo: s1.3 situação; s1.5 resultado; s2.1/s2.2 limites dentro/fora.
 - Levantamento de requisitos: s3.1 sensores/placas + função; s3.2 conectividade/captura/processamento/software; IoT/visão/integração; viabilidade e aderência (estado planejado + PoCs).
 - Aprofundamento (diferencial Avançado): s1.2 análise; s2.4/s5.4 visão crítica; s5.6 justificativas (8 escolhas, com necessidade, porquê, alternativa e critério).

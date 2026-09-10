@@ -1,4 +1,4 @@
-# Inspeção multi-view e rastreabilidade em linha de envase
+# Inspeção multi-view e rastreabilidade em linha de produção
 
 Projeto de conclusão do módulo TCC da capacitação PNAAT 2026 (FIT), a partir do cenário 1: identificar, em uma bancada de escala reduzida, garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo, registrar cada item e separar defeitos para análise manual.
 

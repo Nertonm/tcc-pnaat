@@ -2,7 +2,7 @@
 
 ## Escopo do projeto
 
-Trabalho de conclusão sobre inspeção multi-view e rastreabilidade em linha de envase. A documentação descreve um sistema planejado; a implementação evolui por provas de conceito isoladas.
+Trabalho de conclusão sobre inspeção multi-view e rastreabilidade em linha de produção. A documentação descreve um sistema planejado; a implementação evolui por provas de conceito isoladas.
 
 ## Convenções de commit
 

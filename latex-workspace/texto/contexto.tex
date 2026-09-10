@@ -6,7 +6,7 @@
 \toprule
 \tblhdr{Campo} & \tblhdr{Descrição}\\
 \midrule
-Ambiente ou processo & Fábrica de envase rápido, na etapa final da linha de produção, antes do empacotamento. A equipe observa a operação, mas não controla a velocidade nem a lógica da esteira existente.\\
+Ambiente ou processo & Fábrica de produção, na etapa final da linha de produção, antes do empacotamento. A equipe observa a operação, mas não controla a velocidade nem a lógica da esteira existente.\\
 Público previsto & Operadores, manutenção e qualidade, que precisam saber quando uma anomalia ocorreu, qual defeito foi identificado, em qual esteira e com qual evidência.\\
 Situação atual & A identificação de anomalias ocorre sem visibilidade por item e sem histórico consolidado. Esta é a interpretação de projeto que será validada a partir do cenário fornecido.\\
 Entradas previstas & Imagens de mais de uma vista por item, evento de presença, identificador da esteira, identificador do nó, timestamp, localização da captura, vista de origem e sinais de saúde. A velocidade da esteira é uma condição externa.\\
@@ -28,14 +28,14 @@ Operação distribuída & O nó registra origem, localização, vistas, timestam
 \end{tabularx}
 
 \section{Dor ou problema específico}
-\campoGrande{Este documento formaliza a proposta de uma camada de observação para o Cenário 1. Em uma fábrica de envase rápido, garrafas e recipientes podem chegar à etapa final da linha com tampa ausente, tampa mal rosqueada ou deformidade no corpo. O problema tratado nesta Entrega 1 é a falta de visibilidade organizada sobre essas ocorrências: sem um registro por evento, torna-se difícil relacionar o defeito ao momento, à localização, à esteira, à vista de origem e à recorrência. A solução proposta não controla a velocidade da esteira nem executa atuação física; ela produz informação rastreável para operação, manutenção e qualidade.}
+\campoGrande{Este documento formaliza a proposta de uma camada de observação para o Cenário 1. Em uma fábrica de produção, garrafas e recipientes podem chegar à etapa final da linha com tampa ausente, tampa mal rosqueada ou deformidade no corpo. O problema tratado nesta Entrega 1 é a falta de visibilidade organizada sobre essas ocorrências: sem um registro por evento, torna-se difícil relacionar o defeito ao momento, à localização, à esteira, à vista de origem e à recorrência. A solução proposta não controla a velocidade da esteira nem executa atuação física; ela produz informação rastreável para operação, manutenção e qualidade.}
 
 \section{Validação da necessidade}
 \begin{tabularx}{\dimexpr\textwidth-12pt\relax}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth} Y@{}}
 \toprule
 \tblhdr{Campo} & \tblhdr{Descrição}\\
 \midrule
-Fonte do problema & Cenário 1 do enunciado oficial: fábrica de envase rápido com anomalias em tampas e no corpo dos recipientes, associadas a paradas não programadas na esteira.\\
+Fonte do problema & Cenário 1 do enunciado oficial: fábrica de produção com anomalias em tampas e no corpo dos recipientes, associadas a paradas não programadas na esteira.\\
 Necessidade derivada & Tornar cada ocorrência consultável por tipo de defeito, momento, localização, esteira, nó de origem, vista e evidência. Essa é uma interpretação de projeto a ser validada.\\
 Recorte da proposta & Um nó de observação e um dashboard como configuração inicial. A expansão para múltiplos nós, linhas ou esteiras fica condicionada às PoCs de integração.\\
 Limitação da evidência & O enunciado caracteriza a dor, mas não fornece frequência de falhas, volume de eventos, impacto financeiro ou dados próprios da linha. Esses valores não serão inventados nesta entrega.\\

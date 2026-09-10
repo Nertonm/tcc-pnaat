@@ -4,7 +4,7 @@
 
 A fonte de verdade da entrega atual é `latex-workspace/`, que gera o PDF de Levantamento de Requisitos.
 
-O recorte atual é: Cenário 1, Inspeção de envase. O núcleo propõe observação multi-view, classificação, registro rastreável e dashboard usando um nó de observação. O documento não assume controle da velocidade da esteira, atuação física, ejeção, hub central, MQTT ou múltiplos nós como capacidades do núcleo.
+O recorte atual é: Cenário 1, Inspeção de produção. O núcleo propõe observação multi-view, classificação, registro rastreável e dashboard usando um nó de observação. O documento não assume controle da velocidade da esteira, atuação física, ejeção, hub central, MQTT ou múltiplos nós como capacidades do núcleo.
 
 ## Leitura por objetivo
 
