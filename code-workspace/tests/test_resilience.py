@@ -1,5 +1,5 @@
 from pnaat_pocs.events import DefectClass, ObservationEvent, ViewResult
-from pnaat_pocs.resilience import retry_until_persist
+from pnaat_pocs.poc06_resiliencia import retry_until_persist
 
 
 def _ev(eid):

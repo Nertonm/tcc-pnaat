@@ -1,5 +1,5 @@
 from pnaat_pocs.events import DefectClass, ViewResult
-from pnaat_pocs.fusion import fuse_views
+from pnaat_pocs.poc04_fusao import fuse_views
 
 
 def test_majoria_estrita_vence():

@@ -1,5 +1,5 @@
 from pnaat_pocs.events import DefectClass, ObservationEvent, ViewResult
-from pnaat_pocs.registry import LocalRegistry
+from pnaat_pocs.poc05_registro import LocalRegistry
 
 
 def _ev(eid):

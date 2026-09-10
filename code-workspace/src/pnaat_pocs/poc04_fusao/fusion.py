@@ -8,7 +8,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Sequence
 
-from .events import DefectClass, ViewResult
+from ..events import DefectClass, ViewResult
 
 
 def fuse_views(results: Sequence[ViewResult]) -> tuple[DefectClass, float]:

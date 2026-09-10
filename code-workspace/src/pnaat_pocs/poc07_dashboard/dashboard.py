@@ -4,8 +4,8 @@ from __future__ import annotations
 from collections import Counter
 from typing import Optional
 
-from .events import DefectClass
-from .registry import LocalRegistry
+from ..events import DefectClass
+from ..poc05_registro import LocalRegistry
 
 
 def summarize(registry: LocalRegistry) -> dict:
@@ -37,8 +37,8 @@ def recorrencia(registry: LocalRegistry, esteira_id: Optional[str] = None, limit
 
 
 def bootstrap_events() -> tuple[ObservationEvent, ObservationEvent, ObservationEvent]:
-    from .events import DefectClass, ObservationEvent, ViewResult
-    from .fusion import fuse_views
+    from ..events import DefectClass, ObservationEvent, ViewResult
+    from ..poc04_fusao import fuse_views
 
     def ev(event_id, item, esteira, views):
         fused, conf = fuse_views(views)

@@ -1,6 +1,6 @@
-from pnaat_pocs.dashboard import bootstrap_events, recorrencia, summarize
+from pnaat_pocs.poc07_dashboard import bootstrap_events, recorrencia, summarize
 from pnaat_pocs.events import DefectClass
-from pnaat_pocs.registry import LocalRegistry
+from pnaat_pocs.poc05_registro import LocalRegistry
 
 
 def test_summarize_agrega_por_esteira_defeito():

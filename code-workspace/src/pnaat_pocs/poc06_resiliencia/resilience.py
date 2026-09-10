@@ -7,7 +7,7 @@ from __future__ import annotations
 import time
 from typing import Callable
 
-from .events import ObservationEvent
+from ..events import ObservationEvent
 
 
 def retry_until_persist(
