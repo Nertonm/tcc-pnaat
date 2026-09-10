@@ -1,69 +1,16 @@
-# Protocolo de provas de conceito
+# PoCs da Entrega 1
 
-## Objetivo
+Cada PoC é uma proposta de validação. Ela deve produzir métrica, evidência, decisão e impacto de escopo antes que a capacidade seja tratada como validada.
 
-Uma PoC responde uma pergunta de viabilidade antes da integração. Ela não é uma versão incompleta do produto e não recebe o rótulo “funciona” por uma execução feliz.
-
-## Ciclo obrigatório
-
-1. Definir uma pergunta binária e o risco que ela reduz.
-2. Registrar hipótese, setup, entradas, métrica, limiar e condição de parada antes do teste.
-3. Isolar uma variável crítica; não integrar componentes não necessários.
-4. Executar casos positivos, negativos e de fronteira.
-5. Registrar resultado observado, falhas, ambiente e artefatos.
-6. Decidir entre aprovada, não aprovada ou aprovada com condição.
-7. Propagar a decisão para requisitos, escopo e próximo experimento.
-
-## Registro mínimo
-
-```markdown
-# PoC NN: nome
-
-- Status: Pendente | Em execução | Aprovada | Não aprovada | Aprovada com condição | Bloqueada
-- Data:
-- Responsável:
-- Pergunta binária:
-- Hipótese:
-- Risco coberto:
-- Setup: hardware, software, versão, iluminação e dataset
-- Entrada e amostra:
-- Métrica e limiar:
-- Casos positivos:
-- Casos negativos:
-- Casos de fronteira:
-- Resultado observado:
-- Go/no-go:
-- Evidência:
-- Requisitos afetados:
-- Decisão seguinte:
-```
-
-## Regras de validade
-
-- Meta não é medição.
-- Benchmark externo não é resultado do Pi 5.
-- Um log sem amostra, versão e setup não fecha a PoC.
-- Falha de hipótese é resultado válido e deve ser preservada.
-- PoC de componente não prova integração ponta a ponta.
-- Modo de teste e golden samples devem ser separados das estatísticas produtivas.
-- Alterar hardware, modelo, dataset ou limiar invalida a comparação anterior.
-
-## Ordem por risco
-
-| ID | PoC | Pergunta | Dependência de saída |
+| PoC | Ideia | Critério de passagem | Evidência esperada |
 |---|---|---|---|
-| 01 | Classificador de topo | Tampa ausente/mal rosqueada atinge o limiar preliminar? | dataset e iluminação |
-| 02 | Deformidade lateral | As laterais identificam deformidade com erro aceitável? | calibração e PoC 01 |
-| 03 | Sincronização física | As três vistas pertencem ao mesmo item na janela definida? | rig, trigger e encoder |
-| 04 | Correlação multi-nó | O hub associa eventos de 50 itens sem troca? | payload e relógios |
-| 05 | Integração de dados | Eventos chegam ao SQLite sem perda/duplicação? | MQTT e schema |
-| 06 | Resiliência | Falhas definidas recuperam sem crash e com estado observável? | PoC 05 |
-| 07 | Atuação confirmada | Defeito é separado e confirmado sem ejetar item OK? | sensor, atuador e segurança |
+| PoC-01 | Captura multi-view | Mais de uma vista associada ao mesmo evento, sem duplicidade. | Imagens, timestamps e log. |
+| PoC-02 | Classificação de tampa | Metas do RNF-02 para tampa ausente e mal rosqueada. | Matriz de confusão. |
+| PoC-03 | Deformidade lateral | Meta de classificação e erro dimensional declarado. | Calibração e matriz. |
+| PoC-04 | Fusão e identidade | Regra determinística preserva discordâncias e origem. | Fixture e log. |
+| PoC-05 | Registro local | Evento contém origem, localização, classe, qualidade e evidência. | Consulta e reconciliação. |
+| PoC-06 | Resiliência | Falha gera estado explícito e replay sem duplicação. | Falha injetada e log. |
+| PoC-07 | Dashboard | Evento consultável por defeito, momento, esteira, nó e evidência. | Dashboard e notificação. |
+| PoC-Final | Conjectura integrada | Captura, classificação, registro e visibilidade avaliados no mesmo ensaio. | Pacote de ensaio. |
 
-## Evidência por PoC
-
-Guardar somente artefatos diretamente ligados ao ensaio: manifest de entrada, configuração, logs estruturados, imagens ou vídeo, relatório e decisão. Binários grandes, dados brutos e arquivos privados ficam fora do Git, com caminho e hash no manifest.
-
-## Critério de liberação
-
-Uma PoC aprovada libera somente a próxima dependência declarada. Ela não transforma o sistema inteiro em implementado. A integração final exige novo ensaio com o conjunto completo.
+Atuação física, ejeção, controle da esteira e MQTT/multi-nó não são critérios do núcleo da Entrega 1. Podem ser tratados como expansão após as PoCs de observação, identidade e registro.

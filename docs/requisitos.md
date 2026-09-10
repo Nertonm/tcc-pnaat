@@ -1,128 +1,67 @@
-# Requisitos e artefatos
+# Requisitos da Entrega 1
 
-Especificação de requisitos do projeto de inspeção multi-view e rastreabilidade. Os itens aqui descritos são metas de engenharia; nenhum deles representa resultado medido até ser verificado no setup declarado.
+Esta é a versão canônica em Markdown do catálogo usado no PDF. Todos são propostas de engenharia: `Núcleo` pertence à validação inicial; `Expansão` fica registrada para evolução, sem ser apresentada como capacidade validada.
 
-## 1. Requisitos funcionais
+## Requisitos funcionais
 
-- RF-01: capturar as três vistas (topo e duas laterais) do mesmo item, sincronizadas por trigger físico.
-- RF-01.1: garantir a confiabilidade do trigger de captura via barreira por oclusão retrorrefletiva no E18-D80NK, com timing determinístico calculado pelo ESP32.
-- RF-02: classificar tampa ausente na vista de topo.
-- RF-03: classificar tampa mal rosqueada na vista de topo.
-- RF-04: classificar deformidade de corpo nas vistas laterais, com erro dimensional abaixo de 5% da referência.
-- RF-05: combinar os classificadores por votação e produzir o status final do item com código de severidade.
-- RF-06: registrar cada item no hub com identificador, timestamp, ponto, defeito, evidência, confiança, vista de origem e qualidade do registro.
-- RF-07: correlacionar eventos multi-nó do mesmo item por identificador sequencial e relógio externo.
-- RF-08: emitir telemetria de saúde dos nós, incluindo heartbeat, fila, latência e watchdog.
-- RF-09: apresentar dashboard com itens, defeitos e status dos nós, com notificação de defeito crítico.
-- RF-10: medir throughput real do rig pelo encoder.
-- RF-11: detectar micro-paradas acima do limite definido sem falso positivo.
-- RF-12: registrar correção do operador preservando a decisão original e a corrigida, com responsável e horário.
-- RF-13: detector opcional de anomalia desconhecida como camada adicional à votação.
-- RF-14: separar o item defeituoso no fim do trilho para análise manual, com confirmação por sensor e evento de qualidade quando a confirmação falhar.
-- RF-15: medir a altura da tampa em milímetros com backlight e decidir por limite dimensional, usando o classificador como segunda camada.
-- RF-16: manter kit de golden samples com defeito conhecido para injeção sob demanda, isolado das estatísticas de produção.
-- RF-17: gerar relatório de lote em PDF com indicadores, severidade, evidências e tendência, com envio por notificação.
-- RF-18: calcular descritores geométricos por vista e score de anomalia calibrado sobre o conjunto normal.
-- RF-19: treinar detector de anomalia autossupervisionado somente com imagens de itens normais, com anomalias sintéticas por recorte e colagem de patch, no formato original, sem autoencoder puro.
-- RF-20: avaliar consistência entre vistas pelo score conjunto dos três classificadores.
-- RF-21: destilar professor para aluno leve quantizado, treinando o professor apenas em GPU disponível e rodando o aluno no hardware alvo.
-- RF-22: validar o timestamp esperado pela distância e velocidade do encoder e alertar quando o observado divergir.
-- RF-23: expandir o dataset por supervisão fraca combinando regras de medição, descritores e score de anomalia, documentando a incerteza.
-- RF-24: conduzir testes de resiliência como experimentos com hipótese falsável, métrica prévia e blast radius mínimo.
-- RF-25: manter commits estruturados para histórico e linha do tempo de decisões.
-- RF-26: fixar conexões críticas do rig em headers com teste de continuidade.
-- RF-27: construir painel de base rígido com furos fixos para câmeras, trigger e encoder.
-- RF-28: montar suportes parafusados, jig de posicionamento e réplicas parametrizadas de deformidade.
-- RF-29: aplicar design for testability como princípio orientador da arquitetura.
-- RF-30: acionar pulso estroboscópico de LEDs RGB sincronizado ao trigger, desligando logo após a janela de captura.
-
-As fichas detalhadas de cada requisito estão em `docs/requisitos/01-funcionais.md`.
-
-## 2. Requisitos não funcionais
-
-- RNF-01: latência de decisão por item abaixo de 500 ms.
-- RNF-02: acurácia com intervalo de confiança: tampa ausente 95% ou mais, mal rosqueada 90% ou mais, deformidade 90% ou mais.
-- RNF-03: falsos positivos até 2% para tampa ausente e até 5% para as demais classes.
-- RNF-04: correlação multi-nó de 98% ou mais em ensaio de 50 itens.
-- RNF-05: integridade do registro de 99% ou mais em 30 minutos de estresse.
-- RNF-06: retransmissão de 100% dos eventos bufferizados após reconexão, sem duplicação.
-- RNF-07: detecção de nó offline abaixo de 10 segundos.
-- RNF-08: resiliência a reconexão, debounce, sensor nulo e watchdog, sem interrupção silenciosa.
-- RNF-09: throughput real medido no rig, mantendo a acurácia.
-- RNF-10: documentação reproduzível, com README, esquemático, decisões e proveniência de dataset.
-- RNF-11: calibração pixel em milímetro documentada por posição fixa.
-- RNF-12: qualidade do registro propagada aos consumidores.
-- RNF-13: confirmação correta de pelo menos 99% das separações comandadas e nenhum item normal direcionado ao caminho de análise manual.
-- RNF-14: precisão dimensional da tampa dentro de 0,5 mm e nenhuma rejeição de golden sample normal.
-- RNF-15: custo da camada de descritores abaixo de 10 ms por vista, com threshold calibrado e falha natural independente.
-- RNF-16: detector de anomalia treinado apenas com itens normais, com alvo de área sob a curva na validação e latência compatível.
-- RNF-17: aluno destilado validado no hardware alvo, com fallback documentado caso a latência estoure.
-- RNF-18: validação física de timestamp com tolerância configurável.
-- RNF-19: cada teste de resiliência com hipótese e métrica definidas antes do experimento.
-- RNF-20: estabilidade mecânica sem recalibração após movimentação dentro do uso previsto.
-- RNF-21: eliminar hotspots de saturação luminosa nas imagens capturadas, usando lente difusora acoplada aos LEDs, sem regiões estouradas que prejudiquem a extração de bordas e contornos.
-
-As fichas detalhadas estão em `docs/requisitos/02-nao-funcionais.md`.
-
-## 3. Arquitetura
-
-O diagrama e a revisão dos componentes estão em `docs/arquitetura.md`. O desenho separa o caminho de inspeção, a telemetria paralela, a atuação com confirmação e os consumidores do hub. Ele representa o plano; captura simultânea, latência, correlação, atuação e fallback dependem de verificação no hardware.
-
-## 4. Mapa de valor
-
-| Funcionalidade | Dor que alivia | Benefício |
+| ID | Requisito | Escopo |
 |---|---|---|
-| Inspeção multi-view | Garrafas defeituosas chegam ao fim do processo | Pode reduzir o envio de itens defeituosos e a devolução de lote |
-| Rastreabilidade por item | Causa raiz desconhecida e recall de lote inteiro | Pode apoiar recall seletivo com evidência fotográfica |
-| Telemetria e micro-paradas | Paradas invisíveis mascaram a eficiência | Pode produzir dados de disponibilidade e desempenho |
-| Detecção de anomalia | Defeitos novos passam despercebidos | Camada extra de segurança |
-| Separação com análise humana | Defeituosos misturados ao lote bom | Pode apoiar um ciclo de qualidade com análise humana |
+| RF-01 | Capturar mais de uma vista do mesmo item após o evento de presença, com timestamp e identificador de captura. | Núcleo |
+| RF-01.1 | Verificar confiabilidade do trigger de captura por sensor de presença, com timing determinístico do microcontrolador. | Núcleo |
+| RF-02 | Classificar tampa ausente nas vistas disponíveis. | Núcleo |
+| RF-03 | Classificar tampa mal rosqueada usando a composição multi-view. | Núcleo |
+| RF-04 | Classificar deformidade do corpo nas vistas laterais e preservar a medida de referência. | Núcleo |
+| RF-05 | Combinar resultados das vistas e produzir classe, confiança e resultado do item. | Núcleo |
+| RF-06 | Registrar evento com identificador, timestamp, localização, defeito, evidência, confiança, vista e qualidade. | Núcleo |
+| RF-07 | Correlacionar eventos de uma futura expansão multi-nó por identificador e origem. | Expansão |
+| RF-08 | Emitir telemetria de saúde do nó: heartbeat, fila, latência e falha. | Núcleo |
+| RF-09 | Apresentar dashboard com itens, defeitos, localização, recorrência e saúde do nó. | Núcleo |
+| RF-10 | Medir taxa de eventos da bancada sem controlar a velocidade da esteira. | Expansão |
+| RF-11 | Identificar intervalos sem evento acima do limite definido e registrá-los para análise. | Expansão |
+| RF-12 | Registrar correção do operador preservando decisão original, correção, responsável e horário. | Expansão |
+| RF-13 | Avaliar detector opcional de anomalia desconhecida como camada adicional. | Expansão |
+| RF-14 | Registrar encaminhamento de item para análise humana, sem comandar atuação física. | Expansão |
+| RF-15 | Medir altura da tampa em milímetros quando a calibração estiver disponível. | Expansão |
+| RF-16 | Manter golden samples com defeito conhecido, isolados das estatísticas operacionais. | Expansão |
+| RF-17 | Gerar relatório de lote com indicadores, severidade, evidências e tendência. | Expansão |
+| RF-18 | Calcular descritores geométricos por vista e score de anomalia sobre conjunto normal. | Expansão |
+| RF-19 | Avaliar detecção autossupervisionada com imagens de itens normais e anomalias sintéticas. | Expansão |
+| RF-20 | Avaliar consistência entre vistas pelo score conjunto dos classificadores. | Expansão |
+| RF-21 | Avaliar destilação de modelo para execução no hardware alvo. | Expansão |
+| RF-22 | Comparar timestamp previsto e observado quando houver referência de deslocamento disponível. | Expansão |
+| RF-23 | Avaliar expansão do dataset por supervisão fraca, documentando incerteza. | Expansão |
+| RF-24 | Conduzir testes de resiliência com hipótese, métrica e impacto definidos antes do ensaio. | Núcleo |
+| RF-25 | Manter histórico de decisões e mudanças do projeto. | Núcleo |
+| RF-26 | Verificar continuidade de conexões críticas do rig. | Expansão |
+| RF-27 | Planejar base rígida e pontos de fixação para captura. | Expansão |
+| RF-28 | Planejar suportes e gabaritos para posicionamento e deformidades controladas. | Expansão |
+| RF-29 | Aplicar design for testability: entradas controláveis e saídas observáveis. | Núcleo |
+| RF-30 | Avaliar iluminação pulsada e difusa para reduzir saturação nas imagens. | Expansão |
 
-## 5. Esqueleto do pitch
+## Requisitos não funcionais
 
-1. Dor: garrafas com tampa ausente ou corpo deformado chegam ao fim do processo; cada parada custa eficiência e cada lote rejeitado custa retrabalho.
-2. Solução: inspeção multi-view com um classificador por vista e rastreabilidade por item em topologia estrela.
-3. Evidências: acurácia por classe com intervalo de confiança, latência por item, correlação multi-nó e throughput medido na bancada reduzida.
-4. Continuidade: escalonamento para o throughput da linha, atuação com análise humana e evolução para indicadores de fábrica.
+| ID | Qualidade ou restrição | Escopo |
+|---|---|---|
+| RNF-01 | Latência de registro por item menor que 500 ms, sob condição declarada. | Núcleo |
+| RNF-02 | Acurácia com intervalo de confiança: tampa ausente 95% ou mais, tampa mal rosqueada 90% ou mais e deformidade 90% ou mais. | Núcleo |
+| RNF-03 | Falsos positivos até 2% para tampa ausente e 5% para as demais classes. | Núcleo |
+| RNF-04 | Correlação multi-nó de 98% ou mais em ensaio de 50 itens. | Expansão |
+| RNF-05 | Integridade do registro de 99% ou mais em 30 minutos de estresse. | Núcleo |
+| RNF-06 | Retransmissão de 100% dos eventos bufferizados após reconexão, sem duplicação. | Núcleo |
+| RNF-07 | Detecção de nó indisponível abaixo de 10 segundos. | Núcleo |
+| RNF-08 | Resiliência a reconexão, debounce, sensor nulo e watchdog sem interrupção silenciosa. | Núcleo |
+| RNF-09 | Taxa de eventos da bancada registrada junto da qualidade da captura. | Expansão |
+| RNF-10 | Documentação reproduzível com README, decisões e proveniência de dataset. | Núcleo |
+| RNF-11 | Calibração pixel--milímetro documentada por posição fixa. | Expansão |
+| RNF-12 | Qualidade do registro propagada aos consumidores do dashboard. | Núcleo |
+| RNF-13 | Caso exista encaminhamento físico futuro, confirmação correta de 99% e nenhum item normal encaminhado. | Expansão |
+| RNF-14 | Precisão dimensional da tampa dentro de 0,5 mm e nenhuma rejeição de golden sample normal. | Expansão |
+| RNF-15 | Custo da camada de descritores abaixo de 10 ms por vista. | Expansão |
+| RNF-16 | Detector de anomalia treinado apenas com itens normais, com validação e latência compatíveis. | Expansão |
+| RNF-17 | Modelo aluno validado no hardware alvo com fallback documentado. | Expansão |
+| RNF-18 | Validação de timestamp com tolerância configurável, quando a referência estiver disponível. | Expansão |
+| RNF-19 | Cada teste de resiliência possui hipótese e métrica antes do experimento. | Núcleo |
+| RNF-20 | Estabilidade mecânica sem recalibração indevida após movimentação prevista. | Expansão |
+| RNF-21 | Iluminação difusa sem saturação que prejudique a extração de contornos. | Expansão |
 
-Toda alegação numérica vem de medição no rig ou é identificada como meta.
-
-## 6. Cronograma
-
-O plano lógico de desenvolvimento em semanas:
-
-| Semana | Entrega |
-|---|---|
-| S1 | Requisitos, indicadores, diagrama e início do rig |
-| S2 | Rig completo e captura do dataset de topo |
-| S3 | PoC 1: classificador de topo |
-| S4 | Câmeras laterais e PoC 2: deformidade multi-view |
-| S5 | PoC 3: sincronização no trilho; revisão do escopo |
-| S6 | PoC 4: correlação multi-nó e hub SQLite |
-| S7 | PoC 5: integração, PoC 6: resiliência, PoC 7: ejeção, dashboard |
-| S8 | Testes de estresse, ensaio da demonstração, README e pitch |
-
-O calendário operacional define os marcos da apresentação: requisitos, apresentação da PoC, esboço de vídeo e documentação, e vídeo final com documentação.
-
-## 7. Critérios de aceite da demonstração
-
-- [ ] Dataset com proveniência documentada.
-- [ ] PoC 1 e 2 com acurácia e intervalo de confiança reportados.
-- [ ] PoC 3 com throughput real medido pelo encoder.
-- [ ] PoC 4 com correlação no limite definido.
-- [ ] PoC 5 sem perda de eventos sob carga.
-- [ ] PoC 6 com cenários de falha recuperando sem interrupção.
-- [ ] PoC 7 com ejeção confirmada e nenhum item normal ejetado.
-- [ ] Golden samples rotulados e prontos para injeção sob demanda.
-- [ ] Medida dimensional da tampa demonstrada.
-- [ ] Relatório de lote gerado e enviado.
-- [ ] Camadas condicionais apenas se a PoC correspondente for aprovada.
-- [ ] Schema populado com consultas analíticas demonstráveis.
-- [ ] Dashboard e notificação funcionando com o mesmo identificador de item.
-- [ ] Decisões datadas com justificativa.
-- [ ] README reproduzível em ambiente limpo, com esquemático do rig.
-- [ ] Pitch ensaiado com as quatro partes e números de evidência.
-
-## 8. Registro de prova de conceito
-
-O protocolo e o modelo de registro estão em `docs/pocs/README.md`. Cada PoC registra pergunta binária, hipótese, setup, métrica, go/no-go, evidência e decisão seguinte.
+A validação de cada requisito é definida pelas PoCs no PDF. Os arquivos em `requisitos/` mantêm detalhamento histórico e backlog técnico; não substituem este catálogo para a Entrega 1.

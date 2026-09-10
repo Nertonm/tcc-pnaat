@@ -1,25 +1,24 @@
-# Documentação
+# Documentação do projeto
+
+## Autoridade da Entrega 1
+
+A fonte de verdade da entrega atual é `latex-workspace/`, que gera o PDF de Levantamento de Requisitos.
+
+O recorte atual é: Cenário 1, Inspeção de envase. O núcleo propõe observação multi-view, classificação, registro rastreável e dashboard usando um nó de observação. O documento não assume controle da velocidade da esteira, atuação física, ejeção, hub central, MQTT ou múltiplos nós como capacidades do núcleo.
 
 ## Leitura por objetivo
 
 | Necessidade | Documento |
 |---|---|
-| Entender o problema e a solução | `README.md` |
-| Metodologia e fontes pedagógicas | `metodologia.md` |
-| Escopo, decisões e riscos | `escopo.md` |
-| Diagrama da arquitetura | `arquitetura.md` |
-| Requisitos funcionais e não funcionais | `requisitos.md` |
-| Fichas detalhadas por domínio | `requisitos/` |
-| Dados, schema e consultas | `dados-telemetria.md` |
-| Prova de conceito | `pocs/` |
-| Posições de decisão em aberto | `DECISIONS.md` |
-| Design mecânico do grip | `design/grip-extensivel.md` |
-| Estrutura e autoridade do repositório | `estrutura-repositorio.md` |
+| Escopo e limites da Entrega 1 | `escopo.md` |
+| Arquitetura proposta | `arquitetura.md` |
+| Catálogo RF/RNF | `requisitos.md` |
+| PoCs e conjectura integrada | `pocs/README.md` |
+| Decisões anteriores e alternativas | `DECISIONS.md` |
+| Backlog técnico detalhado | `requisitos/` |
 
-## Convenção de conteúdo
+## Regra para o backlog detalhado
 
-Os documentos descrevem o sistema planejado e as regras de engenharia. Nenhuma meta aparece como resultado medido. Dados de ensaio são registrados somente quando existem, com data, setup, métrica e artefato.
+Os arquivos em `requisitos/` preservam hipóteses e alternativas de engenharia acumuladas antes do recorte atual. Eles não são autoridade para o PDF da Entrega 1 quando contradisserem `escopo.md`, `arquitetura.md` ou `requisitos.md`.
 
-Referências externas (papers, normas, datasets) são citadas por título, autor e local de publicação. Referências a anotações, ferramentas de produtividade ou infraestrutura de desenvolvimento não fazem parte desta documentação.
-
-- `estrutura-repositorio.md`: autoridade, fronteiras e politica de publicacao.
+O estado de qualquer capacidade é proposta até a PoC correspondente produzir evidência identificável.
