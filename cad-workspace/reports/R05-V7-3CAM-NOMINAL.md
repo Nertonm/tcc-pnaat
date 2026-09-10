@@ -26,6 +26,22 @@ acima do envelope de 370 mm da garrafa e desce somente fora da correia. A
 coluna alta contém o Pi e fornece rotas CSI para `C_TOP`/`C_LEFT`; a rota
 USB-C/UVC é independente e deve receber alívio de tração.
 
+## Visualização imediata no FreeCAD
+
+Use `scripts/freecad_r05_v7_preview.py` para criar uma visualização autônoma.
+No console Python do FreeCAD, execute o comando abaixo e substitua o caminho
+absoluto pelo local do seu clone:
+
+```python
+import runpy; runpy.run_path(r"/caminho/absoluto/tcc-pnaat/cad-workspace/scripts/freecad_r05_v7_preview.py", run_name="__main__")
+```
+
+O script não requer arquivos de fornecedores e salva
+`exports/concepts/optical-rig-r05/optical-rig-r05-v7-3cam-preview.fcstd`.
+Ele mostra esteira IN 150 nominal, garrafa, ponte, duas colunas, case da Pi,
+três mounts, os envelopes das três câmeras e seus eixos ópticos. É uma cena de
+referência: não valida fabricação, carga, FOV, fatiamento ou encaixe físico.
+
 ## Clamp de tripé externo
 
 O G-clamp de tripé indicado pela equipe é apropriado como candidato a
