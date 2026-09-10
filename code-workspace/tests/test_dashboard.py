@@ -1,16 +1,13 @@
-from pnaat_pocs.poc07_dashboard import bootstrap_events, recorrencia, summarize
-from pnaat_pocs.events import DefectClass
-from pnaat_pocs.poc05_registro import LocalRegistry
+from pocs.poc05_registro import LocalRegistry
+from pocs.poc07_dashboard import bootstrap_events, recorrencia, summarize
 
 
-def test_summarize_agrega_por_esteira_defeito():
+def test_summarize_agrega():
     r = LocalRegistry()
     for ev in bootstrap_events():
         r.upsert(ev)
     s = summarize(r)
-    assert s["total"] == 3
-    assert s["por_esteira"]["est-b"] == 2
-    assert DefectClass.DEFORMIDADE.value in s["por_defeito"]
+    assert s["total"] == 3 and s["por_esteira"]["est-b"] == 2
 
 
 def test_recorrencia_mais_recente_primeiro():

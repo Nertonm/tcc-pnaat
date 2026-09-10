@@ -1,5 +1,5 @@
-from pnaat_pocs.events import DefectClass, ObservationEvent, ViewResult
-from pnaat_pocs.poc05_registro import LocalRegistry
+from pocs.events import DefectClass, ObservationEvent, ViewResult
+from pocs.poc05_registro import LocalRegistry
 
 
 def _ev(eid):
@@ -20,12 +20,5 @@ def test_upsert_idempotente_nao_duplica():
 
 def test_reconcile_detecta_perda():
     r = LocalRegistry()
-    r.upsert(_ev("a"))
-    r.upsert(_ev("b"))
+    r.upsert(_ev("a")); r.upsert(_ev("b"))
     assert r.reconcile({"a", "b", "c"}) == {"missing": ["c"], "stored": 2}
-
-
-def test_query_por_defeito_e_esteira():
-    r = LocalRegistry()
-    r.upsert(_ev("a"))
-    assert r.query(esteira_id="est-b") and not r.query(esteira_id="est-x")

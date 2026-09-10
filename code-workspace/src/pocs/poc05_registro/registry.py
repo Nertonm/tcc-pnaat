@@ -11,7 +11,6 @@ class LocalRegistry:
         self._store: dict[str, ObservationEvent] = {}
 
     def upsert(self, event: ObservationEvent) -> str:
-        # idempotente: reenvio do mesmo event_id não duplica
         if event.event_id in self._store:
             return "exists"
         self._store[event.event_id] = event
@@ -25,16 +24,9 @@ class LocalRegistry:
         return len(self._store)
 
     def reconcile(self, expected_ids: set[str]) -> dict:
-        missing = sorted(expected_ids - set(self._store))
-        return {"missing": missing, "stored": self.size}
+        return {"missing": sorted(expected_ids - set(self._store)), "stored": self.size}
 
-    def query(
-        self,
-        esteira_id: Optional[str] = None,
-        defect: Optional[DefectClass] = None,
-        start: Optional[str] = None,
-        end: Optional[str] = None,
-    ) -> list[ObservationEvent]:
+    def query(self, esteira_id=None, defect=None, start=None, end=None) -> list[ObservationEvent]:
         out = []
         for ev in self._store.values():
             if esteira_id and ev.esteira_id != esteira_id:

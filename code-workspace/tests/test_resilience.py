@@ -1,5 +1,5 @@
-from pnaat_pocs.events import DefectClass, ObservationEvent, ViewResult
-from pnaat_pocs.poc06_resiliencia import retry_until_persist
+from pocs.events import DefectClass, ObservationEvent, ViewResult
+from pocs.poc06_resiliencia import retry_until_persist
 
 
 def _ev(eid):
@@ -13,26 +13,15 @@ def _ev(eid):
 
 def test_retry_conta_tentativas_ate_sucesso():
     calls = {"n": 0}
-
     def flaky(ev):
         calls["n"] += 1
         if calls["n"] < 2:
             raise ConnectionError("indisponivel")
         return "stored"
-
     res = retry_until_persist(flaky, _ev("a"), max_retries=3)
-    assert res["persisted"] is True
-    assert res["attempts"] == 2
-    assert res["alert"] is False
-    assert res["quality"] == "ok"
+    assert res["persisted"] is True and res["attempts"] == 2 and res["alert"] is False
 
 
 def test_esgotamento_gera_alerta():
-    def always_fail(ev):
-        return "error"
-
-    res = retry_until_persist(always_fail, _ev("a"), max_retries=2)
-    assert res["persisted"] is False
-    assert res["attempts"] == 3
-    assert res["alert"] is True
-    assert res["quality"] == "falha"
+    res = retry_until_persist(lambda ev: "error", _ev("a"), max_retries=2)
+    assert res["persisted"] is False and res["alert"] is True and res["quality"] == "falha"

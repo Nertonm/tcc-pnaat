@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Optional
 
-from ..events import DefectClass
+from ..events import DefectClass, ObservationEvent
 from ..poc05_registro import LocalRegistry
 
 
@@ -18,25 +17,19 @@ def summarize(registry: LocalRegistry) -> dict:
     }
 
 
-def recorrencia(registry: LocalRegistry, esteira_id: Optional[str] = None, limite: int = 10) -> list[dict]:
+def recorrencia(registry: LocalRegistry, esteira_id=None, limite: int = 10) -> list[dict]:
     events = [e for e in registry.all() if (not esteira_id or e.esteira_id == esteira_id)]
     events.sort(key=lambda e: e.recorded_at, reverse=True)
-    out = []
-    for e in events[:limite]:
-        out.append(
-            {
-                "event_id": e.event_id,
-                "item_id": e.item_id,
-                "esteira_id": e.esteira_id,
-                "defeito": e.fused.value,
-                "recorded_at": e.recorded_at,
-                "quality": e.quality,
-            }
-        )
-    return out
+    return [
+        {
+            "event_id": e.event_id, "item_id": e.item_id, "esteira_id": e.esteira_id,
+            "defeito": e.fused.value, "recorded_at": e.recorded_at, "quality": e.quality,
+        }
+        for e in events[:limite]
+    ]
 
 
-def bootstrap_events() -> tuple[ObservationEvent, ObservationEvent, ObservationEvent]:
+def bootstrap_events():
     from ..events import DefectClass, ObservationEvent, ViewResult
     from ..poc04_fusao import fuse_views
 

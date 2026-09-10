@@ -1,7 +1,4 @@
-"""PoC-06: retry contado e alerta em falha de persistencia local.
-
-Replay contar as tentativas; em esgotamento, sinalizar alerta (estado de qualidade falha).
-"""
+"""PoC-06: retry contado e alerta em falha de persistencia local."""
 from __future__ import annotations
 
 import time
@@ -10,12 +7,8 @@ from typing import Callable
 from ..events import ObservationEvent
 
 
-def retry_until_persist(
-    persist: Callable[[ObservationEvent], str],
-    event: ObservationEvent,
-    max_retries: int = 3,
-    delay_s: float = 0.0,
-) -> dict:
+def retry_until_persist(persist: Callable[[ObservationEvent], str], event: ObservationEvent,
+                        max_retries: int = 3, delay_s: float = 0.0) -> dict:
     attempts = 0
     while attempts <= max_retries:
         attempts += 1
