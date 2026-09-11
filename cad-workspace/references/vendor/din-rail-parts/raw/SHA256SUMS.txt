@@ -1,7 +1,0 @@
-464b1fcd50e124dd1f7d2bc07304dc30efbe2e21b90b263b94c48af9cfb2bf85  raw/PROVENANCE.md
-78059ccf4564cf42485b22a8fb17f4d52522e45a5438c30b369feaee57aa9080  raw/SHA256SUMS.txt
-aaa65602f26834730d70e02eb9780dd7dbc8d42ffef29c6f19e4341d0e0c5a3e  raw/din-clip-redux-heatset-42mm.3mf
-191d3cd096c7ffdee4ed8685c6f0d136a817383247b76b6e609fa4325b6e1acb  raw/din-clip-redux-heatset.3mf
-f5a867f75fdf7b065817cfca8e8a9142656d0cc2f101e38c5e015f457a5039d4  raw/din-clip-redux-reverse.3mf
-3f4bd389aecae10bb5b8dd2e093e30fc20c8825952968a16e7559e20e395fa3e  raw/din-clip-redux-selftap.3mf
-c722a2b16ce380860c48a0af5a47697b07caf79b9932b7dd5e71631a8f58ee1b  raw/din-clip-redux.3mf

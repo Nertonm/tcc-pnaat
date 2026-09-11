@@ -1,9 +1,0 @@
-cddd13d6a38e74167c8179ff9b99233c28cb5d74a4876f4bf0be9565f975da4d  angle-adapter/1757341-din-rail-angle-adapter-a8e0dc37-139c-4709-b751-1706dac77d8c.pdf
-9895709b8b20c4a2c9e56443f83a888c20750de50877e1022f0f3e87c1ae66a0  angle-adapter/din-rail_right_angle_adapter-100mm.step
-7edd5f092727dc914e7eb9cc7a7ec92e47016ac3d62af03fb4ae2f797a7a2ead  angle-adapter/din-rail_right_angle_adapter-120mm.step
-834ba81505aa299b9c8cfc66e64d427038123338a95a9d761424d5015cb4bede  angle-adapter/din-rail_right_angle_adapter-150mm.step
-4f21b5af4f62c7d3d4cf273a8a039bd9699790718baa3218d15c5643cb144bdf  angle-adapter/din-rail_right_angle_adapter-73mm.step
-5420f6ea8ab2251e2e18b16ab5db42a8cbc9320413f76fc124d86108b4cf8de4  m6-bracket/573570-din-rail-bracket-for-m6-bolts-186bc7f0-a387-4f89-b69e-f7013a534162.pdf
-dba83c3dab9f4c6718474f0526e7e71d55097ff896f84ac1eaa52e4c4d28255b  m6-bracket/DIN Rail Bracket 4mm.stl
-264235d81b0919a50e29205b8c14dd5f69eab46a509f26c7fbbafb5c7f9ec91d  m6-bracket/DIN Rail Bracket Keyholed L 4mm.stl
-24551b2b47c4eefaf0bf6e0bd12603715bc3ba05598f0d7b7250994f7568801e  m6-bracket/DIN Rail Bracket Keyholed R 4mm.stl
