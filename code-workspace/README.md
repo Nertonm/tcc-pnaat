@@ -5,6 +5,9 @@ anomalias (tampa ausente, tampa mal rosqueada, deformidade do corpo) em linha de
 Sem atuacao fisica, sem controle de velocidade da esteira; nucleo de nó unico + registro
 local (MQTT/multi-nó são expansão).
 
+Para preparar e gravar a Entrega 2, incluindo o estado real de cada PoC, limitações e roteiro de
+narração, consulte [`src/pocs/ROTEIRO-GRAVACAO.md`](src/pocs/ROTEIRO-GRAVACAO.md).
+
 Mapa PoC -> artefato de código
 - PoC-01 captura multi-view   -> src/pocs/poc01_trigger (debounce + janela; ESP32: esp/main.py)
 - PoC-02 classificacao de tampa  -> src/pocs/poc02_classificacao (matriz de confusao; RNF-02)
