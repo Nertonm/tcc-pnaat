@@ -49,15 +49,15 @@ Registro de posições de decisão. Nenhuma posição está fechada: cada item a
 - Direção forte: A, extensível.
 - A decidir: número de nós e carga da demo, confirmados na PoC 4 e 5.
 
-## D-06: Destino do item defeituoso
+## D-06: Comunicação do item defeituoso
 
 - Opções:
-  - A: atuador no fim do trilho, separando para análise manual, com confirmação por sensor.
-  - B: apenas sinalização, sem separação física.
+  - A: sinalização no dashboard e notificação ao operador, sem separação física.
+  - B: atuador no fim do trilho, separando para análise manual, com confirmação por sensor.
   - C: descarte automático.
-- Direção forte: A, fechando o ciclo detectar, separar, analisar, corrigir e registrar.
-- A decidir: mecanismo, confirmação, timeout e parada manual, validados na PoC 7.
-- Alternativa descartada: C, por risco e ausência de análise humana.
+- Direção forte: A, pois o prazo e os recursos não permitem construir nem validar um mecanismo físico de remoção.
+- A decidir: severidade, canal de notificação e confirmação de leitura, validados na PoC 7 de sinalização.
+- Alternativas fora do escopo: B e C. Uma futura integração física exige nova decisão, análise de segurança e validação independente.
 
 ## D-07: Medida dimensional da tampa
 

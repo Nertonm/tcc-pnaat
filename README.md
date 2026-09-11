@@ -1,8 +1,8 @@
 # Inspeção multi-view e rastreabilidade em linha de produção
 
-Projeto de conclusão do módulo TCC da capacitação PNAAT 2026 (FIT), a partir do cenário 1: identificar, em uma bancada de escala reduzida, garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo, registrar cada item e separar defeitos para análise manual.
+Projeto de conclusão do módulo TCC da capacitação PNAAT 2026 (FIT), a partir do cenário 1: identificar, em uma bancada de escala reduzida, garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo e informar o defeito ao operador para análise manual. Não há remoção física de garrafas neste escopo.
 
-O sistema usa três câmeras sincronizadas por trigger físico, um classificador por vista, fusão por votação, telemetria de sensores paralelos, persistência em SQLite e um dashboard local. A decisão e a atuação são registradas como eventos observáveis.
+O sistema usa três câmeras sincronizadas por trigger físico, um classificador por vista, fusão por votação, telemetria de sensores paralelos, persistência em SQLite e um dashboard local. A decisão e a notificação ao operador são registradas como eventos observáveis.
 
 ## Arquitetura em resumo
 
@@ -19,11 +19,11 @@ flowchart LR
     cls3 --> fusao
     fusao --> decisao{Status}
     decisao -->|ok| reg[Registro]
-    decisao -->|defeito| atuador[Atuador]
-    atuador --> conf[Confirmação]
+    decisao -->|defeito| alerta[Alerta ao operador]
+    alerta --> conf[Confirmação de leitura]
     conf -->|falha| qualidade[Evento de qualidade]
     reg --> mqtt[MQTT]
-    atuador --> mqtt
+    alerta --> mqtt
     sensores[Sensores paralelos] --> mqtt
     mqtt --> hub[Hub]
     hub --> db[(SQLite)]

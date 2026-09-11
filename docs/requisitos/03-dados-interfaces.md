@@ -37,7 +37,7 @@ Estas fichas detalham DAT-01..08 e IF-01..07 de `../requisitos.md`. Nenhum contr
 - Entrada: amostra marcada `is_golden`.
 - Contrato: amostra participa da demo e é excluída de FPY/KPIs produtivos.
 - Critério de reprovação: golden aparece em taxa de defeito do lote.
-- Verificação: query produtiva e query de demo. Dependências: RF-16, ACT-09.
+- Verificação: query produtiva e query de demo. Dependências: RF-16, SIG-05.
 
 ### DAT-06: Taxonomia de defeitos
 
@@ -102,11 +102,11 @@ Estas fichas detalham DAT-01..08 e IF-01..07 de `../requisitos.md`. Nenhum contr
 - Entrada: defeito crítico e falha crítica de atuação.
 - Contrato: notificação contém item, severidade, estado e horário.
 - Critério de reprovação: evento crítico persistido sem notificação ou com mensagem sem vínculo.
-- Verificação: payload enviado, resposta e recebimento. Dependências: RF-09, ACT-10.
+- Verificação: payload enviado, resposta e recebimento. Dependências: RF-09, SIG-06.
 
-### IF-07: Atuador para confirmação
+### IF-07: Canal de notificação de defeito
 
-- Entrada: ordem e sensor E18-D80NK/VL53L0X.
-- Contrato: ordem, movimento e confirmação são estados distintos.
-- Critério de reprovação: remover sensor deve produzir `falha`, nunca `confirmada`.
-- Verificação: evento_rejeicao e ensaio físico. Dependências: ACT-01..10.
+- Entrada: decisão, `item_id`, severidade e evidência.
+- Contrato: decisão, tentativa de envio, entrega e leitura são estados distintos quando o canal suportar leitura.
+- Critério de reprovação: tentativa de envio produzir `entregue`, ou notificação sem `item_id`/severidade.
+- Verificação: evento_sinalizacao, payload e ensaio de entrega. Dependências: SIG-01..06.

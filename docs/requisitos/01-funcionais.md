@@ -137,14 +137,14 @@ Cada ficha informa ator, pré-condição, entrada, comportamento, saída, crité
 - Critério de reprovação: PoC não atingir critério ou estourar latência gera no-go e fallback.
 - Verificação: relatório de PoC. Dependências: ML-05, PERF-01.
 
-### RF-14: Ejetar defeito para análise manual
+### RF-14: Informar defeito ao operador
 
-- Ator: controlador do atuador. Pré-condição: decisão defeito e atuador pronto.
-- Entrada: ordem com `item_id` e severidade.
-- Comportamento: acionar servo/solenoide e aguardar sensor de confirmação.
-- Saída: `pendente`, `confirmada` ou `falha`; nunca “sucesso” só pela ordem.
-- Critério de reprovação: remover confirmação deve produzir falha registrada.
-- Verificação: eventos ACT e vídeo/sensor. Dependências: ACT-01..10, SAFE-01..03.
+- Ator: serviço de notificação. Pré-condição: decisão defeito persistida e canal configurado.
+- Entrada: `item_id`, defeito, severidade, confiança e evidência.
+- Comportamento: publicar o alerta no dashboard e no canal de notificação configurado, sem acionar remoção física da garrafa.
+- Saída: `pendente`, `entregue`, `lida` ou `falha`; nunca “entregue” só porque a decisão foi criada.
+- Critério de reprovação: falha de envio ou alerta sem vínculo ao item ser apresentado como entregue.
+- Verificação: eventos SIG, captura do dashboard/notificação e consulta. Dependências: SIG-01..06, IF-06.
 
 ### RF-15: Medir altura da tampa
 
@@ -162,7 +162,7 @@ Cada ficha informa ator, pré-condição, entrada, comportamento, saída, crité
 - Comportamento: permitir injeção sob demanda e marcar `is_golden`.
 - Saída: resultado de teste excluído do FPY de produção.
 - Critério de reprovação: golden sample aparecer em KPI produtivo é falha de isolamento.
-- Verificação: inventário e consulta filtrada. Dependências: DAT-05, ACT-09.
+- Verificação: inventário e consulta filtrada. Dependências: DAT-05, SIG-05.
 
 ### RF-17: Gerar relatório de lote
 

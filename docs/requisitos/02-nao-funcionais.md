@@ -103,17 +103,17 @@ Base: RNF-01 a RNF-20 em `../requisitos.md`. Nenhum item representa resultado me
 
 ## Atuação e estabilidade física
 
-### RNF-13: Ejeção confirmada e sem falsa ejeção
+### RNF-13: Sinalização rastreável e sem alerta falso
 
-- Mede: ≥99% de confirmações dos itens ordenados e zero item OK ejetado.
-- Método: golden samples, defeitos conhecidos e sensor de confirmação real.
-- Aceite: ordem, movimento e confirmação são estados separados.
-- Critério de reprovação: comando sem confirmação apresentado como sucesso falha.
-- Verificação: eventos ACT, vídeo/sensor e contagem. Dependências: ACT-01..10, SAFE-01..03.
+- Mede: entrega da notificação para cada defeito no cenário declarado e zero alerta de defeito para golden OK.
+- Método: golden samples, defeitos conhecidos, dashboard e canal de notificação configurado.
+- Aceite: decisão, envio, entrega e leitura são estados separados quando o canal suportar confirmação de leitura.
+- Critério de reprovação: tentativa de envio apresentada como entrega, ou alerta de defeito emitido para golden OK.
+- Verificação: eventos SIG, captura do dashboard/notificação e consulta. Dependências: SIG-01..06, IF-06.
 
 ### RNF-14: Medida dimensional e golden samples
 
-- Mede: precisão da tampa de ±0,5 mm e zero falsa rejeição de golden OK.
+- Mede: precisão da tampa de ±0,5 mm e zero falso alerta de defeito para golden OK.
 - Método: referência física, calibração e repetição.
 - Aceite: erro absoluto por amostra e filtro `is_golden` reportados.
 - Critério de reprovação: média sem distribuição ou golden misturado no FPY falha.

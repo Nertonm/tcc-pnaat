@@ -1,95 +1,66 @@
-# Atuação, controlabilidade e segurança operacional
+# Sinalização de defeito e segurança operacional
 
-Estas fichas detalham os requisitos de atuação e segurança operacional. Atuação confirmada significa movimento físico observado e confirmação recebida; comando emitido sozinho não é sucesso.
+Esta seção substitui a atuação física por sinalização rastreável ao operador.
+O escopo não inclui atuador, servo, solenoide, ejeção, separação ou descarte de
+garrafas. Uma futura remoção física exige decisão, análise de segurança e
+validação próprias.
 
-### ACT-01: Ordem de atuação observável
+### SIG-01: Ordem de sinalização observável
 
-- Entrada: `item_id`, status defeito e severidade.
-- Contrato: registrar atuador, origem, timestamp, `attempt_id` e tentativa.
-- Critério de reprovação: ordem existente apenas em log textual ou sem item vinculado.
+- Entrada: `item_id`, status de defeito e severidade.
+- Contrato: registrar origem, timestamp, `notification_id`, canal e tentativa.
+- Critério de reprovação: notificação apenas em log textual ou sem item vinculado.
 - Verificação: tabela/evento consultável. Dependências: RF-14, DAT-07.
 
-### ACT-02: Estados de rejeição separados
+### SIG-02: Estados de entrega separados
 
-- Entrada: ordem, sensor e relógio.
-- Contrato: `pendente`, `confirmada` e `falha`, com timestamps ordenado/confirmado.
-- Critério de reprovação: ordem sem sensor produzir `confirmada`.
+- Entrada: decisão, canal e relógio.
+- Contrato: `pendente`, `enviada`, `entregue`, `lida` e `falha`; `lida` é opcional quando o canal não oferece confirmação.
+- Critério de reprovação: tentativa de envio produzir `entregue`.
 - Verificação: fixture de cada transição. Dependências: IF-07.
 
-### ACT-03: Correlação sem troca de item
+### SIG-03: Correlação sem troca de item
 
 - Entrada: eventos de dois itens consecutivos.
-- Contrato: confirmação só fecha a ordem correspondente por ID/janela física.
-- Critério de reprovação: atraso do sensor do item A atribuído ao item B.
-- Verificação: ensaio com espaçamento mínimo. Dependências: DAT-01/03.
+- Contrato: cada alerta referencia o `item_id` e a decisão correspondente.
+- Critério de reprovação: alerta do item A ser associado ao item B.
+- Verificação: ensaio com eventos próximos e consulta. Dependências: DAT-01/03.
 
-### ACT-04: Timeout, retry e idempotência
+### SIG-04: Timeout, retry e idempotência
 
-- Entrada: ordem sem confirmação.
-- Contrato: timeout configurável, retry contado e nenhuma ejeção duplicada por replay.
-- Critério de reprovação: repetir a mesma mensagem gera duas ordens físicas.
-- Verificação: log de tentativas e contador físico. Dependências: DAT-07, IF-04.
+- Entrada: envio sem entrega.
+- Contrato: timeout configurável, retry contado e nenhuma notificação duplicada por replay.
+- Critério de reprovação: repetir a mesma mensagem gera alertas independentes sem vínculo.
+- Verificação: log de tentativas e consulta. Dependências: DAT-07, IF-04.
 
-### ACT-05: Estado operacional do atuador
-
-- Entrada: ciclo do atuador.
-- Contrato: `pronto`, `acionado`, `confirmado`, `falha`, `bloqueado`, `parada_manual`.
-- Critério de reprovação: dashboard mostra pronto enquanto o atuador está bloqueado/falhando.
-- Verificação: transição temporal e query. Dependências: OPS-03.
-
-### ACT-06: Parada manual auditável
-
-- Entrada: ação do operador.
-- Contrato: interromper novas ordens e registrar operador, motivo e horário.
-- Critério de reprovação: parada não impede novo acionamento ou não deixa trilha.
-- Verificação: ensaio e evento de auditoria. Dependências: SAFE-03.
-
-### ACT-07: Evidência da atuação
-
-- Entrada: sensor, imagem/vídeo e evento.
-- Contrato: evidência ligada ao item, vista, sensor e hash/caminho.
-- Critério de reprovação: evento confirmado sem artefato recuperável quando o método exige imagem.
-- Verificação: leitura do arquivo e evento. Dependências: DAT-08.
-
-### ACT-08: Não ejetar OK e não mascarar falha
-
-- Entrada: golden OK, defeito e sensor ausente.
-- Contrato: OK segue; defeito sem confirmação vira falha de qualidade.
-- Critério de reprovação: golden ejetado ou falha apresentada como confirmada.
-- Verificação: ensaio negativo com contagem. Dependências: SAFE-01/02, RNF-13.
-
-### ACT-09: Teste controlado separado
+### SIG-05: Teste controlado separado
 
 - Entrada: golden sample ou modo simulado.
-- Contrato: testar o atuador sem contaminar estatísticas nem confundir produção.
+- Contrato: testar a sinalização sem contaminar estatísticas nem confundir produção.
 - Critério de reprovação: evento de teste contado como lote produtivo.
 - Verificação: flag de modo e consulta filtrada. Dependências: DAT-05.
 
-### ACT-10: Propagação de falha
+### SIG-06: Propagação de falha
 
-- Entrada: falha de atuação crítica.
-- Contrato: mesma falha chega ao banco, dashboard, relatório e ntfy quando aplicável.
-- Critério de reprovação: uma superfície diz falha e outra diz sucesso/ausência.
-- Verificação: `item_id` nas quatro superfícies. Dependências: IF-05/06.
+- Entrada: falha de sinalização crítica.
+- Contrato: a mesma falha chega ao banco, dashboard, relatório e ntfy quando aplicável.
+- Critério de reprovação: uma superfície diz entregue e outra diz falha/ausência.
+- Verificação: `item_id` e `notification_id` nas superfícies. Dependências: IF-05/06.
 
-### SAFE-01: Quarentena e análise humana
+### SAFE-01: Sem remoção física no escopo
 
-- Contrato: atuador separa para análise manual; não descarta automaticamente.
-- Critério de reprovação: sistema elimina item sem decisão humana.
-- Verificação: fluxo físico e procedimento.
+- Contrato: o sistema somente informa a decisão; a garrafa segue na esteira e a análise/ação é humana.
+- Critério de reprovação: qualquer comando de remoção, ejeção ou descarte ser tratado como capacidade implementada.
+- Verificação: revisão de hardware, fluxo de dados e demonstração.
 
-### SAFE-02: Falha segura de sensor
+### SAFE-02: Falha segura de sinalização
 
-- Contrato: sensor nulo, desconectado ou ambíguo não confirma ejeção.
-- Critério de reprovação: forçar leitura inválida e observar estado final.
+- Contrato: falha de rede, canal indisponível ou payload ambíguo registra `falha`; nunca afirma entrega.
+- Critério de reprovação: forçar erro de envio e observar estado de sucesso.
 - Verificação: fixture/simulação e evento de qualidade.
-
-### SAFE-03: Parada e intertravamento
-
-- Contrato: não acionar sem item/condição válida; existir parada manual e condição de recuperação.
-- Critério de reprovação: ordem sem item ou durante parada aciona o mecanismo.
-- Verificação: teste de bancada e checklist.
 
 ## Lacuna de schema
 
-A tabela `evento_rejeicao` cobre ordem, confirmação, estado e sensor, mas a composição de atuação exige ainda tentativa, timeout, retry, estado operacional, motivo de parada, operador, evento de comando e evidência. A alteração do schema deve ser uma decisão separada antes do código.
+O schema deve registrar um `evento_sinalizacao` com decisão, tentativa, estado,
+canal, timeout, retry e evidência. A alteração do schema é uma decisão
+separada antes da implementação.

@@ -27,13 +27,13 @@
 
 ### HW-05: BOM e interfaces
 
-- Critério: cada placa, câmera, sensor, atuador, alimentação e cabo tem modelo, interface e quantidade.
+- Critério: cada placa, câmera, sensor, canal de notificação, alimentação e cabo tem modelo, interface e quantidade.
 - Critério de reprovação: “câmera USB” ou “sensor” sem identificação reproduzível. Evidência: BOM versionada.
 
 ### HW-06: Segurança física e térmica
 
 - Critério: alimentação, ventilação, cabos, partes móveis e parada segura são inspecionados antes da demo.
-- Critério de reprovação: atuador acessível sem parada ou Pi superaquecendo sem alerta. Evidência: checklist e medição.
+- Critério de reprovação: Pi superaquecendo sem alerta ou cabeamento crítico sem alívio de tração. Evidência: checklist e medição.
 
 ### ENV-01: Condições do ensaio
 

@@ -54,8 +54,8 @@ Esta é a versão canônica em Markdown do catálogo usado no PDF. Todos são pr
 | RNF-10 | Documentação reproduzível com README, decisões e proveniência de dataset. | Núcleo |
 | RNF-11 | Calibração pixel--milímetro documentada por posição fixa. | Expansão |
 | RNF-12 | Qualidade do registro propagada aos consumidores do dashboard. | Núcleo |
-| RNF-13 | Caso exista encaminhamento físico futuro, confirmação correta de 99% e nenhum item normal encaminhado. | Expansão |
-| RNF-14 | Precisão dimensional da tampa dentro de 0,5 mm e nenhuma rejeição de golden sample normal. | Expansão |
+| RNF-13 | Sinalização rastreável de defeito e nenhum alerta de defeito para golden sample normal. | Núcleo |
+| RNF-14 | Precisão dimensional da tampa dentro de 0,5 mm e nenhum falso alerta para golden sample normal. | Expansão |
 | RNF-15 | Custo da camada de descritores abaixo de 10 ms por vista. | Expansão |
 | RNF-16 | Detector de anomalia treinado apenas com itens normais, com validação e latência compatíveis. | Expansão |
 | RNF-17 | Modelo aluno validado no hardware alvo com fallback documentado. | Expansão |

@@ -98,13 +98,18 @@ CREATE TABLE correcao_operador (
   timestamp TEXT
 );
 
-CREATE TABLE evento_rejeicao (
+CREATE TABLE evento_sinalizacao (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   item_id TEXT REFERENCES item(item_id),
-  timestamp_ordenado TEXT NOT NULL,
-  timestamp_confirmado TEXT,
-  status TEXT CHECK(status IN ('pendente','confirmada','falha')),
-  via_sensor TEXT
+  notification_id TEXT NOT NULL UNIQUE,
+  timestamp_criado TEXT NOT NULL,
+  timestamp_enviado TEXT,
+  timestamp_entregue TEXT,
+  timestamp_lido TEXT,
+  status TEXT CHECK(status IN ('pendente','enviada','entregue','lida','falha')),
+  canal TEXT NOT NULL,
+  tentativa INTEGER NOT NULL DEFAULT 1,
+  evidencia_ref TEXT
 );
 
 CREATE TABLE descritor_geometrico (
@@ -123,7 +128,7 @@ CREATE INDEX idx_inspecao_item ON inspecao_vista(item_id);
 CREATE INDEX idx_heartbeat_ponto_tempo ON heartbeat_no(ponto_id, timestamp);
 ```
 
-A coluna `qualidade_registro` liga a confiabilidade do nó ao dado final. O registro de atuação precisa ser revisado antes da implementação para cobrir tentativa, timeout, retry, estado do atuador e evidência; a definição está em `docs/requisitos/04-atuacao-seguranca.md`.
+A coluna `qualidade_registro` liga a confiabilidade do nó ao dado final. O registro `evento_sinalizacao` preserva tentativa, estado de entrega e evidência; timeout e retry são controlados pela política do canal. A definição está em `docs/requisitos/04-atuacao-seguranca.md`.
 
 ## 3. Consultas analíticas
 
@@ -135,7 +140,7 @@ A coluna `qualidade_registro` liga a confiabilidade do nó ao dado final. O regi
 6. Saúde dos nós na última hora.
 7. Latência média e máxima de decisão por vista.
 8. Itens com correção manual, para auditoria.
-9. Rejeições não confirmadas, como evento de qualidade.
+9. Notificações não entregues ou falhas de sinalização, como eventos de qualidade.
 10. Taxa de disparo falso ou perda de detecção do gatilho, por fonte (E18-D80NK vs VL53L0X vs correlacionado).
 11. Percentual de pixels saturados por vista, comparando capturas com e sem lente difusora.
 

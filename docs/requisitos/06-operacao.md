@@ -9,17 +9,17 @@
 
 ### OPS-02: Logs por fronteira
 
-- Critério: logs separam captura, inferência, fusão, persistência, MQTT, atuação e confirmação, com `item_id` e timestamps.
+- Critério: logs separam captura, inferência, fusão, persistência, MQTT, sinalização e confirmação de leitura, com `item_id` e timestamps.
 - Critério de reprovação: log agregado não permite localizar a falha. Evidência: amostra estruturada.
 
 ### OPS-03: Observabilidade do sistema
 
-- Critério: dashboard/queries mostram item, defeito, fila, heartbeat, latência, qualidade e estado do atuador.
+- Critério: dashboard/queries mostram item, defeito, fila, heartbeat, latência, qualidade e estado da sinalização.
 - Critério de reprovação: campo existe no banco mas não chega ao consumidor. Evidência: query versus dashboard.
 
 ### OPS-04: Matriz de falhas
 
-- Critério: câmera, rede, sensor, banco, atuador e alimentação têm sintoma, resposta segura, recuperação e evidência definidos.
+- Critério: câmera, rede, sensor, banco, sinalização e alimentação têm sintoma, resposta segura, recuperação e evidência definidos.
 - Critério de reprovação: falha não classificada ou processo morto sem alerta. Evidência: matriz e ensaio.
 
 ### MAINT-01: Calibração repetível
@@ -51,7 +51,7 @@
 
 ### DOC-04: Esquemático do rig
 
-- Critério: diagrama mostra alimentação, interfaces, trigger, iluminação estroboscópica com difusor, câmeras, encoder, atuador, confirmação e fluxo MQTT.
+- Critério: diagrama mostra alimentação, interfaces, trigger, iluminação estroboscópica com difusor, câmeras, encoder, sinalização ao operador, confirmação de leitura e fluxo MQTT.
 - Critério de reprovação: diagrama omite componente necessário ao teste. Evidência: revisão cruzada com BOM.
 
 ### DOC-05: Registro de PoC
