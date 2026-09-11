@@ -19,5 +19,6 @@ Mapa PoC -> artefato de código
 - PoC-Final conjectura integrada -> src/pocs/pocfinal (trigger->fusao->registro->dashboard)
 
 Comandos
-- instalar: python3 -m venv .venv && .venv/bin/pip install -e . pytest
-- testar:   make test  (roda pytest)
+- ambiente unico: `~/tcc-pnaat/github/.venv` (Python 3.11; CPU, visao e serial)
+- instalar: `~/tcc-pnaat/github/.venv/bin/pip install -e .`
+- testar:   `make test` (roda pytest)

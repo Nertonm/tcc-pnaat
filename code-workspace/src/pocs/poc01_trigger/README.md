@@ -42,7 +42,7 @@ passivos**, e o upload é coordenado por sentinela: nunca matando processos de t
 
 ```bash
 cd ~/tcc-pnaat/github/code-workspace
-$HOME/.venvs/esp/bin/python scripts/poc01_teste.py --passagens 10 --espera 6 --separacao 3
+$HOME/tcc-pnaat/github/.venv/bin/python scripts/poc01_teste.py --passagens 10 --espera 6 --separacao 3
 ```
 
 Saída: tabela por passagem (`OK` / `PERDIDA` / `DUPLICATA`), janelas fora de passagem, descartes da

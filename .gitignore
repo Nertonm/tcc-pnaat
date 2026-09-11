@@ -108,3 +108,12 @@ cad-workspace/structural-candidate-*/
 # artefatos gerados do PoC-01 (stream, evidencias)
 code-workspace/poc01_passagens.csv
 :poc01/
+
+# Kernel CAD e insumos de terceiros (nunca versionar: .step/.stl ja estavam fora)
+*.brep
+*.FCStd
+*.FCBak
+*.zip
+# Backups locais de script (nao sao entrega; ficam no disco, fora do git)
+code-workspace/scripts/*.bak*
+*.bak2-*
