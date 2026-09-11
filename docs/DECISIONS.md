@@ -420,6 +420,39 @@ Ver D-23.
   quando tocados.
 - Consequencia: relatorios e matrizes usam apenas esse vocabulario.
 
+## D-29: Regra de fusao por dominio implementada (PoC-04)
+
+- Contexto: `fusion.py` votava por **maioria global** entre vistas e, com empate, mandava para analise
+  humana. Isso contradiz D-04 ("nao existe maioria global entre as tres cameras") e D-11 (a camada
+  secundaria nao cancela reprovacao): uma vista reprovando podia ser **cancelada** pelas outras.
+- Decisao: a fusao passa a ser por **dominio** (`fundir()`), com estas regras declaradas:
+  - o **papel** da vista e declarado no rig: `lateral1`/`lateral2` = decisorias, `topo` = check
+    dimensional. Vista fora desse conjunto e **erro** (fail closed), nao suposicao;
+  - cada vista emite uma medida por dominio (tampa/corpo) e o par dominio x classe e validado: classe
+    incoerente com o dominio e recusada na criacao da medida;
+  - **defeito detectado em qualquer vista do dominio reprova** o item, com precedencia declarada
+    (`tampa_ausente` > `tampa_mal_rosqueada`; empate de classe resolvido por maior confianca);
+  - **aprovacao exige todos os dominios medidos emitindo `normal` com qualidade ok**; qualquer
+    ausencia, qualidade insuficiente ou inconclusivo produz `inconclusivo` -- nunca aprovacao silenciosa;
+  - o **check dimensional** (topo) nao classifica nem aprova: `escalona`/qualidade ruim/motivo
+    declarado escalam o item para analise humana;
+  - **discordancia lateral** = as vistas decisorias de um dominio NAO emitiram a mesma classe
+    (cobre "defeito x normal" e "defeito x defeito de outra classe"; vista unica nunca e
+    discordancia). Fica em `discordancia_lateral` e nos `motivos`, junto com
+    `classes_divergentes_<dominio>` quando as classes de defeito diferem;
+  - a **origem** de cada medida (`view_id`, dominio, classe) e registrada no resultado;
+  - o rig e **declarado** em `ConfiguracaoFusao` (numero de vistas decisorias por dominio, se o check
+    e obrigatorio, quais dominios sao medidos): configuracao menor nao vira aprovacao -- dominio nao
+    medido bloqueia a aprovacao e entra como motivo.
+- Consequencia: a demonstracao com o rig v0 (1 vista de corpo) reporta `inconclusivo` para item normal
+  em vez de aprovar por uma vista unica. E o comportamento correto pela regra, e o proximo passo
+  declarado e a bancada de 2 laterais + topo.
+- Implementado em: `code-workspace/src/pocs/poc04_fusao/fusion.py`,
+  `code-workspace/src/pocs/events.py` (vocabulario D-28 + dominio/qualidade),
+  `code-workspace/scripts/avaliar_poc04.py`, `code-workspace/tests/test_fusion.py`.
+- Evidencia: harness `make poc04` (casos declarados com ground truth; falha se divergir) e o teste de
+  mutacao que reverte a regra e exige que o harness acuse.
+
 ## Regra de atualização
 
 Uma questão somente deixa o estado `a decidir` quando houver evidência de PoC, medição no hardware ou revisão técnica registrada no repositório.

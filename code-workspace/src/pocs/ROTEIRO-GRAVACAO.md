@@ -272,7 +272,7 @@ que a equipe precisa entender para não narrar uma capacidade inexistente.
 | `poc02_classificacao/politica_tampa.py` | geometria/qualidade → classe, motivos e escalonamento | aplica gate de qualidade, ausência por altura, tilt e fallback auxiliar; os limiares default são provisórios |
 | `poc02_classificacao/classificacao.py` | listas de previsto/verdade → acurácia/matriz simples | harness antigo e básico; para relatório da entrega, usar `scripts/avaliar_poc02.py` |
 | `poc03_deformidade/medicao.py` | pixels + referência → mm/tolerância | só contém a matemática de escala; não detecta o contorno da garrafa nem calibra a câmera sozinho |
-| `poc04_fusao/fusion.py` | várias `ViewResult` → classe/confiança | usa maioria estrita e empate→humano; não implementa ainda a fusão por domínio decidida em D-04/D-23 |
+| `poc04_fusao/fusion.py` | várias `ViewResult` → `Fusao` (classe + status por domínio, discordância, qualidade) | fusão por domínio implementada (D-04/emenda D-23): defeito não é cancelado, topo só veta/escala. O demo roda com a configuração declarada de 1 vista de corpo; com ela o item normal fica `inconclusivo` |
 | `poc05_registro/registry.py` | `ObservationEvent` → armazenamento/consulta | dicionário em RAM indexado por `event_id`; `upsert` devolve `stored` ou `exists`; tudo some ao encerrar o processo |
 | `poc06_resiliencia/resilience.py` | função de persistência → resultado de retries | captura exceção, tenta novamente e gera alerta ao esgotar; não monitora câmera, GPIO ou heartbeat |
 | `poc07_dashboard/dashboard.py` | registro em RAM → resumo/recorrência | agrega total, esteira, defeito e falha; não é servidor web e não lê um banco persistente |
@@ -392,7 +392,7 @@ mão: rode `calibrar_limiar_modelo.py`.
 | porta serial | `PORTA` em `esp_tool.py` | hoje fixa em `/dev/ttyUSB0`; confirme com `python -m serial.tools.list_ports` |
 | pino/tempo no ESP32 | constantes de `poc01_trigger/esp/main.py` | alterar antes do upload e registrar versão/hash do firmware |
 | classes e contrato | `events.py` | alteração de arquitetura; exige testes e migração dos consumidores |
-| regra de fusão | `poc04_fusao/fusion.py` | pendência real; implementar por domínio antes de alegar PoC-04 aprovada |
+| regra de fusão | `poc04_fusao/fusion.py` | **fechada**: `fundir()` por domínio + `scripts/avaliar_poc04.py` (10 casos declarados, ground truth) + `tests/test_fusion.py`. Aprovada no rig declarado; falta a bancada de 2 laterais + topo |
 
 **Não altere um limiar durante a gravação para transformar uma saída em “acerto”.** Interrompa,
 registre a falha, calibre com conjunto separado, faça commit e execute uma nova tomada.

@@ -1,7 +1,6 @@
 {
   "JuncaoA": {
-    "vol_antes": 41595.92729379379,
-    "vol_depois": 41595.927293793786,
+    "vol_depois": 41889.516400221924,
     "solids": 1,
     "valid": true,
     "malha_fechada": true,
@@ -12,8 +11,7 @@
     ]
   },
   "JuncaoB": {
-    "vol_antes": 41595.927293793786,
-    "vol_depois": 41595.927293793786,
+    "vol_depois": 41889.51640022192,
     "solids": 1,
     "valid": true,
     "malha_fechada": true,
@@ -21,90 +19,6 @@
       25.45,
       43.0,
       43.0
-    ]
-  },
-  "peca-A": {
-    "vol_antes": 22762.88464885245,
-    "vol_depois": 22762.88464885242,
-    "solids": 1,
-    "valid": true,
-    "malha_fechada": true,
-    "bbox": [
-      20.0,
-      75.402,
-      66.0
-    ]
-  },
-  "bracket": {
-    "vol_antes": 10352.711975994484,
-    "vol_depois": 10352.711975994484,
-    "solids": 1,
-    "valid": true,
-    "malha_fechada": true,
-    "bbox": [
-      26.0,
-      39.0,
-      11.5
-    ]
-  },
-  "clamp": {
-    "vol_antes": 20490.755857314572,
-    "vol_depois": 20490.755857314576,
-    "solids": 1,
-    "valid": true,
-    "malha_fechada": true,
-    "bbox": [
-      71.0,
-      35.001,
-      19.999
-    ]
-  },
-  "sapata": {
-    "vol_antes": 1438.382621975876,
-    "vol_depois": 1438.382621975876,
-    "solids": 1,
-    "valid": true,
-    "malha_fechada": true,
-    "bbox": [
-      19.998,
-      19.998,
-      7.996
-    ]
-  },
-  "parafuso": {
-    "vol_antes": 10262.497909902293,
-    "vol_depois": 10262.497909902293,
-    "solids": 1,
-    "valid": true,
-    "malha_fechada": true,
-    "bbox": [
-      19.798,
-      19.798,
-      71.304
-    ]
-  },
-  "chaveta-A": {
-    "vol_antes": 411.35352700498913,
-    "vol_depois": 411.3535270049891,
-    "solids": 1,
-    "valid": true,
-    "malha_fechada": true,
-    "bbox": [
-      6.2,
-      14.6,
-      5.0
-    ]
-  },
-  "chaveta-B": {
-    "vol_antes": 411.35352700498976,
-    "vol_depois": 411.3535270049891,
-    "solids": 1,
-    "valid": true,
-    "malha_fechada": true,
-    "bbox": [
-      6.2,
-      14.6,
-      5.0
     ]
   }
 }

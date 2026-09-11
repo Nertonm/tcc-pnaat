@@ -30,18 +30,59 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from pocs.events import DefectClass, ObservationEvent, ViewResult
+from pocs.events import DefectClass, Dominio, ObservationEvent, ViewResult
 from pocs.poc01_trigger.presence import PresenceTrigger, present_from_sensor
-from pocs.poc04_fusao import fuse_views
+from pocs.poc04_fusao import ConfiguracaoFusao, fundir
 from pocs.poc05_registro import LocalRegistry
 from pocs.poc07_dashboard import recorrencia, summarize
 from pocs.poc08_preproc import preproc
+
+# Configuracao DECLARADA do rig na bancada desta demonstracao (D-04/D-23).
+# Uma unica vista de corpo e sem check dimensional: a fusao NAO pode ser cobrada por uma
+# segunda vista que nao existe -- mas o item tambem nao pode ser aprovado com dominio nao medido.
+CONFIG_FUSAO_DEMO = ConfiguracaoFusao(
+    rig_id="bancada-1-vista",
+    vistas_decisoria_por_dominio=1,
+    checagem_obrigatoria=False,
+    dominios_medidos=(Dominio.CORPO,),
+)
 
 TCC_HOME = Path(os.environ.get("TCC_HOME", str(Path.home() / "tcc-pnaat")))
 BASE_DATASETS = Path(os.environ.get("PNAAT_DATASETS", str(TCC_HOME / "datasets" / "pnaat")))
 ROI_TAMPA = 0.35           # fracao superior usada para o dominio da tampa
 ESPECULAR_MAX = 0.03       # acima disso a captura e parcial (gate de qualidade)
 TENENGRAD_MIN = 20.0       # abaixo disso a captura esta sem foco util
+
+
+def _confianca_por_margem(score: float | None, limiar: float | None, suspeita: bool) -> float:
+    """Confianca declarada = distancia relativa do score ao limiar derivado (0..1).
+
+    Nao e probabilidade: e a margem medida em relacao ao proprio limiar. Sem modelo/limiar, a
+    confianca fica 0.0 -- nao se inventa confianca para evidencia que nao existe.
+    """
+    if score is None or not limiar:
+        return 0.0
+    margem = (score - limiar) / limiar if suspeita else (limiar - score) / limiar
+    return round(min(1.0, max(0.0, margem)), 4)
+
+
+def medida_do_corpo(r: dict, limiar: float | None) -> ViewResult:
+    """Traduz a decisao do detector (dominio do corpo) em UMA medida do PoC-04.
+
+    Regra de honestidade (D-11/D-04): a suspeita do detector de anomalia NAO vira classe de
+    defeito -- vira escalonamento para analise humana. Captura degradada tambem nao aprova.
+    """
+    decisao = r["decisao"]
+    score = r["corpo"]["score"]
+    if decisao == "suspeita_anomalia":
+        return ViewResult("lateral1", Dominio.CORPO, DefectClass.INCONCLUSIVO,
+                          _confianca_por_margem(score, limiar, True),
+                          escalona=True, motivo="suspeita_de_anomalia")
+    if decisao == "normal":
+        return ViewResult("lateral1", Dominio.CORPO, DefectClass.NORMAL,
+                          _confianca_por_margem(score, limiar, False))
+    return ViewResult("lateral1", Dominio.CORPO, DefectClass.INCONCLUSIVO, 0.0,
+                      escalona=True, motivo="captura_ou_modelo_indisponivel")
 
 
 def titulo(n: int, total: int, texto: str) -> None:
@@ -281,23 +322,26 @@ def main() -> int:
     time.sleep(args.pausa)
 
     # ---- 6) REGISTRO + DASHBOARD
-    titulo(6, 7, "RESULTADO 1/2 - registro local + dashboard")
+    titulo(6, 7, "RESULTADO 1/2 - fusao por dominio + registro local + dashboard")
+    print(f"  config de fusao DECLARADA: rig_id={CONFIG_FUSAO_DEMO.rig_id} | "
+          f"vistas decisorias por dominio={CONFIG_FUSAO_DEMO.vistas_decisoria_por_dominio} | "
+          f"check dimensional obrigatorio={CONFIG_FUSAO_DEMO.checagem_obrigatoria} | "
+          f"dominios medidos={[d.value for d in CONFIG_FUSAO_DEMO.dominios_medidos]}")
     reg = LocalRegistry()
     for i, r in enumerate(resultados, 1):
-        views = (ViewResult("topo", DefectClass.ANALISE_HUMANA if not r["tampa"]["contorno_detectado"]
-                            else DefectClass.NORMAL, 0.5),)
-        classe = {"normal": DefectClass.NORMAL, "suspeita_anomalia": DefectClass.DEFORMIDADE,
-                  "inconclusivo": DefectClass.ANALISE_HUMANA}.get(r["decisao"], DefectClass.ANALISE_HUMANA)
-        views = (ViewResult("corpo", classe, 0.8),)
-        fused, conf = fuse_views(views)
+        views = (medida_do_corpo(r, limiar),)
+        fusao = fundir(views, CONFIG_FUSAO_DEMO)
         ev = ObservationEvent(
             event_id=f"ev-{i:03d}", item_id=f"i-{i:03d}", esteira_id="est-b", node_id="n01",
             location="bancada-tcc", recorded_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            views=views, fused=fused, confidence=conf,
-            quality=r["qualidade"]["estado"],
+            views=views, fused=fusao.classe, confidence=fusao.confidence,
+            quality=r["qualidade"]["estado"], fusao=fusao.como_dict(),
         )
         estado = reg.upsert(ev)
-        print(f"  {ev.event_id} gravado ({estado}) classe={ev.fused.value} qualidade={ev.quality}")
+        print(f"  {ev.event_id} gravado ({estado}) classe={fusao.classe.value} "
+              f"tampa={fusao.status_tampa} corpo={fusao.status_corpo} "
+              f"qualidade={fusao.qualidade_registro} escalonado={fusao.escalonado}")
+        print(f"      motivos: {', '.join(fusao.motivos) or '(nenhum)'}")
 
     resumo = summarize(reg)
     print(f"\n  resumo: {json.dumps(resumo, ensure_ascii=False)}")
@@ -314,9 +358,13 @@ def main() -> int:
 
     # ---- 7) RESULTADO + PROXIMO PASSO
     titulo(7, 7, "RESULTADO 2/2 - o que provou e o que falta")
-    suspeitas = sum(1 for r in resultados if r["decisao"] == "suspeita_anomalia")
-    inconclusivos = sum(1 for r in resultados if r["decisao"] == "inconclusivo")
-    print(f"  itens processados: {len(resultados)} | suspeitas: {suspeitas} | inconclusivos: {inconclusivos}")
+    # Contagem pelo resultado do ITEM (fusao por dominio), nao pela decisao crua do detector:
+    # rotulo que conta outra coisa que nao a decisao registrada e rotulo que mente.
+    classes_item = [ev.fused.value for ev in reg.all()]
+    com_defeito = sum(1 for c in classes_item if c not in ("normal", "inconclusivo"))
+    inconclusivos = sum(1 for c in classes_item if c == "inconclusivo")
+    print(f"  itens processados: {len(classes_item)} | itens com defeito: {com_defeito} | "
+          f"inconclusivos: {inconclusivos}")
     print("  PROVADO: entrada (gatilho+imagem) -> pipeline (preproc+modelo+decisao) -> resultado "
           "(registro+dashboard), com metrica e evidencia por item.")
     print("  PROXIMO PASSO (nao integrado): (1) pares de defeito reais/sinteticos para medir "

@@ -23,7 +23,7 @@ STREAM = BASE / "stream.log"
 
 LEGENDA = """\
 ==============================================================================
- PNAAT - PoC-01: trigger de presenca (ESP32 + E18-D80NK em GPIO27)
+ PNAAT - PoC-01: trigger de presenca (ESP32 + E18-D80NK em GPIO33)
 ------------------------------------------------------------------------------
  VOCE ESTA LENDO O STREAM DO SUPERVISOR (o supervisor e o dono da porta serial).
  O QUE CADA LINHA SIGNIFICA

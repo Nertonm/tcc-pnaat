@@ -51,6 +51,10 @@ controle:
 	PYTHONPATH=src $(AI_PY) scripts/gerar_perturbacao_controle.py --origem $(DS)/dataset/normal/frame_0000.jpg --tipo oclusao --dest $(DS)/controle --seed 7
 	PYTHONPATH=src $(AI_PY) scripts/gerar_perturbacao_controle.py --origem $(DS)/dataset/normal/frame_0001.jpg --tipo risco --dest $(DS)/controle --seed 11
 
+# PoC-04 - fusao por dominio: harness de casos declarados com ground truth (sai != 0 se divergir)
+poc04:
+	PYTHONPATH=src $(AI_PY) scripts/avaliar_poc04.py
+
 # PoC-01 sem hardware: mesma logica do firmware, eventos identicos no terminal
 simular-poc01:
 	PYTHONPATH=src $(PY) scripts/simular_trigger.py --caso todos

@@ -10,7 +10,7 @@ firmware exigia parar o visualizador -> a janela de quem estava acompanhando mor
 
 Rodar como unidade do usuario:
     systemd-run --user --unit=pnaat-poc01-sup --collect \
-      $HOME/.venvs/esp/bin/python .../poc01_supervisor.py
+      $HOME/tcc-pnaat/github/.venv/bin/python .../poc01_supervisor.py
 """
 from __future__ import annotations
 

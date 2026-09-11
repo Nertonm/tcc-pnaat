@@ -15,7 +15,7 @@ Instalar como main.py faz o firmware iniciar sozinho a cada reset/boot.
 from machine import Pin, reset
 import time
 
-PRESENCE_PIN = 27
+PRESENCE_PIN = 33
 CAPTURE_OUT_PIN = 26
 DEBOUNCE_MS = 20
 STABLE_READS = 5          # leituras LOW para abrir

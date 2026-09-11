@@ -104,3 +104,43 @@ validacao-astra-20260911/
 ```
 
 **Nada foi commitado. Os originais estão intactos.**
+
+---
+
+## 6. ENSAIO REGISTRADO — 2026-09-11
+
+**Feito:** impressão de **apenas o `orientada-bracket`** e teste de encaixe no trilho real.
+
+**Resultado: encaixe confirmado.**
+
+### O que isso valida
+
+| | |
+|---|---|
+| **folga de 0,18 mm/lado** | **VALIDADA fisicamente** no PETG impresso na K1C do laboratório. O precedente do projeto deixou de ser suposição. |
+| gate de folga do bracket | **FECHADO** empiricamente |
+| o `orientada-bracket` é o cupom | o arquivo impresso é idêntico ao `cupom-bracket-0p18` (mesmo BREP) — o ensaio já foi feito |
+| encolhimento do PETG | não fechou o vão de 0,18 em 35 mm — não é preciso partir para 0,25 |
+
+### Consequência aplicada
+
+A luva estava com **0,25** (escolha de partida do Astra, nunca validada) e foi
+**regerada com 0,18** — o mesmo valor provado no ensaio. Menos folga significa menos
+jogo angular na junção, que é justamente o ponto fraco declarado na checklist v2 (B11).
+
+```
+luva-0.18-JuncaoA/B:  42 636,72 -> 41 889,52 mm3  (removeu 747,20)
+  colisao 0,000000 · dist 0,180000 · 1 solido · isValid · malha fechada
+  trilho +0,14/+0,16/+0,18 -> passa   |   +0,20 -> COLIDE (7,596 mm3)
+```
+
+As duas luvas de 0,25 foram **removidas** do lote (folga não validada).
+
+### Impacto no que falta imprimir
+
+O bracket **já está pronto** — não vai na chapa. Restam **15 unidades**:
+
+peca-A · peca-B · luva-0.18-A · luva-0.18-B · clamp ×2 · sapata ×2 · parafuso ×2 ·
+chaveta-A · chaveta-B · (cupons opcionais: já não são necessários, o ensaio foi feito)
+
+Novo volume estimado sem o bracket: ~193 cm³ (menos 2 × 10,35 cm³).

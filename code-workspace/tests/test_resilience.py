@@ -1,4 +1,4 @@
-from pocs.events import DefectClass, ObservationEvent, ViewResult
+from pocs.events import DefectClass, Dominio, ObservationEvent, ViewResult
 from pocs.poc06_resiliencia import retry_until_persist
 
 
@@ -6,7 +6,7 @@ def _ev(eid):
     return ObservationEvent(
         event_id=eid, item_id="i", esteira_id="est-b", node_id="n01", location="l1",
         recorded_at="2026-09-09T10:00:00+00:00",
-        views=(ViewResult("topo", DefectClass.NORMAL, 0.9),),
+        views=(ViewResult("topo", Dominio.DIMENSAO, DefectClass.NORMAL, 0.9),),
         fused=DefectClass.NORMAL, confidence=0.9,
     )
 
