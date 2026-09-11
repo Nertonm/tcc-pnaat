@@ -1,0 +1,81 @@
+schema_version: reference-envelope.v1
+reference_id: conveyor-a-in150-market-envelope-r01
+status: reference_only
+fabrication_allowed: false
+source: vendor_listing_search_2026-09-08_plus_project_team_approximation_2026-09-10
+units: mm
+coordinate_system:
+  x: transport
+  y: transverse
+  z: vertical
+  origin: not_defined
+conveyor:
+  model_candidates:
+    - IN 150
+    - IN 150 Large
+  length_mm:
+    compact: 1500
+    large: 1470
+    status: reference
+  belt_width_mm:
+    compact: 190
+    large: 300
+    status: reference
+  overall_height_mm:
+    compact: unknown
+    large: 750
+    status: reference
+  material:
+    compact: inox_202
+    large: inox_202
+    status: reference
+  speed_max_m_min:
+    compact: 21
+    large: 21
+    status: reference
+  motor_power_w:
+    compact: 60
+    large: 120
+    status: reference
+  mass_kg:
+    compact: 20
+    large: 24
+    status: reference
+  guide_travel_mm: 150
+  chassis_interface:
+    value: unknown
+    status: blocked
+  actual_model:
+    value: unknown
+    status: blocked
+reference_scenario:
+  status: reference_only
+  fabrication_allowed: false
+  selected_nominal:
+    belt_width_mm: 190
+    conveyor_length_mm: 1500
+    belt_top_z_mm: 0
+    side_clearance_mm: 80
+    guide_travel_mm: 150
+    selection_basis: project-team approximate values; reference only, not G0 measured
+  envelopes_mm:
+    bottle: {width: 60, depth: 60, height: 220}
+    camera_top: {width: 60, depth: 60, height: 40}
+    camera_side: {width: 60, depth: 60, height: 40}
+    trigger: {width: 30, depth: 30, height: 30}
+    lighting_top: {width: 300, depth: 20, height: 10}
+    lighting_side: {width: 20, depth: 120, height: 10}
+    cable_bundle: {width: 20, depth: 20, height: 20}
+    motor_keepout: {width: 200, depth: 200, height: 200}
+  origin_placeholder_mm: [0, 0, 0]
+provenance:
+  measured: false
+  fabrication_allowed: false
+  project_team_declared_approximation:
+    date: 2026-09-10
+    compact: {length_mm: 1500, belt_width_mm: 190, speed_max_m_min: 21, motor_power_w: 60, mass_kg: 20}
+    large: {length_mm: 1470, belt_width_mm: 300, overall_height_mm: 750, speed_max_m_min: 21, motor_power_w: 120, mass_kg: 24}
+    note: Dimensions of the actual chassis, rail and clamp contact surface remain blocked until G0 collection.
+  source_urls:
+    - https://www.casadodatador.com/datadores-ink-jet/esteira-transportadora-em-inox-para-datadores-inkjet-modelo-in-150
+    - https://www.casadodatador.com/datadores-ink-jet/esteira-transportadora-em-inox-202-para-datadores-inkjet-modelo-in-150-large-220v

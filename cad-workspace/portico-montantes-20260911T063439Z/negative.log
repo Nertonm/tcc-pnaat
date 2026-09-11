@@ -1,0 +1,17 @@
+[N1_junction_split_into_two] caught=True {"solids": 3, "isValid": true, "note": "B-Rep validity alone does not see this (the old R07 defect)"}
+[N2_rectangular_groove_no_keying] caught=True {"overlap_on_rotation_mm3": {"0.5deg": 0.0, "1.0deg": 0.0, "2.0deg": 7.250993}, "groove": "36.5 x 8.5 rectangular", "note": "a groove that merely holds the rail does not key the profile: at 1.0 deg the rail turns with zero overlap, so the build's rotation_blocked gate (1/2/5 deg) goes False"}
+[N3_key_too_short_by_2mm] caught=True {"overlap_0.5mm_shift_short_key_mm3": 0.0, "overlap_0.5mm_shift_design_key_mm3": 1.859994, "note": "the check must separate a 12.6 key (no stop) from the 14.6 design key"}
+[N4_key_0.6mm_too_narrow] caught=True {"key_slot_contact_area_narrow_mm2": 0.0, "key_slot_contact_area_design_mm2": 16.8, "by_axis_design": {"X": 16.8, "Y": 0.0, "Z": 0.0}}
+[N5_junction_between_two_slots] caught=True {"overlap_junction_upright_mm3": 0.0, "overlap_key_upright_mm3": 66.837352, "note": "the key body fouls the rail base plate by 66.8 mm3, so the zero_interference gate on the Chaveta<->Montante pair goes False"}
+{
+  "N1_junction_split_into_two": true,
+  "N2_rectangular_groove_no_keying": true,
+  "N3_key_too_short_by_2mm": true,
+  "N4_key_0.6mm_too_narrow": true,
+  "N5_junction_between_two_slots": true
+}
+all_mutations_caught: True
+FreeCAD 1.1.1, Libs: 1.1.1R20260414 (Git shallow)
+(C) 2001-2026 FreeCAD contributors
+FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+

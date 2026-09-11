@@ -1,0 +1,36 @@
+{
+  "peca": "peca de duas plataformas (bracket integrado na plataforma superior)",
+  "solids": 1,
+  "volume_mm3": 22762.9,
+  "bbox": [
+    -72.0,
+    32.0,
+    0.0,
+    -6.0,
+    107.4,
+    20.0
+  ],
+  "contato_com_clamp": 0.0,
+  "trilho_encaixa": 0.0,
+  "furos": {
+    "clamp_eixo_Y": "D6,35 em (X-30,5 Z10)",
+    "clamp_eixo_X": "D6,35 em (Y42 Z10)",
+    "bracket_topo": "2x D3,4 eixo Y",
+    "bracket_lateral": "2x D3,4 eixo X"
+  },
+  "nao_validado": [
+    "escolha CFG1/CFG2 depende de medir a esteira",
+    "cargas",
+    "vibracao",
+    "rigidez",
+    "fadiga",
+    "parafusos reais",
+    "rosca",
+    "torque"
+  ],
+  "sha256": {
+    "peca-dupla-plataformas.step": "640823f4ea1c08b17f0f842219ac1891e9128945a9fb91ffd368377842db53d2",
+    "peca-dupla-plataformas.stl": "7857d63e2eec3d223133ca28fddf012f6de195e5c84c6a1ef78acc6af1291575",
+    "peca-dupla-plataformas.FCStd": "fe7ec99f702215d546a9d405f376bf912c898a6d9cc9ec0aca086f54336794df"
+  }
+}

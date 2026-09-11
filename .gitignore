@@ -117,3 +117,7 @@ code-workspace/poc01_passagens.csv
 # Backups locais de script (nao sao entrega; ficam no disco, fora do git)
 code-workspace/scripts/*.bak*
 *.bak2-*
+
+# Artefatos grandes de auditoria/staging (acima do limite do gate: ficam locais)
+cad-workspace/_backup-organizacao-20260911/*.tsv
+cad-workspace/auditoria-r07-20260911T052357Z/redux-sections.json

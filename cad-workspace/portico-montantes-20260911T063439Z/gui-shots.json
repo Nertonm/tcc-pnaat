@@ -1,0 +1,39 @@
+{
+  "gui_up": true,
+  "document": "portico_montantes",
+  "objects": 15,
+  "main_window_title": "[*] portico-montantes - FreeCAD 1.1.1",
+  "shots": [
+    {
+      "view": "iso",
+      "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/iso.png",
+      "bytes": 36316
+    },
+    {
+      "view": "topo",
+      "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/topo.png",
+      "bytes": 28378
+    },
+    {
+      "view": "lado",
+      "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/lado.png",
+      "bytes": 18226
+    },
+    {
+      "view": "frente",
+      "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/frente.png",
+      "bytes": 13889
+    }
+  ],
+  "window_geometry_px": [
+    1500,
+    950
+  ],
+  "window_visible": true,
+  "desktop_grab": {
+    "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/janela-real.png",
+    "returncode": 0,
+    "bytes": 1224626,
+    "stderr": ""
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "step_solid_count": true,
+  "step_total_volume": true,
+  "step_bbox": true,
+  "step_valid": true,
+  "step_per_body_volumes": true,
+  "fcstd_object_set": true,
+  "fcstd_per_object_volume": true,
+  "fcstd_single_solid_each": true,
+  "fcstd_all_valid": true,
+  "fcstd_bbox": true,
+  "reopen_zero_interference": true,
+  "roundtrip_pass": true
+}
+roundtrip_pass: True
+FreeCAD 1.1.1, Libs: 1.1.1R20260414 (Git shallow)
+(C) 2001-2026 FreeCAD contributors
+FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+
+Importing project files......
+						(4 %)							(9 %)							(13 %)							(18 %)							(22 %)							(27 %)							(31 %)							(36 %)							(40 %)							(45 %)							(50 %)							(54 %)							(59 %)							(63 %)							(68 %)							(72 %)							(77 %)							(81 %)							(86 %)							(90 %)							(95 %)							(100 %)									Postprocessing......
+						(100 %)									

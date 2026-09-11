@@ -1,0 +1,151 @@
+{
+  "instrument": {
+    "positive": {
+      "volume": 499.9999999999999,
+      "solids": 1,
+      "null": false,
+      "distance": 0.0
+    },
+    "negative": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 490.0
+    },
+    "contact_positive": 99.99999999999999,
+    "contact_negative": 0.0
+  },
+  "raw_pair": {
+    "nominal": {
+      "volume": 9854.226957582076,
+      "solids": 1,
+      "null": false,
+      "distance": 0.0
+    },
+    "positive": {
+      "volume": 22647.902835626326,
+      "solids": 1,
+      "null": false,
+      "distance": 0.0
+    },
+    "negative": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 456.00017631645557
+    }
+  },
+  "placement": [
+    0.0,
+    0.0019989999999978636,
+    -11.5
+  ],
+  "assembled_pair": {
+    "nominal": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 0.0
+    },
+    "positive": {
+      "volume": 868.0923849376462,
+      "solids": 1,
+      "null": false,
+      "distance": 0.0
+    },
+    "negative": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 499.5005630627457
+    },
+    "contact": 791.6646908045917,
+    "contact_positive": 99.99999999999999,
+    "contact_negative": 0.0
+  },
+  "railA": {
+    "nominal": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 0.0
+    },
+    "positive": {
+      "volume": 137.30442269800028,
+      "solids": 1,
+      "null": false,
+      "distance": 0.0
+    },
+    "negative": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 29.5
+    }
+  },
+  "sleeveA": {
+    "nominal": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 0.0
+    },
+    "positive": {
+      "volume": 1.1858415944610934,
+      "solids": 3,
+      "null": false,
+      "distance": 0.0
+    },
+    "negative": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 461.0
+    }
+  },
+  "railB": {
+    "nominal": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 0.0
+    },
+    "positive": {
+      "volume": 137.30442269800022,
+      "solids": 1,
+      "null": false,
+      "distance": 0.0
+    },
+    "negative": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 29.5
+    }
+  },
+  "sleeveB": {
+    "nominal": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 0.0
+    },
+    "positive": {
+      "volume": 1.1858415944703793,
+      "solids": 3,
+      "null": false,
+      "distance": 0.0
+    },
+    "negative": {
+      "volume": 0.0,
+      "solids": 0,
+      "null": false,
+      "distance": 461.0
+    }
+  },
+  "rail_bbox": [
+    35.0,
+    450.00000000000006,
+    7.5000000000000036
+  ]
+}

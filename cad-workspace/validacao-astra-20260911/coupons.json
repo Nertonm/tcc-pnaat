@@ -1,0 +1,128 @@
+{
+  "controls": {
+    "positive": 999.9999999999998,
+    "negative": 0.0
+  },
+  "coupons": {
+    "cupom-luva-0p18": {
+      "clearance_design": 0.18,
+      "source_volume": 8211.12389268167,
+      "removed": 142.11790671728613,
+      "nominal": 0.0,
+      "positive": 8069.005985964383,
+      "negative": 0.0,
+      "export": {
+        "volume_before": 8069.005985964383,
+        "volume_after": 8069.0059859643825,
+        "valid": true,
+        "solids": 1,
+        "mesh_closed": true,
+        "bbox": [
+          25.450000000000006,
+          7.9999990000000025,
+          43.00000000000001
+        ]
+      }
+    },
+    "cupom-luva-0p25": {
+      "clearance_design": 0.25,
+      "source_volume": 8211.12389268167,
+      "removed": 197.94598148178193,
+      "nominal": 0.0,
+      "positive": 8013.177911199888,
+      "negative": 0.0,
+      "export": {
+        "volume_before": 8013.177911199888,
+        "volume_after": 8013.177911199885,
+        "valid": true,
+        "solids": 1,
+        "mesh_closed": true,
+        "bbox": [
+          25.450000000000006,
+          7.9999990000000025,
+          43.00000000000001
+        ]
+      }
+    },
+    "cupom-luva-0p3": {
+      "clearance_design": 0.3,
+      "source_volume": 8211.12389268167,
+      "removed": 238.01517771814179,
+      "nominal": 0.0,
+      "positive": 7973.108714963528,
+      "negative": 0.0,
+      "export": {
+        "volume_before": 7973.108714963528,
+        "volume_after": 7973.1087149635305,
+        "valid": true,
+        "solids": 1,
+        "mesh_closed": true,
+        "bbox": [
+          25.450000000000006,
+          7.9999990000000025,
+          43.00000000000001
+        ]
+      }
+    },
+    "cupom-bracket-0p18": {
+      "clearance_design": 0.18,
+      "source_volume": 10352.711975994476,
+      "removed": 0.0,
+      "nominal": 0.0,
+      "positive": 137.30442269800028,
+      "negative": 0.0,
+      "export": {
+        "volume_before": 10352.711975994476,
+        "volume_after": 10352.711975994476,
+        "valid": true,
+        "solids": 1,
+        "mesh_closed": true,
+        "bbox": [
+          39.0,
+          26.0,
+          11.5
+        ]
+      }
+    },
+    "cupom-bracket-0p25": {
+      "clearance_design": 0.25,
+      "source_volume": 10352.711975994476,
+      "removed": 1.07799970627093,
+      "nominal": 0.0,
+      "positive": 137.30442269800028,
+      "negative": 0.0,
+      "export": {
+        "volume_before": 10351.633976288205,
+        "volume_after": 10351.633976288207,
+        "valid": true,
+        "solids": 1,
+        "mesh_closed": true,
+        "bbox": [
+          39.0,
+          26.0,
+          11.5
+        ]
+      }
+    },
+    "cupom-bracket-0p3": {
+      "clearance_design": 0.3,
+      "source_volume": 10352.711975994476,
+      "removed": 1.8479994964618527,
+      "nominal": 0.0,
+      "positive": 137.30442269800028,
+      "negative": 0.0,
+      "export": {
+        "volume_before": 10350.863976498014,
+        "volume_after": 10350.863976498016,
+        "valid": true,
+        "solids": 1,
+        "mesh_closed": true,
+        "bbox": [
+          39.0,
+          26.0,
+          11.5
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "controls": {
+    "positive": 999.9999999999998,
+    "negative": 0.0
+  },
+  "sideB": {
+    "nominal": 0.0,
+    "positive": 868.0923849376442,
+    "negative": 0.0,
+    "contact": 791.6646908045917
+  },
+  "piece_rail": {
+    "nominal": 0.0,
+    "positive_self": 22647.902835626348,
+    "negative": 0.0
+  },
+  "pieceB_export": {
+    "before": 22647.90283562633,
+    "after": 22647.902835626344,
+    "closed": true,
+    "solids": 1
+  },
+  "clamp_source_mesh": {
+    "closed": false,
+    "components": 2,
+    "facets": 3218
+  },
+  "ray_controls": {
+    "positive": 10.0,
+    "negative": 0.0
+  },
+  "recess_ray": [
+    [
+      0.0,
+      6.824999999999992
+    ],
+    [
+      13.175,
+      19.5
+    ]
+  ]
+}

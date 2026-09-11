@@ -1,0 +1,7 @@
+{
+  "symmetric_difference": 0.0,
+  "positive_control": 999.9999999999998,
+  "negative_control": 0.0,
+  "valid": true,
+  "solids": 1
+}

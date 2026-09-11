@@ -1,0 +1,138 @@
+﻿Msg: FreeCAD 1.1.1, Libs: 1.1.1R20260414 (Git shallow)
+(C) 2001-2026 FreeCAD contributors
+FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+
+Log: Time = 2026-Sep-11 02:37:17
+Log: AppDataSkipVendor = true
+Log: AppHomePath = /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/
+Log: AppTempPath = /tmp/
+Log: BOOST_VERSION = 1_86
+Log: BinPath = /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/bin/
+Log: BuildRepositoryURL = Unknown
+Log: BuildRevision = 20260414 (Git shallow)
+Log: BuildRevisionBranch = (HEAD detached at 0108fd4b4)
+Log: BuildRevisionDate = 2026/04/14 22:09:59
+Log: BuildRevisionHash = 0108fd4b4850cc46e625b60e53cea7a7bbe69f8d
+Log: BuildVersionMajor = 1
+Log: BuildVersionMinor = 1
+Log: BuildVersionPoint = 1
+Log: BuildVersionSuffix = 
+Log: CopyrightInfo = (C) 2001-2026 FreeCAD contributors
+FreeCAD is free and open-source software licensed under the terms of LGPL2+ license.
+
+
+Log: Debug = 0
+Log: DocPath = /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/doc/
+Log: EIGEN_VERSION = 3.4.0
+Log: ExeName = FreeCAD
+Log: ExeVendor = FreeCAD
+Log: ExeVersion = 1.1.1
+Log: LoggingConsole = 1
+Log: LoggingFile = 1
+Log: LoggingFileName = /home/<usuario>/tcc-pnaat/github/cad-workspace/structural-candidate-20260911T053435Z/probe.log
+Log: OCC_VERSION = 7.8.1
+Log: OpenFile0 = /home/<usuario>/tcc-pnaat/github/cad-workspace/structural-candidate-20260911T053435Z/probe_geom.py
+Log: OpenFileCount = 1
+Log: PATH = /usr/local/sbin:/usr/local/bin:/usr/bin:/opt/bin:/usr/lib/llvm/22/bin
+Log: PYSIDE_VERSION = 6.8.3
+Log: PYTHON_VERSION = 3.11.14
+Log: PythonSearchPath = /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/lib/python311.zip:/home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/lib/python3.11:/home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/lib/python3.11/lib-dynload:/home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/lib/python3.11/site-packages
+Log: QT_VERSION = 6.8.3
+Log: RunMode = Exit
+Log: SystemParameter = /home/<usuario>/.config/FreeCAD/v1-1/system.cfg
+Log: UserAppData = /home/<usuario>/.local/share/FreeCAD/v1-1/
+Log: UserCachePath = /home/<usuario>/.cache/FreeCAD/v1-1/Cache/
+Log: UserConfigPath = /home/<usuario>/.config/FreeCAD/v1-1/
+Log: UserHomePath = /home/<usuario>
+Log: UserMacroPath = /home/<usuario>/.local/share/FreeCAD/v1-1/Macro/
+Log: UserParameter = /home/<usuario>/.config/FreeCAD/v1-1/user.cfg
+Log: Verbose = 
+Log: XERCESC_VERSION = 3.3.0
+Log: Create Application
+Log: Run App init script
+Log: Init: starting App::FreeCADInit.py
+Log: Init:   Searching for modules...
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/AddonManager/./... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Assembly... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/BIM... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/CAM... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Draft... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Fem... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Help(Init.py not found)... ignore
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Idf... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Import... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Inspection... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Material... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Measure... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Mesh... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/MeshPart... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/OpenSCAD... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Part... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/PartDesign... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Plot(Init.py not found)... ignore
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Points... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/ReverseEngineering... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Robot... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Show(Init.py not found)... ignore
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Sketcher... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Spreadsheet... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Start... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Surface... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/TechDraw... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Test... done
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Tux(Init.py not found)... ignore
+Log: Init:      Initializing /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Web... done
+Log: Init:      Initializing /home/<usuario>/.local/share/FreeCAD/v1-1/Mod/FreeCADMCP... done
+Log: Using /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod as module path!
+Log: System path after init:
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/bin
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/AddonManager
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/AddonManager/./
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Assembly
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/BIM
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/CAM
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Draft
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Fem
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Help
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Idf
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Import
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Inspection
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Material
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Measure
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Mesh
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/MeshPart
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/OpenSCAD
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Part
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/PartDesign
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Plot
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Points
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/ReverseEngineering
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Robot
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Show
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Sketcher
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Spreadsheet
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Start
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Surface
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/TechDraw
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Test
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Tux
+Log:    /home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/Mod/Web
+Log:    /home/<usuario>/.local/share/FreeCAD/v1-1/Mod/FreeCADMCP
+Log:    /usr/local/sbin
+Log:    /usr/local/bin
+Log:    /usr/bin
+Log:    /opt/bin
+Log:    /usr/lib/llvm/22/bin
+Log: Init: App::FreeCADInit.py done
+Log: Init: Processing command line files
+Log: Init:     Processing file: /home/<usuario>/tcc-pnaat/github/cad-workspace/structural-candidate-20260911T053435Z/probe_geom.py
+Log: Loading Material module… done
+Log: Module: Part
+Log: Loading Part module... done
+Log: Loading Mesh module... done
+Log: Exiting on purpose
+Log: FreeCAD terminating...
+Log: Saving system parameter...
+Log: Saving system parameter...done
+Log: Saving user parameter...
+Log: Saving user parameter...done

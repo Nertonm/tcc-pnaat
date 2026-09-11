@@ -1,0 +1,118 @@
+{
+  "step": {
+    "valid": true,
+    "solids": 1,
+    "volume": 10192.515797875318,
+    "bbox": [
+      -71.0,
+      32.0,
+      0.0,
+      0.0,
+      72.0,
+      20.0
+    ],
+    "volume_delta": 0.0,
+    "bbox_max_delta": 0.0
+  },
+  "fcstd": {
+    "valid": true,
+    "solids": 1,
+    "volume": 10192.515797875318,
+    "bbox": [
+      -71.0,
+      32.0,
+      0.0,
+      0.0,
+      72.0,
+      20.0
+    ],
+    "volume_delta": 0.0,
+    "bbox_max_delta": 0.0
+  },
+  "stl": {
+    "solid": true,
+    "components": 1,
+    "volume": 10192.580078125,
+    "facets": 3700,
+    "relative_volume_error": 6.306612710442812e-06
+  },
+  "join_face_area_mm2": {
+    "old": 0.0,
+    "candidate": 99.99999999999999
+  },
+  "holes": [
+    {
+      "start": [
+        -56,
+        67,
+        10
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "probe_radius": 0.5,
+      "probe_length": 5,
+      "blocked_volume": 0.0
+    },
+    {
+      "start": [
+        -30.5,
+        67,
+        10
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "probe_radius": 0.5,
+      "probe_length": 5,
+      "blocked_volume": 0.0
+    },
+    {
+      "start": [
+        -5,
+        67,
+        10
+      ],
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "probe_radius": 0.5,
+      "probe_length": 5,
+      "blocked_volume": 0.0
+    },
+    {
+      "start": [
+        -71,
+        42,
+        10
+      ],
+      "axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "probe_radius": 0.5,
+      "probe_length": 5,
+      "blocked_volume": 0.0
+    }
+  ],
+  "source_preservation": {
+    "/tmp/r07b.py": true,
+    "/tmp/dinr135-007.5.step": true,
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/references/vendor/g-clamp-tripod/G-clamp_Tripod.stl": true,
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/references/vendor/din-rail-parts/raw/din-clip-redux-selftap.3mf": true,
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/references/vendor/din-rail-parts/m6-bracket/DIN Rail Bracket 4mm.stl": true,
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/references/vendor/din-rail-parts/angle-adapter/din-rail_right_angle_adapter-100mm.step": true,
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/01-g-clamp.stl": true,
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/02-cantoneira.stl": true,
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/03-redux.stl": true,
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/04-trilho-ts35.stl": true
+  },
+  "result": "PASS_TOPOLOGY_ONLY; ASSEMBLY_BLOCKED"
+}

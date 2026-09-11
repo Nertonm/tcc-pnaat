@@ -1,0 +1,16 @@
+{
+  "inputs": {
+    "/tmp/r07b.py": "e8c96bf260f654283f5de33585af9be35f7d7349f55b6c402690fb5250d99606",
+    "/tmp/dinr135-007.5.step": "d6ef5aead8f2c9c9ea4b511054916b82600d78c1b347c337e04c77a0a532acb9",
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/references/vendor/g-clamp-tripod/G-clamp_Tripod.stl": "ebe4ac7c66ea61d2b90f9a53d9a49c109fdc9c54a2279051ef3e75e2be2240ab",
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/references/vendor/din-rail-parts/raw/din-clip-redux-selftap.3mf": "3f4bd389aecae10bb5b8dd2e093e30fc20c8825952968a16e7559e20e395fa3e",
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/references/vendor/din-rail-parts/m6-bracket/DIN Rail Bracket 4mm.stl": "dba83c3dab9f4c6718474f0526e7e71d55097ff896f84ac1eaa52e4c4d28255b",
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/references/vendor/din-rail-parts/angle-adapter/din-rail_right_angle_adapter-100mm.step": "9895709b8b20c4a2c9e56443f83a888c20750de50877e1022f0f3e87c1ae66a0",
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/01-g-clamp.stl": "0596e63f31ee2e3c24876cafc6e5bb355463324ff79d8fc9750022c8955882c1",
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/02-cantoneira.stl": "db5cfa65516f42b7abdee58abf50fd3feaaad4e6340546bc3bde25b3100a8108",
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/03-redux.stl": "c86d23533f81b011a54a22ceeffc9434c107bb5e2c591bfdca9343ef9652ec80",
+    "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/04-trilho-ts35.stl": "dcf633081237988acc09e6b4dca34116d53a041f84d7e5682c799edc0938ac15"
+  },
+  "git_head": "774234299be1ff8e9b40da6bb23b6329a3fc3681",
+  "git_status": "?? candidate-audit-20260911T052357Z/\n"
+}

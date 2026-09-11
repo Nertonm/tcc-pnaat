@@ -1,0 +1,12 @@
+saved iso 28713
+saved topo 9159
+saved lado 28687
+saved frente 15717
+grab {'path': '/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/janela-real.png', 'returncode': 0, 'bytes': 726467, 'stderr': ''}
+done {"gui_up": true, "document": "portico_montantes", "objects": 15, "main_window_title": "[*] portico-montantes - FreeCAD 1.1.1", "shots": [{"view": "iso", "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/iso.png", "bytes": 28713}, {"view": "topo", "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/topo.png", "bytes": 9159}, {"view": "lado", "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/lado.png", "bytes": 28687}, {"view": "frente", "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/frente.png", "bytes": 15717}], "window_geometry_px": [1500, 950], "window_visible": true, "desktop_grab": {"path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/janela-real.png", "returncode": 0, "bytes": 726467, "stderr": ""}}
+saved iso 36316
+saved topo 28378
+saved lado 18226
+saved frente 13889
+grab {'path': '/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/janela-real.png', 'returncode': 0, 'bytes': 1224626, 'stderr': ''}
+done {"gui_up": true, "document": "portico_montantes", "objects": 15, "main_window_title": "[*] portico-montantes - FreeCAD 1.1.1", "shots": [{"view": "iso", "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/iso.png", "bytes": 36316}, {"view": "topo", "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/topo.png", "bytes": 28378}, {"view": "lado", "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/lado.png", "bytes": 18226}, {"view": "frente", "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/frente.png", "bytes": 13889}], "window_geometry_px": [1500, 950], "window_visible": true, "desktop_grab": {"path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/portico-montantes-20260911T063439Z/shots/janela-real.png", "returncode": 0, "bytes": 1224626, "stderr": ""}}

@@ -1,0 +1,389 @@
+{
+  "scope": "topology-only coupon, not approved assembly",
+  "freecad": [
+    "1",
+    "1",
+    "1",
+    "20260414 (Git shallow)",
+    "Unknown",
+    "2026/04/14 22:09:59",
+    "(HEAD detached at 0108fd4b4)",
+    "0108fd4b4850cc46e625b60e53cea7a7bbe69f8d"
+  ],
+  "old_cant": {
+    "valid": true,
+    "closed": true,
+    "solids": 2,
+    "shells": 2,
+    "volume": 9692.515797875316,
+    "bbox": [
+      -71.0,
+      32.0,
+      0.0,
+      0.0,
+      72.0,
+      20.0
+    ]
+  },
+  "candidate_cant": {
+    "valid": true,
+    "closed": true,
+    "solids": 1,
+    "shells": 1,
+    "volume": 10192.515797875318,
+    "bbox": [
+      -71.0,
+      32.0,
+      0.0,
+      0.0,
+      72.0,
+      20.0
+    ]
+  },
+  "old_join": {
+    "area": 0.0,
+    "volume": 0.0,
+    "edges": 0
+  },
+  "candidate_join": {
+    "area": 0.0,
+    "volume": 0.0
+  },
+  "mutation_test": {
+    "old_fails_one_solid": true,
+    "candidate_passes_one_solid": true
+  },
+  "holes_candidate": [
+    {
+      "radius": 1.7,
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "center": [
+        -56.0,
+        66.0,
+        10.0
+      ]
+    },
+    {
+      "radius": 3.175,
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "center": [
+        -30.5,
+        64.0,
+        10.0
+      ]
+    },
+    {
+      "radius": 1.7,
+      "axis": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "center": [
+        -5.0,
+        66.0,
+        10.0
+      ]
+    },
+    {
+      "radius": 3.175,
+      "axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "center": [
+        -73.0,
+        42.0,
+        10.0
+      ]
+    }
+  ],
+  "G-clamp_Tripod.stl": {
+    "facets": 3218,
+    "points": 1596,
+    "solid": false,
+    "components": 2,
+    "brep_shell": {
+      "valid": true,
+      "closed": true,
+      "solids": 0,
+      "shells": 1,
+      "volume": 20639.103835316382,
+      "bbox": [
+        -66.0,
+        32.0,
+        -2.7755575615628914e-17,
+        5.0,
+        67.0009994506836,
+        19.999000549316406
+      ]
+    }
+  },
+  "r07-01-g-clamp.stl": {
+    "facets": 3218,
+    "points": 1596,
+    "solid": false,
+    "components": 2,
+    "brep_shell": {
+      "valid": true,
+      "closed": true,
+      "solids": 0,
+      "shells": 1,
+      "volume": 20493.695692705238,
+      "bbox": [
+        -66.0,
+        32.0,
+        -2.7755575615628914e-17,
+        5.0,
+        67.0009994506836,
+        19.999000549316406
+      ]
+    }
+  },
+  "r07-02-cantoneira.stl": {
+    "facets": 3704,
+    "points": 1846,
+    "solid": false,
+    "components": 2,
+    "brep_shell": {
+      "valid": true,
+      "closed": true,
+      "solids": 0,
+      "shells": 2,
+      "volume": 9692.566832371682,
+      "bbox": [
+        -71.0,
+        32.0,
+        -8.881784197001252e-16,
+        8.881784197001252e-16,
+        72.0,
+        20.0
+      ]
+    }
+  },
+  "m6-bracket.stl": {
+    "facets": 836,
+    "points": 422,
+    "solid": false,
+    "components": 5,
+    "brep_shell": {
+      "valid": true,
+      "closed": true,
+      "solids": 0,
+      "shells": 5,
+      "volume": 10360.463975266955,
+      "bbox": [
+        -13.0,
+        -19.5,
+        -2.0,
+        13.0,
+        19.5,
+        9.5
+      ]
+    }
+  },
+  "3mf_structure": {
+    "models": [
+      "3D/3dmodel.model"
+    ],
+    "objects": [
+      {
+        "id": "1",
+        "type": "model"
+      }
+    ],
+    "build": [
+      {
+        "objectid": "1"
+      }
+    ],
+    "unit": "millimeter"
+  },
+  "redux_mesh": {
+    "facets": 9524,
+    "points": 4758,
+    "solid": true,
+    "components": 1
+  },
+  "redux_shell": {
+    "valid": true,
+    "closed": true,
+    "solids": 0,
+    "shells": 1,
+    "volume": 4664.896499740172,
+    "bbox": [
+      -27.0,
+      -9.0,
+      -1.000000003627494e-15,
+      33.0,
+      9.0,
+      7.599999904632568
+    ]
+  },
+  "rail_original": {
+    "valid": true,
+    "closed": true,
+    "solids": 1,
+    "shells": 1,
+    "volume": 3178.358451247017,
+    "bbox": [
+      0.0,
+      -3.903127820947816e-15,
+      -17.5,
+      75.0,
+      7.5000000000000036,
+      17.5
+    ]
+  },
+  "r07_datums": {
+    "rail_length_axis": [
+      1.1102230246251565e-16,
+      1.0,
+      -1.1102230246251565e-16
+    ],
+    "rail_section_normal": [
+      -1.1102230246251565e-16,
+      1.1102230246251565e-16,
+      1.0
+    ],
+    "clip_mounting_normal": [
+      0.0,
+      1.0,
+      -2.220446049250313e-16
+    ],
+    "normal_dot": -1.1102230246251565e-16,
+    "clip_normal_dot_rail_length": 1.0,
+    "interpretation": "normal mismatch; section normal uses STEP thickness Y and clip thickness Z"
+  },
+  "angle_adapter": {
+    "valid": true,
+    "closed": true,
+    "solids": 7,
+    "shells": 7,
+    "volume": 18302.672650345878,
+    "bbox": [
+      -18.500000000000004,
+      -2.4999999999999973,
+      -50.0,
+      18.500000000000004,
+      9.494734473992217,
+      50.000000000000014
+    ],
+    "solid_details": [
+      {
+        "valid": true,
+        "closed": true,
+        "solids": 1,
+        "shells": 1,
+        "volume": 18143.24334796813,
+        "bbox": [
+          -18.500000000000004,
+          -2.4999999999999973,
+          -50.0,
+          18.500000000000004,
+          9.494734473992217,
+          50.000000000000014
+        ]
+      },
+      {
+        "valid": true,
+        "closed": true,
+        "solids": 1,
+        "shells": 1,
+        "volume": 67.97003937069705,
+        "bbox": [
+          -9.99999999999997,
+          -0.7000000000000001,
+          -45.400000000000006,
+          -3.2000000000000273,
+          -0.10000000000000016,
+          10.441699475574161
+        ]
+      },
+      {
+        "valid": true,
+        "closed": true,
+        "solids": 1,
+        "shells": 1,
+        "volume": 5.872307806183434,
+        "bbox": [
+          -11.499999999999996,
+          -0.7000000000000001,
+          -29.979150262212926,
+          -10.799999999999999,
+          -0.10000000000000016,
+          -4.979150262212923
+        ]
+      },
+      {
+        "valid": true,
+        "closed": true,
+        "solids": 1,
+        "shells": 1,
+        "volume": 5.872307806183444,
+        "bbox": [
+          -2.400000000000005,
+          -0.7000000000000001,
+          -29.979150262212926,
+          -1.700000000000007,
+          -0.10000000000000016,
+          -4.979150262212923
+        ]
+      },
+      {
+        "valid": true,
+        "closed": true,
+        "solids": 1,
+        "shells": 1,
+        "volume": 67.97003937066293,
+        "bbox": [
+          3.2000000000000273,
+          -0.7000000000000001,
+          -45.400000000000006,
+          9.99999999999997,
+          -0.10000000000000016,
+          10.441699475574161
+        ]
+      },
+      {
+        "valid": true,
+        "closed": true,
+        "solids": 1,
+        "shells": 1,
+        "volume": 5.872307806183435,
+        "bbox": [
+          1.7000000000000604,
+          -0.7000000000000001,
+          -29.979150262212933,
+          2.400000000000176,
+          -0.10000000000000016,
+          -4.979150262212937
+        ]
+      },
+      {
+        "valid": true,
+        "closed": true,
+        "solids": 1,
+        "shells": 1,
+        "volume": 5.872307806183406,
+        "bbox": [
+          10.800000000000061,
+          -0.7000000000000001,
+          -29.979150262212983,
+          11.50000000000017,
+          -0.10000000000000016,
+          -4.979150262212979
+        ]
+      }
+    ]
+  }
+}

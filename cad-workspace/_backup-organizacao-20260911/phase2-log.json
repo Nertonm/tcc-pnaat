@@ -1,0 +1,52 @@
+{
+  "stages": [
+    {
+      "mapa": [
+        {
+          "de": "candidate-audit-20260911T052357Z",
+          "para": "auditoria-r07-20260911T052357Z"
+        },
+        {
+          "de": "structural-candidate-20260911T053435Z",
+          "para": "base-estrutura-20260911T053435Z"
+        },
+        {
+          "de": "stage0-reference-review-20260911T032253Z",
+          "para": "stage0-referencias-20260911T032253Z"
+        },
+        {
+          "de": "stage1-references-20260911",
+          "para": "stage1-referencias-20260911"
+        }
+      ],
+      "stage": "renames"
+    },
+    {
+      "de": "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r05/camera-mount-din-v1-interferencia.step",
+      "para": "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r05/_diagnostico/camera-mount-din-v1-interferencia.step",
+      "bytes": 7806129,
+      "sha256": "465d35962ffe23a1b4470d18fdf7f5c966aba57d6fd32f8f013dbadf5246c9d6",
+      "stage": "diagnostico_movido"
+    },
+    {
+      "original": "/home/<usuario>/tcc-pnaat/github/cad-workspace/reports/R05-CAMERA-MOUNT-DIN.md",
+      "copia": "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r05/LAUDO-camera-mount-din-v6.md",
+      "original_sha256": "495bfb5e4f314a634a8ff0d6758e47b6118a712872b68c64950bf8acac3bc4bb",
+      "original_intacto": true,
+      "stage": "laudo_copiado"
+    },
+    {
+      "arquivos": [
+        "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r06-estrutura/REPROVADO.md",
+        "/home/<usuario>/tcc-pnaat/github/cad-workspace/exports/concepts/optical-rig-r07-estrutura/REPROVADO.md"
+      ],
+      "relatorios_originais_intactos": true,
+      "stage": "reprovado_marcado"
+    },
+    {
+      "path": "/home/<usuario>/tcc-pnaat/github/cad-workspace/INDICE.md",
+      "bytes": 11562,
+      "stage": "indice_criado"
+    }
+  ]
+}

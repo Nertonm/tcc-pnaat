@@ -1,0 +1,165 @@
+{
+  "parts": {
+    "ClampFunctionalSource": {
+      "valid": true,
+      "solids": 1,
+      "volume": 20490.756,
+      "bbox": [
+        -66.0,
+        32.0,
+        -0.0,
+        5.0,
+        67.001,
+        19.999
+      ]
+    },
+    "SocketSaddleAdapted": {
+      "valid": true,
+      "solids": 1,
+      "volume": 23242.207,
+      "bbox": [
+        -52.0,
+        59.0,
+        -8.0,
+        -9.0,
+        102.001,
+        28.0
+      ]
+    },
+    "SpineCap": {
+      "valid": true,
+      "solids": 1,
+      "volume": 4419.398,
+      "bbox": [
+        -52.0,
+        52.0,
+        -8.0,
+        -9.0,
+        55.0,
+        28.0
+      ]
+    },
+    "SaddleBoltEnvelope0": {
+      "valid": true,
+      "solids": 1,
+      "volume": 429.613,
+      "bbox": [
+        -51.5,
+        51.0,
+        -8.5,
+        -44.5,
+        79.0,
+        -1.5
+      ]
+    },
+    "SaddleNutEnvelope0": {
+      "valid": true,
+      "solids": 1,
+      "volume": 77.754,
+      "bbox": [
+        -51.5,
+        73.001,
+        -8.5,
+        -44.5,
+        76.001,
+        -1.5
+      ]
+    },
+    "SaddleBoltEnvelope1": {
+      "valid": true,
+      "solids": 1,
+      "volume": 429.613,
+      "bbox": [
+        -16.5,
+        51.0,
+        21.5,
+        -9.5,
+        79.0,
+        28.5
+      ]
+    },
+    "SaddleNutEnvelope1": {
+      "valid": true,
+      "solids": 1,
+      "volume": 77.754,
+      "bbox": [
+        -16.5,
+        73.001,
+        21.5,
+        -9.5,
+        76.001,
+        28.5
+      ]
+    },
+    "Rail75Actual": {
+      "valid": true,
+      "solids": 1,
+      "volume": 3178.358,
+      "bbox": [
+        -48.0,
+        87.501,
+        10.0,
+        -13.0,
+        162.501,
+        17.5
+      ]
+    },
+    "RailRetentionBoltEnvelope": {
+      "valid": true,
+      "solids": 1,
+      "volume": 241.117,
+      "bbox": [
+        -34.0,
+        92.101,
+        2.0,
+        -27.0,
+        99.101,
+        15.0
+      ]
+    },
+    "RailRetentionNutEnvelope": {
+      "valid": true,
+      "solids": 1,
+      "volume": 77.754,
+      "bbox": [
+        -34.0,
+        92.101,
+        11.001,
+        -27.0,
+        99.101,
+        14.001
+      ]
+    }
+  },
+  "pairs": {
+    "ClampFunctionalSource__SocketSaddleAdapted": 0.0,
+    "ClampFunctionalSource__SpineCap": 0.0,
+    "SocketSaddleAdapted__SaddleBoltEnvelope0": 0.0,
+    "SocketSaddleAdapted__SaddleNutEnvelope0": 0.0,
+    "SocketSaddleAdapted__SaddleBoltEnvelope1": 0.0,
+    "SocketSaddleAdapted__SaddleNutEnvelope1": 0.0,
+    "SocketSaddleAdapted__Rail75Actual": 0.0,
+    "SocketSaddleAdapted__RailRetentionBoltEnvelope": 0.0,
+    "SocketSaddleAdapted__RailRetentionNutEnvelope": 0.0,
+    "SpineCap__SaddleBoltEnvelope0": 0.0,
+    "SpineCap__SaddleBoltEnvelope1": 0.0,
+    "SaddleBoltEnvelope0__SaddleNutEnvelope0": 0.0,
+    "SaddleBoltEnvelope1__SaddleNutEnvelope1": 0.0,
+    "Rail75Actual__RailRetentionBoltEnvelope": 0.0,
+    "Rail75Actual__RailRetentionNutEnvelope": 0.0,
+    "RailRetentionBoltEnvelope__RailRetentionNutEnvelope": 0.0
+  },
+  "negative_extraction_pin_overlap": 2.816789,
+  "base_parts_pass": true,
+  "base_collision_pass": true,
+  "m6_rail_fit": {
+    "common": 0.0,
+    "distance": 0.0
+  },
+  "not_validated": [
+    "load",
+    "threaded fasteners",
+    "print tolerances",
+    "actual conveyor"
+  ]
+}
