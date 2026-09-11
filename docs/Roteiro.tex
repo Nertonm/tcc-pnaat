@@ -1,0 +1,69 @@
+\chapter{Roteiro do vídeo pitch}
+
+\section{Introdução — Problema}
+\textbf{Tempo reservado: 2 a 3 minutos}
+
+\begin{itemize}
+    \item Abrir com o gancho de dor: em uma fábrica de envase rápido, garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo chegam sem triagem até a etapa final da linha.
+    \item Explicar a consequência concreta: isso trava a esteira principal, gera paradas não programadas, derramamento de líquido e desperdício de lotes já embalados.
+    \item Situar o problema no processo: mostrar (com imagem, diagrama ou vídeo curto) o ponto exato da linha onde a falha ocorre — a etapa final, antes do empacotamento.
+    \item Fechar a introdução com a pergunta que a solução vai responder: "como identificar e remover esses itens defeituosos antes que cheguem a essa etapa, sem parar a esteira?"
+\end{itemize}
+
+\section{Solução — Proposta tecnológica}
+\textbf{Tempo reservado: 4 a 5 minutos}
+
+\begin{itemize}
+    \item Apresentar a proposta em uma frase: inspeção visual multi-vista (topo + duas laterais) com trigger físico confiável, classificação automática dos três tipos de defeito e ejeção confirmada por sensor.
+    \item Explicar o fluxo entrada → processamento → saída (reaproveitar o diagrama do capítulo de arquitetura): trigger (E18-D80NK + VL53L0X) → captura sincronizada (3 câmeras) → classificação por vista → fusão por votação → registro no hub → ejeção confirmada.
+    \item Indicar, sem entrar em detalhe técnico excessivo, como cada componente resolve uma parte específica do problema:
+    \begin{itemize}
+        \item o trigger garante que toda garrafa seja capturada, mesmo transparente ou com líquido;
+        \item as três vistas cobrem tampa e corpo simultaneamente;
+        \item a fusão por votação evita decisão baseada em uma única vista com erro;
+        \item o atuador só ejeta com confirmação física, evitando remover item bom por engano.
+    \end{itemize}
+    \item Reforçar que o valor esperado (redução de paradas, menos desperdício) é uma expectativa a ser validada por ensaio, não um resultado já medido.
+\end{itemize}
+
+\section{Demonstração — Funcionamento}
+\textbf{Tempo reservado: 5 a 6 minutos}
+
+\begin{itemize}
+    \item Anunciar o que será mostrado ao vivo: passagem de garrafas golden sample (uma OK e as anomalias conhecidas: sem tampa, tampa mal rosqueada, deformidade) pelo rig montado.
+    \item Indicar o espaço físico reservado: bancada com esteira/rig montado, câmeras posicionadas e iluminação estroboscópica .
+  \item Descrever a sequência da demonstração:
+    \begin{enumerate}
+        \item passagem da garrafa golden OK — deve seguir sem ejeção;
+        \item passagem das três garrafas com defeito conhecido, uma de cada vez — cada uma deve ser classificada e ejetada;
+        \item mostrar em paralelo o dashboard atualizando o status de cada item em tempo de execução.
+    \end{enumerate}
+    \item Reservar o tempo de forma explícita no roteiro: cerca de 1 minuto por golden sample (4 no total) + 1 a 2 minutos para mostrar o dashboard e o registro gerado.
+    \item Caso algum defeito não seja capturado ao vivo (falha de rede, hardware etc.), ter um vídeo de backup gravado previamente como plano B, deixado claro na narração que é uma gravação de apoio.
+\end{itemize}
+
+\section{Conclusão — Fechamento}
+\textbf{Tempo reservado: 2 minutos}
+
+\begin{itemize}
+    \item Retomar o problema em uma frase: paradas não programadas e desperdício causados por garrafas defeituosas na etapa final da linha.
+    \item Retomar a solução em uma frase: inspeção multi-vista com classificação automática e ejeção confirmada, sem interromper o fluxo da esteira.
+    \item Apresentar o resultado esperado com o cuidado já adotado no documento de requisitos: falar em termos de expectativa e não de dado comprovado, por exemplo: "esperamos que essa abordagem reduza o número de paradas não programadas causadas por esse tipo de defeito, algo que pretendemos validar com ensaios de throughput e resiliência nas próximas etapas."
+    \item Indicar continuidade: quais camadas ainda dependem de validação (ex.: camadas condicionais de detecção de anomalia desconhecida, generalização para outros objetos) para deixar claro o que é núcleo pronto e o que é extensão futura.
+    \item Fechar com agradecimento e call-to-action apropriado (perguntas, disponibilidade para detalhamento técnico).
+\end{itemize}
+
+\section{Distribuição de tempo (referência rápida)}
+\begin{tabularx}{\textwidth}{p{0.3\textwidth} Y}
+\toprule
+Parte & Tempo reservado\\
+\midrule
+Introdução & 2–3 min\\
+Solução & 4–5 min\\
+Demonstração & 5–6 min\\
+Conclusão & 2 min\\
+\midrule
+\textbf{Total} & \textbf{13–16 min (ajustar para caber em 15 min)}\\
+\bottomrule
+\end{tabularx}
+
