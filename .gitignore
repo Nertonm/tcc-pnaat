@@ -15,13 +15,18 @@ managed_components/
 
 # Raw data and generated CAD outputs
 data/
-dataset/
 *.jpg
+!dataset/**/*.jpg
 *.jpeg
+!dataset/**/*.jpeg
 *.png
+!dataset/**/*.png
 *.bmp
+!dataset/**/*.bmp
 *.webp
+!dataset/**/*.webp
 *.heic
+!dataset/**/*.heic
 *.npy
 *.mp4
 *.mov
@@ -62,8 +67,7 @@ docs/agent/
 # Vendor external snapshots (not publishable)
 cad-workspace/references/vendor/**
 
-# imagens locais (symlink) — nunca versionar
-/dataset
+# dataset/ do rig: versionado de proposito (81 frames, 1,86 MB) — o gate tem a mesma excecao
 
 # resultados gerados por notebook (MVTec etc.)
 **/notebooks/results/
