@@ -63,6 +63,14 @@ Uma direção adotada orienta os requisitos e a implementação, mas não repres
 - A decidir: regra para combinar as duas vistas laterais, tratamento definitivo da discordância lateral e limiares mínimos de qualidade e confiança, validados nas PoCs 01 e 02.
 - Alternativas não adotadas no núcleo B e C, por aumentarem o acoplamento entre vistas e dificultarem a preservação explícita da vista ausente e da decisão por domínio.
 
+### Emenda a D-04 (2026-09-11): a vista superior NAO decide a tampa
+
+A decisao original ("a vista superior decide isoladamente o dominio da tampa") esta **incorreta**: a
+vista de topo nao tem informacao suficiente para decidir a tampa sozinha. A decisao da tampa passa a
+rodar nas **duas vistas laterais**; a vista de topo permanece como **check dimensional independente**,
+cuja unica funcao e verificar que a dimensao nao foi violada (pode escalonar, nunca aprovar sozinha).
+Ver D-23.
+
 ## D-05: Topologia da demonstração
 
 - Opções:
@@ -352,6 +360,65 @@ Uma direção adotada orienta os requisitos e a implementação, mas não repres
   - requisitos condicionais devem possuir fallback que preserve o funcionamento do núcleo;
   - requisito condicional sem evidência suficiente deve permanecer aberto ou ser adiado.
 - A decidir: quais requisitos condicionais serão promovidos para a demonstração após as PoCs essenciais.
+
+## D-23: Vista decisoria da tampa (duas laterais + topo como check)
+
+- Contexto: RF-03 exige "composicao multi-view" (`requisitos.md`); D-04 afirmava que a vista superior
+  decidia isoladamente, o que o usuario corrigiu como erro.
+- Decisao: a classificacao da tampa roda nas **duas vistas laterais** (medida de tilt/arco por vista,
+  fusao determinista preservando discordancia, D-04 no que segue valido). A vista de **topo** e um
+  **check dimensional independente**: sua unica funcao e verificar que a dimensao nao foi violada; ela
+  **nao aprova** o item e, quando violada, **escalona** o caso.
+- Consequencia: a matriz da PoC-02 e por item, com a vista lateral como via decisoria e o topo como
+  veto/flag dimensional; a taxa de escalonamento por motivo entra no resultado.
+- A calibrar empiricamente: qual grandeza do topo constitui "dimensao violada" e o limiar dela.
+
+## D-24: Nenhum limiar de aceitacao sem fonte ou validacao empirica
+
+- Contexto: `politica_tampa.py` fixa `tilt_incerto=2,0`, `tilt_reprova=4,0` e `altura_ausente_px=3,0`;
+  os dois primeiros vem de **erro de medicao** (`reference/medicao-vies-elipse-geometria.md`) e o
+  terceiro nao tem fonte. A regra do arquivo exige criterio definido antes do ensaio.
+- Decisao: todo limiar usado como criterio de aceitacao precisa de (a) fonte primaria citada com
+  `arquivo:linha`, ou (b) **validacao empirica registrada** (protocolo, `n` e resultado). Limiar sem
+  nenhum dos dois **nao pode ser usado como criterio**: serve apenas como parametro provisorio, marcado
+  como tal. Toda avaliacao registra o bloco de limiares usado (versionado).
+- Estado atual: `arco_visivel_min_graus` tem fonte; tilt e altura **nao tem** (parametros provisorios).
+
+## D-25: Metrica da PoC-02 por classe, com IC, FP separado e imagem anotada
+
+- Contexto: `classificacao.py` devolvia acuracia **global** com limiar unico, sem IC e sem FP: nao
+  atende RNF-02 ("acuracia com intervalo de confianca", por classe) nem RNF-03 (FP separado de FN).
+- Decisao: a avaliacao passa a produzir, **por classe**: recall com IC de Wilson 95% (e
+  Clopper-Pearson quando disponivel), `n` declarado, FP separado de FN e de erro tecnico, taxa de
+  inconclusivo e taxa de escalonamento por motivo. Alem disso, cada item avaliado gera **imagem
+  anotada** mostrando o que discriminou a decisao (classe prevista x verdadeira, confianca, medidas e
+  motivos).
+- Implementado em: `code-workspace/scripts/avaliar_poc02.py` (+ `tests/test_avaliar_poc02.py`).
+- Consequencia: a acuracia global agregada deixa de ser criterio; nenhum numero pode ser publicado como
+  "RNF-02 atendido" sem o limite inferior do IC.
+
+## D-26: Fronteira entra no conjunto; inconclusivo e classe propria
+
+- Decisao: amostras de fronteira (rosca parcial/alinhamento limitrofe) entram no conjunto de teste e a
+  confusao que produzem e reportada; `inconclusivo` e classe propria da matriz e **conta como erro** para
+  o recall da classe verdadeira. Inconclusivo acima de 10% dos itens torna o resultado
+  **nao decidivel** (nunca aprovacao silenciosa).
+- Consequencia: o manifest registra quantos itens sao de fronteira e a definicao operacional usada.
+
+## D-27: Composicao de fontes com procedencia por numero
+
+- Decisao: a PoC-02 usa uma **composicao de todas as referencias e datasets disponiveis** (conjunto
+  proprio + corpus publico + referencias bibliograficas), mas **metrica nunca e agregada entre fontes**:
+  cada `fonte` tem seu proprio bloco (recall/IC/FP), e todo numero publicado carrega a sua origem.
+- Consequencia: resultado de dataset publico nao responde ao RNF-02 do projeto; serve a metodo,
+  convencao de rotulo e bootstrap. O conjunto proprio continua sendo o unico que responde ao RNF.
+
+## D-28: Vocabulario canonico das classes
+
+- Decisao: as classes sao `normal`, `tampa_ausente`, `tampa_mal_rosqueada` e `inconclusivo`. Nomes
+  divergentes (`cap_ausente`, `cap_mal_rosqueada`) em testes/artefatos sao legado e devem ser corrigidos
+  quando tocados.
+- Consequencia: relatorios e matrizes usam apenas esse vocabulario.
 
 ## Regra de atualização
 

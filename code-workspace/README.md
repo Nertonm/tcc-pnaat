@@ -1,6 +1,6 @@
-# code-workspace — PoCs do Cenário 1 (Inspeção de envase)
+# code-workspace: PoCs do Cenário 1 (Inspeção de envase)
 
-Código de validação das PoCs da Entrega 1. Foco: visibilidade e rastreabilidade de
+Código de validação das PoCs do projeto. Foco: visibilidade e rastreabilidade de
 anomalias (tampa ausente, tampa mal rosqueada, deformidade do corpo) em linha de envase.
 Sem atuacao fisica, sem controle de velocidade da esteira; nucleo de nó unico + registro
 local (MQTT/multi-nó são expansão).

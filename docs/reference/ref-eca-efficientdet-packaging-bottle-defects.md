@@ -7,7 +7,7 @@
 - Periódico: Journal of Sensors (Hindawi), Volume 2022, Article ID 9518910, 9 páginas
 - DOI: 10.1155/2022/9518910
 - Ano: 2022 (recebido 29/09/2021; publicado 23/02/2022). Open access (CC BY).
-- PDF local: `/home/nerton/Downloads/Fast_Method_of_Detecting_Packaging_Bottle_Defects_.pdf`
+- PDF local: `/home/<usuario>/Downloads/Fast_Method_of_Detecting_Packaging_Bottle_Defects_.pdf`
 
 ## Método (fonte, CONFIRMED)
 
@@ -39,7 +39,7 @@ Coerências / relevância:
 - **Tampa ausente e tampa deslocada** mapeiam diretamente nossos RF-02 (tampa ausente) e RF-03
   (tampa mal rosqueada). É a referência mais próxima do nosso alvo de tampa.
 - **EfficientDet** como one-stage é um **encoder leve** (mobile-friendly) com bom balanço
-  velocidade/acurácia e potencial de INT8 no Pi 5 — alinha com nossa restrição de borda.
+  velocidade/acurácia e potencial de INT8 no Pi 5: alinha com nossa restrição de borda.
 - **Transfer learning com pouca amostra defeituosa** valida o caminho **supervisionado** para
   tampa (nossa opção A), e a técnica (mosaic + channel attention) é reutilizável no nosso treino.
 
@@ -63,3 +63,5 @@ Reforça o uso de **detecção one-stage leve (EfficientDet)** como candidato do
 para tampa (RF-02/03), com transfer learning e augmentação (mosaic/attention) reutilizáveis, e
 mantém uma referência de acurácia por classe para comparar no nosso benchmark. Continuam válidos:
 one-class leve (CutPaste) para anomalia/novidade e medição mm para geometria. Nenhuma decisão fechada.
+> **Aliases de arquivo:** o PDF em Downloads chamado `Fast_Method_of_Detecting_Packaging_Bottle_Defects_.pdf`
+> e **este mesmo artigo** (metadata `JS_9518910`, J. Sensors 2022, Article ID 9518910).

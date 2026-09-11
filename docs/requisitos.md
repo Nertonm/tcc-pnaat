@@ -1,4 +1,4 @@
-# Requisitos da Entrega 1
+# Requisitos do nucleo
 
 Esta é a versão canônica em Markdown do catálogo usado no PDF. Todos são propostas de engenharia: `Núcleo` pertence à validação inicial; `Expansão` fica registrada para evolução, sem ser apresentada como capacidade validada.
 
@@ -64,4 +64,4 @@ Esta é a versão canônica em Markdown do catálogo usado no PDF. Todos são pr
 | RNF-20 | Estabilidade mecânica sem recalibração indevida após movimentação prevista. | Expansão |
 | RNF-21 | Iluminação difusa sem saturação que prejudique a extração de contornos. | Expansão |
 
-A validação de cada requisito é definida pelas PoCs no PDF. Os arquivos em `requisitos/` mantêm detalhamento histórico e backlog técnico; não substituem este catálogo para a Entrega 1.
+A validação de cada requisito é definida pelas PoCs no PDF. 

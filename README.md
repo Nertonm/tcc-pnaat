@@ -40,13 +40,10 @@ A documentação de engenharia está em desenvolvimento. A entrega atual é a es
 ## Documentação
 
 - `docs/requisitos.md`: requisitos funcionais e não funcionais, pitch, cronograma e critérios de aceite.
-- `docs/requisitos/`: fichas detalhadas por domínio.
 - `docs/escopo.md`: decisões de escopo, indicadores, riscos e limites.
 - `docs/arquitetura.md`: diagrama e revisão dos componentes.
-- `docs/dados-telemetria.md`: schema, consultas e taxonomia de defeitos.
 - `docs/pocs/`: protocolo e fichas das provas de conceito.
 - `docs/DECISIONS.md`: posições de decisão em aberto, com opções e critérios de confirmação.
 
 ## Convenções
 
-Ver `CONTRIBUTING.md` para commits, teste, PoC e fluxo de revisão.

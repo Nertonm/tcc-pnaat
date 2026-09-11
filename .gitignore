@@ -53,8 +53,6 @@ prompts/
 **/prompts/
 docs/agent/
 **/docs/agent/
-codex-*.md
-**/codex-*.md
 
 # Explicitly versioned CAD G0 templates
 !cad-workspace/data/
@@ -63,3 +61,46 @@ codex-*.md
 
 # Vendor external snapshots (not publishable)
 cad-workspace/references/vendor/**
+
+# imagens locais (symlink) — nunca versionar
+/dataset
+
+# resultados gerados por notebook (MVTec etc.)
+**/notebooks/results/
+
+# notebooks do projeto sao versionados (evidencia de metodo); resultados gerados nao
+!code-workspace/notebooks/*.ipynb
+
+
+# Segredos e credenciais (nunca versionar)
+(fora do repo)
+**/(fora do repo)
+*.pem
+*.key
+secrets.*
+**/secrets/
+*.kdbx
+
+# Artefatos de modelo/dados pesados
+*.ckpt
+*.onnx
+*.h5
+*.pth
+
+# Staging de trabalho (nao e entrega)
+cad-workspace/stage*/
+**/stage0-*/
+**/stage1-*/
+
+# demo da PoC: entradas (fotos reais) e saidas geradas ficam fora do git
+demo/entrada/
+demo/saida/
+
+# demo da PoC (fotos reais + saidas) e staging do workstream CAD
+code-workspace/demo/
+cad-workspace/candidate-audit-*/
+cad-workspace/structural-candidate-*/
+
+# artefatos gerados do PoC-01 (stream, evidencias)
+code-workspace/poc01_passagens.csv
+:poc01/

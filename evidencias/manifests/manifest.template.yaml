@@ -3,7 +3,6 @@ type: photo|measurement|video|report
 state: MEASURED|DERIVED|SPECULATIVE|BLOCKED|VALIDATED
 captured_at: YYYY-MM-DDThh:mm:ssZ
 setup: bancada ou ensaio
-instrument: instrumento e identificacao sanitizada
 operator: responsavel
 source_file: caminho externo ou referencia
 sha256: hash do artefato externo

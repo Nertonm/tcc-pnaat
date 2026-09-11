@@ -39,7 +39,7 @@ se encaixa em qualquer esteira: o mesmo sistema se desloca entre linhas ou
   mover (simular troca de esteira) → re-medir; registrar drift em mm.
 - **Versão docente**: o grip extensível É a demonstração do Efeito Demonstração
   invertido: se sobrevive a desmontar/remontar sem recalibrar, prova
-  estabilidade mecânica real para a banca. (Também é a resposta para
+  estabilidade mecânica real para o ensaio. (Também é a resposta para
   "funciona só na bancada?")
 
 ## Relação com o escopo vigente

@@ -1,4 +1,4 @@
-# Escopo da Entrega 1
+# Escopo
 
 ## Cenário e problema
 

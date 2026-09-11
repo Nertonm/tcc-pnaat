@@ -50,7 +50,8 @@ def find_original(name: str, classe: str, origem: Path | None) -> Path | None:
     return None
 
 
-def validate_pair(img_path: Path, origem: Path | None, tol: int, max_outside: float, schema_only: bool) -> dict:
+def validate_pair(img_path: Path, origem: Path | None, tol: int, max_outside: float, schema_only: bool,
+                  margin: int = 1) -> dict:
     res = {"arquivo": img_path.name, "status": "PASS", "problemas": []}
 
     def fail(msg: str) -> None:
@@ -70,6 +71,7 @@ def validate_pair(img_path: Path, origem: Path | None, tol: int, max_outside: fl
     for k in ("classe", "regiao", "arquivo_saida"):
         if k not in meta:
             fail(f"campo obrigatorio ausente: {k}")
+    res["classe"] = meta.get("classe")
     if res["problemas"]:
         return res
 
@@ -129,7 +131,9 @@ def validate_pair(img_path: Path, origem: Path | None, tol: int, max_outside: fl
                 b = np.asarray(e, dtype=np.int16)
                 changed = (np.abs(a - b).max(axis=2) > tol)
                 out = changed.copy()
-                out[y:y + h, x:x + w] = False
+                y0 = max(0, y - margin)
+                x0 = max(0, x - margin)
+                out[y0:y + h + margin, x0:x + w + margin] = False
                 ratio = float(out.sum()) / float(changed.size)
                 res["diff_fora_bbox"] = round(ratio, 6)
                 if ratio > max_outside:
@@ -144,6 +148,7 @@ def main() -> int:
     ap.add_argument("--origem", type=Path, default=None)
     ap.add_argument("--tol", type=int, default=12)
     ap.add_argument("--max-outside", type=float, default=0.002)
+    ap.add_argument("--margin", type=int, default=1, help="margem (px) em volta do bbox p/ absorver convencao de borda")
     ap.add_argument("--schema-only", action="store_true")
     ap.add_argument("--json-out", type=Path, default=None)
     args = ap.parse_args()
@@ -154,9 +159,10 @@ def main() -> int:
         print(f"nenhuma imagem em {args.pares}")
         return 1
 
-    resultados = [validate_pair(p, args.origem, args.tol, args.max_outside, args.schema_only) for p in imgs]
+    resultados = [validate_pair(p, args.origem, args.tol, args.max_outside, args.schema_only, args.margin)
+                  for p in imgs]
     fails = [r for r in resultados if r["status"] == "FAIL"]
-    classes = Counter(r["arquivo"].split("_")[0] for r in resultados)
+    classes = Counter(r.get("classe") or "?" for r in resultados)
     hashes = Counter(sha256(p) for p in imgs)
     dups = [h for h, c in hashes.items() if c > 1]
 
