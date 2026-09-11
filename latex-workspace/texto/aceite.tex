@@ -1,0 +1,80 @@
+\chapter{Reprodutibilidade, aceite e próximos passos}
+
+\section{Repositório como produto}
+\begin{tabularx}{\textwidth}{p{0.28\textwidth} Y p{0.16\textwidth}}
+\toprule
+Item & Preenchimento & Estado\\
+\midrule
+Repositório & \field{URL ou caminho autorizado} & \field{estado}\\
+Versão/commit & \field{hash ou tag} & \field{estado}\\
+Ambiente & \field{SO, hardware e versões} & \field{estado}\\
+Dependências & \field{arquivo e comando} & \field{estado}\\
+Execução & \field{comando exato} & \field{estado}\\
+Teste & \field{comando exato e entrada} & \field{estado}\\
+Saída esperada & \field{resultado verificável} & \field{estado}\\
+Esquemático e pinagem & \field{arquivo, revisão e correspondência com o código} & \field{estado}\\
+Configuração externa & \field{variáveis, drivers, portas e arquivo de exemplo} & \field{estado}\\
+Intervenção manual & \field{ajuste necessário e como foi registrado} & \field{estado}\\
+Limitação & \field{o que não foi reproduzido} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+\instruction{O README deve explicar problema, componentes, pré-requisitos, setup, execução e testes. A reprodução em ambiente limpo deve indicar data, versão, comandos, falhas e intervenções manuais.}
+
+\section{Critérios de aceite}
+\begin{tabularx}{\textwidth}{p{0.12\textwidth} Y Y Y p{0.12\textwidth}}
+\toprule
+ID & Cenário & Resultado esperado & Evidência & Estado\\
+\midrule
+AC-01 & Caminho normal & \field{comportamento} & \field{artefato} & \field{estado}\\
+AC-02 & Falha de comunicação & \field{comportamento seguro} & \field{artefato} & \field{estado}\\
+AC-03 & Entrada inválida & \field{tratamento} & \field{artefato} & \field{estado}\\
+AC-04 & Reexecução limpa & \field{resultado} & \field{artefato} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+\section{Estabilidade e operacionalidade}
+\begin{tabularx}{\textwidth}{p{0.2\textwidth} Y Y Y p{0.13\textwidth}}
+\toprule
+Cenário de falha & Condição injetada & Comportamento seguro & Métrica/evidência & Estado\\
+\midrule
+Conectividade, se aplicável & \field{falha de rede} & \field{resposta local/reconexão} & \field{métrica} & \field{estado}\\
+Evento duplicado ou debounce, se aplicável & \field{pulso ou evento repetido} & \field{deduplicação/filtro} & \field{métrica} & \field{estado}\\
+Entrada ou sensor inválido, se aplicável & \field{null ou valor impossível} & \field{erro explícito} & \field{métrica} & \field{estado}\\
+Reinicialização ou watchdog, se aplicável & \field{travamento ou reset} & \field{recuperação documentada} & \field{métrica} & \field{estado}\\
+Risco específico do domínio & \field{condição} & \field{resposta segura} & \field{métrica} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+\section{Evolução do documento}
+As próximas entregas do curso devem preservar os IDs e atualizar o estado das evidências. Itens exploratórios só entram no escopo após a PoC correspondente e uma decisão registrada.
+
+\section{Cobertura da rubrica PNAAT}
+\begin{tabularx}{\textwidth}{p{0.25\textwidth} p{0.22\textwidth} Y p{0.14\textwidth}}
+\toprule
+Critério & Seção & Evidência necessária & Estado\\
+\midrule
+Identificação & Capa & \field{campos preenchidos} & \field{estado}\\
+Tema oficial & Tema selecionado & \field{nome/número da fonte oficial} & \field{estado}\\
+Situação-problema & Contexto e problema & \field{situação, atores, consequência e evidência} & \field{estado}\\
+Resultado pretendido & Contexto e problema & \field{artefato, capacidade e indicador} & \field{estado}\\
+Limites & Escopo & \field{incluído, excluído e justificativa} & \field{estado}\\
+Requisitos técnicos & Requisitos & \field{RF/RNF, função e verificação} & \field{estado}\\
+Análise aprofundada & PoCs e justificativas & \field{alternativas, critérios e trade-offs} & \field{estado}\\
+Visão crítica & Riscos e visão crítica & \field{limitações, riscos e contingência} & \field{estado}\\
+Justificativas & Justificativas tecnológicas & \field{fonte, evidência e decisão} & \field{estado}\\
+\bottomrule
+\end{tabularx}
+
+\instruction{Validado exige evidência reproduzível. Texto preenchido sem fonte, ensaio ou decisão registrada permanece proposto ou em teste.}
+
+\section{Questões abertas}
+\begin{enumerate}
+  \item \field{qual decisão ainda precisa de evidência?}
+  \item \field{qual PoC fechará a decisão?}
+  \item \field{quem registra o resultado e em qual artefato?}
+  \item \field{qual limitação deve acompanhar a conclusão?}
+\end{enumerate}
+
+\section{Referências}
+\instruction{Cite somente fontes verificadas. Para cada norma, paper, dataset ou documento institucional, registre URL, versão/data e o uso feito da fonte.}
