@@ -99,8 +99,23 @@ Ver D-23.
   - a ausência de confirmação dentro do timeout deve produzir estado de falha;
   - o item separado deve permanecer disponível para análise humana;
   - nenhum item classificado como normal pode ser direcionado intencionalmente ao caminho de análise manual.
-- A decidir: tipo de atuador, modelo e interface elétrica do sensor de confirmação, posicionamento físico, timeout, comportamento diante de falha e procedimento de parada manual, validados na PoC 07.
+- A decidir: tipo de atuador, modelo e interface elétrica do sensor de confirmação, posicionamento físico, timeout, comportamento diante de falha e procedimento de parada manual. A decidir: PoC dedicada, ainda não numerada na lista atual (PoC-01 a PoC-07 + Final).
 - Alternativa descartada C, por eliminar a análise humana e introduzir risco de descarte incorreto.
+
+### Emenda a D-06 (2026-09-11):  separação física é Expansão, não núcleo
+A "Direção adotada: A" original está incoerente com docs/escopo.md, que
+exclui ejeção, atuador, rotação mecânica e descarte automático do núcleo,
+e com requisitos.md, que já marca RF-14 (encaminhamento sem controlar
+atuação física) como Expansão.
+
+Direção corrigida: A passa a ser condicional (Expansão), sujeita a PoC
+dedicada e aprovação de prazo — mesmo tratamento dado a D-10/D-11/D-12.
+Fallback do núcleo: opção B (apenas sinalização, sem separação física),
+que corresponde ao que RF-14 já permite.
+
+A regra e o ciclo detectar → separar → analisar → corrigir → registrar
+permanecem válidos como desenho da expansão, não como comportamento
+exigido do núcleo.
 
 ## D-07: Medição dimensional da tampa
 
@@ -352,7 +367,7 @@ Ver D-23.
   - persistência;
   - dashboard;
   - separação confirmada para análise manual.
-- Requisitos condicionais: RF-13, RF-17, RF-18, RF-19, RF-21, RF-23 e RF-30.
+- Requisitos condicionais: RF-13, RF-14, RF-17, RF-18, RF-19, RF-21, RF-23 e RF-30.
 - Direção adotada requisitos condicionais somente entram na implementação depois da aprovação da PoC aplicável, da verificação do orçamento de desempenho e da confirmação de prazo.
 - Regra:
   - requisito condicional não pode bloquear a validação do núcleo;
@@ -416,9 +431,7 @@ Ver D-23.
 
 ## D-28: Vocabulario canonico das classes
 
-- Decisao: as classes sao `normal`, `tampa_ausente`, `tampa_mal_rosqueada` e `inconclusivo`. Nomes
-  divergentes (`cap_ausente`, `cap_mal_rosqueada`) em testes/artefatos sao legado e devem ser corrigidos
-  quando tocados.
+- Decisão: para o domínio da tampa (PoC-02, isolada), as classes são normal, tampa_ausente, tampa_mal_rosqueada e inconclusivo. O domínio do corpo (deformidade, RF-04) possui vocabulário próprio, a definir na PoC-03, e não está coberto por este vocabulário.
 - Consequencia: relatorios e matrizes usam apenas esse vocabulario.
 
 ## Regra de atualização
