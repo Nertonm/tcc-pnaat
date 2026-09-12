@@ -110,12 +110,12 @@ aderir, não o contrário.
 - Alternativa descartada C, por eliminar a análise humana e introduzir risco de descarte incorreto.
 
 ### Emenda a D-06 (2026-09-11):  separação física é Expansão, não núcleo
-A "Direção adotada: A" original está incoerente com docs/escopo.md, que
+- A "Direção adotada: A" original está incoerente com docs/escopo.md, que
 exclui ejeção, atuador, rotação mecânica e descarte automático do núcleo,
 e com requisitos.md, que já marca RF-14 (encaminhamento sem controlar
 atuação física) como Expansão.
 
-Direção corrigida: A passa a ser condicional (Expansão), sujeita a PoC
+- Direção corrigida: A passa a ser condicional (Expansão), sujeita a PoC
 dedicada e aprovação de prazo — mesmo tratamento dado a D-10/D-11/D-12.
 Fallback do núcleo: opção B (apenas sinalização, sem separação física),
 que corresponde ao que RF-14 já permite.
@@ -279,6 +279,24 @@ exigido do núcleo.
   - as interfaces devem ser parametrizadas sempre que possível no FreeCAD.
 - A decidir: mecanismo de fixação, faixa de ajuste, tolerância de calibração, material, orientação de impressão e método de travamento, validados no laboratório.
 - Detalhes em `docs/design/grip-extensivel.md`.
+
+### Emenda a D-17 (2026-09-11): fixação por trilho DIN TS35 de 50 cm
+- Direção corrigida: o rig R05 adota trilho DIN TS35 (IEC 60715, 35 mm),
+comprimento de 50 cm, como mecanismo de fixação — com peças já
+construídas (case Pi5 DIN, angle adapter 90°, bracket M6). Isso
+substitui a direção anterior de perfil T-slot de alumínio (2020/2040)
+descrita em D-17 e em docs/design/grip-extensivel.md.
+
+- Consequência: as opções A (garra M6/M8) e B (spring-loaded) de
+grip-extensivel.md ficam sem objeto — o mecanismo de fixação já não é
+mais uma decisão em aberto, é o trilho DIN TS35 de 50 cm.
+grip-extensivel.md deve ser marcado como proposta supersedida por esta
+emenda, preservando o documento como histórico.
+
+- A decidir: posicionamento do trilho na esteira/bancada, fixação do
+próprio trilho DIN à estrutura, e se as SPECs futuras de mount (como a
+do CM3 Wide) devem referenciar esta emenda em vez de tratar o DIN TS35
+como premissa silenciosa.
 
 ## D-18: Iluminação sincronizada à captura
 
