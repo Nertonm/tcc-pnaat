@@ -16,8 +16,9 @@ Mapa PoC -> artefato de código
 - PoC-05 registro local         -> src/pocs/poc05_registro (upsert idempotente, reconcile)
 - PoC-06 resiliencia            -> src/pocs/poc06_resiliencia (retry contado, alerta)
 - PoC-07 dashboard              -> src/pocs/poc07_dashboard (consulta e recorrencia)
+- PoC-08 pre-processamento      -> src/pocs/poc08_preproc (flat-field, alinhamento, extração de geometria)
 - PoC-Final conjectura integrada -> src/pocs/pocfinal (trigger->fusao->registro->dashboard)
 
 Comandos
-- instalar: python3 -m venv .venv && .venv/bin/pip install -e . pytest
-- testar:   make test  (roda pytest)
+- instalar: `make install` (ou `python3 -m venv .venv && .venv/bin/pip install -e .[dev]`)
+- testar:   `make test`
