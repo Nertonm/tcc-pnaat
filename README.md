@@ -74,7 +74,7 @@ As versões que não estão fixadas serão definidas após as PoCs de integraç�
 
 ## Estado do projeto
 
-A documentação de engenharia está em desenvolvimento. A entrega atual é a especificação de requisitos. Ainda não há firmware validado, dataset final ou resultado de ensaio registrado. As metas descritas nos documentos não são medições.
+A documentação de engenharia está em desenvolvimento. A entrega atual é vídeo das principais POCs, acompanhado de roteiro e do repositório no GitHub. O gatilho de presença (PoC-01) está implementado e operando com hardware real (E18-D80NK + ESP32); o pré-processamento determinístico (PoC-08) está implementado e testado como MVP — ver docs/pocs/README.md para o estado detalhado por PoC.
 
 ## Documentação
 
