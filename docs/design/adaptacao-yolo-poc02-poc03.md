@@ -183,7 +183,7 @@ Lista completa e verificada em `docs/REFERENCIAS.md`.
 |---|---|---|---|
 | Medir antes de classificar (geometria da tampa) | Halir & Flusser (1998), ajuste de elipse por mínimos quadrados | ajuste estável, com viés algébrico que encolhe a cota | P |
 | Idem, limite prático | Nosso ensaio de viés de elipse (`docs/reference/medicao-vies-elipse-geometria.md`) | viés 0,023 mm (sigma 1 px); arco ocluído degrada o ângulo (1,3 grau para 4,1 grau a 270 graus); escala 0,611 mm/px | N |
-| Limiar a partir de referência da peça boa | *Machine-Vision-Based Plastic Bottle Inspection* (Eng. Proc. 2023) | tampa assentada por Harris mais linha entre cantos extremos, com limiar derivado da tampa de referência; 95% no conjunto | S |
+| Limiar a partir de referência da peça boa | *Machine-Vision-Based Plastic Bottle Inspection* (Eng. Proc. 2022, 20(1):9) | tampa assentada por Harris mais linha entre cantos extremos, com limiar derivado da tampa de referência; 95% no conjunto | S |
 | Tampa solta por medição de distância | Xie et al. (2017) | 99% para tampa solta em PET, por distância entre anel de apoio e tampa | S |
 | Piso de desempenho (vidro) | Kumchoo & Chiracharit (2018) | 87% para tampa solta e anel | S |
 | Teto supervisionado | Sheng & Wang, ECA-EfficientDet (J. Sensors 2022) | detecção de tampa e rótulo, mAP 99,16% com 1.200 amostras | P |

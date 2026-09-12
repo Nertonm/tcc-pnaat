@@ -31,7 +31,7 @@ Grau de verificação: **P** texto conferido na fonte · **S** secundária (abst
 | Referência | O que estabelece | Gr. | Usada em |
 |---|---|---|---|
 | Sheng & Wang, *Fast Method of Detecting Packaging Bottle Defects Based on ECA-EfficientDet* (J. Sensors 2022, 9518910) | detecção supervisionada de tampa/rótulo, mAP 99,16% com 1.200 amostras | P | teto de acurácia supervisionada |
-| *Machine-Vision-Based Plastic Bottle Inspection* (Eng. Proc. 2023) | tampa assentada por Harris + linha entre cantos extremos + limiar derivado de referência; 95% no conjunto; tampa sem falso positivo | S | método geométrico com limiar calibrado |
+| *Machine-Vision-Based Plastic Bottle Inspection* (Eng. Proc. 2022, 20(1):9) | tampa assentada por Harris + linha entre cantos extremos + limiar derivado de referência; 95% no conjunto; tampa sem falso positivo | S | método geométrico com limiar calibrado |
 | Xie et al. (2017): PET, distância entre anel de apoio e tampa | 99% para tampa solta em PET | S | precedente de medição por distância |
 | Kumchoo & Chiracharit (2018): vidro, tampa solta e anel | 87% | S | piso de desempenho em vidro |
 | Jarvis-BITS/bottle-defect-detection | Mask-RCNN + CNN: 87,7% (normal/defeituoso) e 72% (material), 740 imagens | P (clone) | referência do que não atende |
@@ -62,5 +62,6 @@ Grau de verificação: **P** texto conferido na fonte · **S** secundária (abst
 | `arXiv:2404.08401` | é trabalho sobre registro de campo esportivo (PnLCalib); não é a fonte do ajuste de elipse, apesar da atribuição circulante |
 | "Tan et al." (índices de refração do PET em 0,3363) | erro físico (PET fica em ≈1,57-1,64) e fonte não identificável |
 | `researchsquare rs-9814627` | URL sem conteúdo; a frase atribuída a ele não foi encontrada |
+| "sensor capacitivo A*STAR (2021)" (LOD 0,11/0,23 cm) | fonte não localizada em busca primária (2026-09-12); o número não foi encontrado em nenhuma origem |
 | Cognex, página de iluminação | página real, mas a citação circulante não é literal |
 | Relatório de levantamento por IA (pré-processamento PET) | mistura material real, misatribuição, erro físico e citação não verificável: só os itens com grau **P** valem |
