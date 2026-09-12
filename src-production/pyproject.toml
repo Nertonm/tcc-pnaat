@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iamralp"
+version = "0.1.0"
+description = "Inspeção Automatizada Multi-View com Rastreabilidade de Anomalias em Linha de Produção"
+requires-python = ">=3.11,<3.13"
+dependencies = ["numpy", "opencv-python"]
+
+[project.optional-dependencies]
+# inferencia na borda: extrator congelado + classificador raso (D-30)
+inferencia = ["torch", "torchvision", "ultralytics", "scikit-learn"]
+dev = ["pytest"]
+
+[tool.setuptools]
+# modulos soltos na raiz da arvore (layout escolhido: sem subpacote src/)
+py-modules = ["decisao", "dominio"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
