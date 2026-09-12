@@ -7,6 +7,17 @@ name = "pnaat-pocs"
 version = "0.1.0"
 description = "PoCs do Cenário 1 (inspecao de envase) - camada de observacao"
 requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "scipy",
+    "Pillow",
+]
+
+[project.optional-dependencies]
+anomalib = ["anomalib>=2.6.1"]
+serial = ["pyserial"]
+dev = ["pytest"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -14,3 +25,4 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+

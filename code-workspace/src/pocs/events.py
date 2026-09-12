@@ -7,9 +7,10 @@ from enum import Enum
 
 class DefectClass(str, Enum):
     NORMAL = "normal"
-    CAP_AUSENTE = "cap_ausente"
-    CAP_MAL_ROSQUEADA = "cap_mal_rosqueada"
+    TAMPA_AUSENTE = "tampa_ausente"
+    TAMPA_MAL_ROSQUEADA = "tampa_mal_rosqueada"
     DEFORMIDADE = "deformidade"
+    INCONCLUSIVO = "inconclusivo"
     ANALISE_HUMANA = "analise_humana"
 
 

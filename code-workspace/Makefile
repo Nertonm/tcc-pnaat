@@ -1,8 +1,7 @@
-# venv unificado (python 3.11 com anomalib). O antigo code-workspace/.venv (3.14) esta DEPRECATED.
-AI_PY ?= $(HOME)/tcc-pnaat/github/.venv/bin/python
-PY ?= $(AI_PY)
+# venv padrão na raiz do code-workspace
+PY ?= .venv/bin/python
 # raiz do dataset
-DS ?= $(HOME)/tcc-pnaat/datasets/pnaat
+DS ?= ../dataset
 MODEL ?= patchcore
 
 test:
@@ -21,35 +20,35 @@ sanitizar-apply:
 
 # checagem de ambiente/API/dados/higiene do repo
 doctor:
-	$(AI_PY) scripts/doctor.py
+	$(PY) scripts/doctor.py
 
 # gate dos pares gerados (schema/bbox/mascara/isolamento)
 validar:
-	$(AI_PY) scripts/validar_pares.py --pares $(DS)/gerados --origem $(DS)/origem
+	$(PY) scripts/validar_pares.py --pares $(DS)/gerados --origem $(DS)/origem
 
 # valida e copia os aprovados para dataset/defective + relatorio
 dataset:
-	$(AI_PY) scripts/montar_dataset.py --gerados $(DS)/gerados --origem $(DS)/origem --dest $(DS)/dataset/defective
+	$(PY) scripts/montar_dataset.py --gerados $(DS)/gerados --origem $(DS)/origem --dest $(DS)/dataset/defective
 
 # treina/avalia one-class no NOSSO dataset (normal vs defective)
 treino:
-	$(AI_PY) scripts/treinar_dataset.py --root $(DS)/dataset --model $(MODEL)
+	$(PY) scripts/treinar_dataset.py --root $(DS)/dataset --model $(MODEL)
 
 clean:
 	rm -rf .pytest_cache
 
-# DEPRECATED: cria um venv py3.14 que nao serve para anomalib. Use AI_PY.
 install:
-	@echo "DEPRECATED: use $(HOME)/tcc-pnaat/github/.venv (py3.11, anomalib). Nada a instalar aqui."
+	python3 -m venv .venv
+	.venv/bin/pip install -e . pytest numpy scipy opencv-python Pillow
 
 # Entrega 2 - demo da PoC: entrada -> execucao -> resultado (uma execucao, sem intervencao)
 demo:
-	PYTHONPATH=src $(AI_PY) scripts/demo_poc.py --frames 3 --pausa 1.0
+	PYTHONPATH=src $(PY) scripts/demo_poc.py --frames 3 --pausa 1.0
 
 # gera perturbacoes de CONTROLE (nao sao defeito real) para provar reacao do modelo
 controle:
-	PYTHONPATH=src $(AI_PY) scripts/gerar_perturbacao_controle.py --origem $(DS)/dataset/normal/frame_0000.jpg --tipo oclusao --dest $(DS)/controle --seed 7
-	PYTHONPATH=src $(AI_PY) scripts/gerar_perturbacao_controle.py --origem $(DS)/dataset/normal/frame_0001.jpg --tipo risco --dest $(DS)/controle --seed 11
+	PYTHONPATH=src $(PY) scripts/gerar_perturbacao_controle.py --origem $(DS)/dataset/normal/frame_0000.jpg --tipo oclusao --dest $(DS)/controle --seed 7
+	PYTHONPATH=src $(PY) scripts/gerar_perturbacao_controle.py --origem $(DS)/dataset/normal/frame_0001.jpg --tipo risco --dest $(DS)/controle --seed 11
 
 # PoC-01 sem hardware: mesma logica do firmware, eventos identicos no terminal
 simular-poc01:

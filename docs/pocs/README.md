@@ -15,7 +15,7 @@ Cada PoC é uma proposta de validação. Ela deve produzir métrica, evidência,
 
 Atuação física, ejeção, controle da esteira e MQTT/multi-nó não são critérios do núcleo do projeto. Podem ser tratados como expansão após as PoCs de observação, identidade e registro.
 
-- `08-preprocessamento-geometria/`: PoC-08: pre-processamento deterministico (flat-field, alinhamento, ROI, elipse Canny+LS+RANSAC) e metricas de qualidade (CNR/Tenengrad/especular).
+- `poc08_preproc/`: PoC-08: pre-processamento deterministico (flat-field, alinhamento, ROI, elipse Canny+LS+RANSAC) e metricas de qualidade (CNR/Tenengrad/especular).
 
 ## Execucao de referencia: o que o ensaio mostra hoje
 

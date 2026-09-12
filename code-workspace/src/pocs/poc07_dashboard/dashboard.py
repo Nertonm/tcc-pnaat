@@ -41,7 +41,7 @@ def bootstrap_events():
             views=views, fused=fused, confidence=conf,
         )
 
-    e1 = ev("ev-1", "i-01", "est-b", (ViewResult("topo", DefectClass.CAP_AUSENTE, 0.91),))
+    e1 = ev("ev-1", "i-01", "est-b", (ViewResult("topo", DefectClass.TAMPA_AUSENTE, 0.91),))
     e2 = ev("ev-2", "i-02", "est-b", (ViewResult("topo", DefectClass.NORMAL, 0.95), ViewResult("lat", DefectClass.NORMAL, 0.9)))
     e3 = ev("ev-3", "i-03", "est-c", (ViewResult("topo", DefectClass.DEFORMIDADE, 0.88), ViewResult("lat", DefectClass.DEFORMIDADE, 0.92)))
     return e1, e2, e3
