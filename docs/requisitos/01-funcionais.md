@@ -88,10 +88,10 @@ Cada ficha informa ator, pré-condição, entrada, comportamento, saída, crité
 
 - Ator: agregador de visão.
 - Pré-condição: resultados associados ao mesmo `item_id`, identificados por vista e acompanhados dos estados de qualidade e disponibilidade.
-- Entrada: decisão da vista superior para o domínio da tampa e decisões das duas vistas laterais para o domínio do corpo.
-- Comportamento: produzir separadamente a decisão do domínio da tampa e a decisão do domínio do corpo. A vista superior deve decidir o domínio da tampa, enquanto as duas vistas laterais devem fornecer as evidências do domínio do corpo. O sistema deve reprovar o item quando qualquer domínio detectar defeito, sem aplicar maioria global entre as três câmeras e sem permitir que um domínio cancele defeito detectado pelo outro.
+- Entrada: decisões das duas vistas laterais para os domínios da tampa e do corpo, com as medidas geométricas associadas a cada vista.
+- Comportamento: produzir separadamente a decisão do domínio da tampa e a decisão do domínio do corpo. As duas vistas laterais decidem os dois domínios: a classe vem do classificador da vista e as medidas geométricas ficam registradas como evidência, nunca como decisão (D-30). A vista superior não decide: atua como check dimensional independente, que pode escalonar e nunca aprovar (D-23). O sistema deve reprovar o item quando qualquer domínio detectar defeito, sem aplicar maioria global entre as três câmeras e sem permitir que um domínio cancele defeito detectado pelo outro.
 - Saída: decisões por domínio, status final do item, defeitos detectados, severidade, confiança, disponibilidade das vistas e indicador de discordância lateral.
-- Critério de reprovação: qualquer combinação que aprove o item apesar de um domínio ter detectado defeito deve reprovar o requisito; também deve ser considerada falha a perda da origem por vista ou a aplicação de maioria global entre as três câmeras.
+- Critério de reprovação: qualquer combinação que aprove o item apesar de um domínio ter detectado defeito deve reprovar o requisito; também deve ser considerada falha a perda da origem por vista, a aplicação de maioria global entre as três câmeras e a aprovação sustentada apenas por medição geométrica, sem decisão de classificador (D-30).
 - Verificação: executar fixtures com combinações de aprovação, reprovação, ausência de vista, baixa confiança e discordância entre as laterais, verificando as decisões por domínio e o status final.
 - Dependências: RF-01.2, RF-02, RF-03, RF-04, RF-04.1 e DAT-06.
 

@@ -456,8 +456,17 @@ como premissa silenciosa.
 
 ## D-28: Vocabulario canonico das classes
 
-- Decisão: para o domínio da tampa (PoC-02, isolada), as classes são normal, tampa_ausente, tampa_mal_rosqueada e inconclusivo. O domínio do corpo (deformidade, RF-04) possui vocabulário próprio, a definir na PoC-03, e não está coberto por este vocabulário.
-- Consequencia: relatorios e matrizes usam apenas esse vocabulario.
+- Decisão: as classes são declaradas **por domínio**, e nenhuma classe pode ser emitida fora do seu domínio.
+  - domínio da tampa (PoC-02): `normal`, `tampa_ausente`, `tampa_mal_rosqueada`, `inconclusivo`;
+  - domínio do corpo (PoC-03, RF-04): `normal`, `deformidade`, `inconclusivo`. O vocabulário é fixado aqui
+    para o domínio não ficar sem nome; `deformidade` não é classe válida no domínio da tampa, e as classes
+    de tampa não são válidas no domínio do corpo;
+  - `analise_humana` **não é classe**: é estado de roteamento do item (D-06/D-30) e não entra em matriz de
+    confusão;
+  - `suspeita` não é termo canônico: o que o material de apresentação chamou de "suspeita" (ROTEIRO-VIDEO,
+    CHECKLIST-RUBRICA, Roteiro.tex) é, na norma, `escalonado` com motivo declarado, ou `inconclusivo`.
+- Consequência: relatórios e matrizes usam apenas esse vocabulário, por domínio; o enum do código passa a
+  carregar o domínio e a recusar par classe x domínio incoerente (a fazer em `events.py`).
 
 ## D-29: Regra de fusao por dominio implementada (PoC-04)
 
@@ -491,6 +500,39 @@ como premissa silenciosa.
   `code-workspace/scripts/avaliar_poc04.py`, `code-workspace/tests/test_fusion.py`.
 - Evidencia: harness `make poc04` (casos declarados com ground truth; falha se divergir) e o teste de
   mutacao que reverte a regra e exige que o harness acuse.
+
+## D-30: Assento decisório da tampa (o classificador decide; a geometria é auxiliar)
+
+- Contexto: D-07 e D-23 colocaram a camada geométrica (tilt, altura, arco) no assento decisório da tampa,
+  com o classificador como segunda camada. A avaliação no conjunto próprio, sem confundimento classe x
+  domínio, mostra o inverso: as features geométricas somam **+0,068** sobre o preditor constante (total
+  0,523 em n=44), enquanto o classificador no recorte da vista soma **+0,523** (0,977; LB95 0,882). O tilt
+  produzido não separa: nas 80 capturas normais do rig varia de 0,008 a 85,2 graus (p97,5 = 83,6).
+- Decisão: a decisão da tampa é do **classificador no recorte da vista**, por domínio. A geometria passa a
+  ser **auxiliar**, em dois papéis declarados:
+  - **(a) explicação, sempre**: as medidas (tilt, altura relativa, arco, CNR na escala do produtor) entram
+    no evento como rastro do que sustentou a decisão. Medida registrada não é voto;
+  - **(b) fallback declarado**: acionado **somente** quando o classificador não pode decidir — indisponível
+    ou inconclusivo. O resultado do fallback sai marcado como fraca confiança e **escala para análise
+    humana**, com o motivo declarado.
+- Travas duras:
+  - a geometria **nunca aprova** e **nunca reprova sozinha**;
+  - ausência de evidência continua `inconclusivo` — jamais aprovação silenciosa (D-04 preservada);
+  - o fallback não pode ser apresentado como decisão: ele roteia.
+- Medição dimensional: as capturas atuais não têm escala conferida, logo **não existe medida em
+  milímetro**. Até haver referência dimensional no setup, a camada reporta grandeza **relativa**, e o
+  diferencial de "medida dimensional explicável" é declarado como relativo, nunca como mm.
+- Condição para o fallback virar confiável: aquisição controlada (fundo de contraste, câmera fixa,
+  iluminação dedicada, escala conferida e piso de ruído medido **antes** de qualquer limiar). Enquanto isso
+  não existir, o fallback existe como rastro e roteamento, não como critério de aceitação.
+- Emenda: D-07 e D-23 perdem o **poder decisório** da geometria; o resto de ambas permanece — as medidas
+  seguem obrigatórias como evidência e a vista de topo continua sem decidir (D-23). Histórico preservado.
+- A decidir: (i) confiança mínima do classificador que dispara o fallback; (ii) se o fallback lê as duas
+  vistas laterais ou apenas a disponível; (iii) o vocabulário do domínio do corpo (D-28).
+- Implementado em (a fazer): `code-workspace/src/pocs/poc02_classificacao/` (papel das duas camadas) e
+  `code-workspace/src/pocs/poc04_fusao/fusion.py` (precedência dentro do domínio, já compatível com D-29).
+- Evidência: `aval_sem_confundimento.py` (mesmo domínio, n=44, recall por classe com IC de Wilson e baseline
+  de preditor constante) e `aval_cnn_sem_conf.txt`, **a versionar no repositório**.
 
 ## Regra de atualização
 
