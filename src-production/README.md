@@ -7,11 +7,17 @@ historico congelado: nada daqui importa de la, e nada de la deve ser promovido p
 reescrita tipada.
 
 ## O que ja existe
-
 | Arquivo | Responsabilidade |
 |---|---|
 | `dominio.py` | Dominios, vocabulario de classes por dominio (D-28), evidencia tipada e o contrato do evento |
-| `decisao.py` | Regra de decisao (D-30): o classificador decide, a geometria e auxiliar, o fallback roteia e nunca aprova |
+| `decisao.py` | Decisao por vista (D-30): o classificador decide, a geometria e auxiliar, o fallback roteia e nunca aprova |
+| `conformidade.py` | Regra por dominio (D-04/D-29): defeito em qualquer vista reprova, aprovacao exige o rig completo, discordancia preservada |
+| `captura.py` | Monta as vistas do mesmo `item_id`; verificacao de posicionamento fail-closed (NCC + tolerancia em px) |
+| `identidade.py` | Formato e geracao do `item_id` (`<lote>-<sequencia>`), com sequencia ancorada no banco |
+| `registro.py` | Persistencia idempotente por `item_id`; recusa evidencia divergente |
+| `painel.py` | As 14 consultas analiticas de `docs/dados-telemetria.md` secao 3, somente leitura |
+| `orquestracao.py` | Pipeline unica (captura -> decisao -> conformidade -> registro) e entry point |
+| `esquema.sql` | Esquema do hub, com as invariantes no banco (o topo nunca decide; decidir exige dominio) |
 
 ## Regras desta arvore
 
