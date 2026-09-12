@@ -72,6 +72,13 @@ rodar nas **duas vistas laterais**; a vista de topo permanece como **check dimen
 cuja unica funcao e verificar que a dimensao nao foi violada (pode escalonar, nunca aprovar sozinha).
 Ver D-23.
 
+## Nota de conformidade (2026-09-11):
+o estado atual da implementação da PoC-04 usa uma vista como maioria global, o que contradiz a regra desta
+decisão ("não existe maioria global entre as três câmeras"). Registrado
+como não-conformidade aberta, não como mudança de direção. A regra
+permanece D-04 (+ emenda); a implementação deve ser corrigida para
+aderir, não o contrário.
+
 ## D-05: Topologia da demonstração
 
 - Opções:
