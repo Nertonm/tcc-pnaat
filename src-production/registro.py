@@ -168,15 +168,18 @@ class Registro:
             raise EventoInvalido("evento sem item_id nao e rastreavel")
 
     def _estados(self, evento: Evento) -> dict[Dominio, str]:
+        """Estado por dominio. Defeito em QUALQUER lateral reprova (D-04); aprovacao exige as DUAS
+        laterais decisorias medidas e normais — com uma lateral so, o dominio fica `inconclusivo`,
+        nunca `ok` (D-29: vista unica nao sustenta aprovacao)."""
         estados: dict[Dominio, str] = {}
         for dom in (Dominio.TAMPA, Dominio.CORPO):
-            classes = {m.classe for m in evento.medidas if m.dominio is dom and m.vista in VISTAS_LATERAIS}
-            if not classes:
-                estados[dom] = "inconclusivo"
-            elif Classe.INCONCLUSIVO in classes:
-                estados[dom] = "inconclusivo"
-            elif any(c is not Classe.NORMAL for c in classes):
+            medidas = [m for m in evento.medidas if m.dominio is dom and m.vista in VISTAS_LATERAIS]
+            classes = {m.classe for m in medidas}
+            vistas_medidas = {m.vista for m in medidas}
+            if any(c is not Classe.NORMAL and c is not Classe.INCONCLUSIVO for c in classes):
                 estados[dom] = "defeito"
+            elif Classe.INCONCLUSIVO in classes or len(vistas_medidas) < len(VISTAS_LATERAIS):
+                estados[dom] = "inconclusivo"
             else:
                 estados[dom] = "ok"
         return estados

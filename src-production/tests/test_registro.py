@@ -176,3 +176,15 @@ def test_codigo_do_catalogo_e_gravado_quando_o_mapa_e_1_para_1(reg):
     codigos = [r[0] for r in reg._cx.execute(
         "SELECT codigo_defeito FROM inspecao_vista WHERE item_id='i-001' AND vista LIKE 'lateral%'")]
     assert codigos == ["TAMPA_AUSENTE", "TAMPA_AUSENTE"]
+
+
+def test_dominio_com_uma_lateral_nao_e_aprovado(reg):
+    """D-04/D-29: vista unica nao sustenta aprovacao do dominio."""
+    medidas = (_medida(Vista.LATERAL1, Dominio.TAMPA, Classe.NORMAL),
+               _medida(Vista.LATERAL1, Dominio.CORPO, Classe.NORMAL),
+               _medida(Vista.LATERAL2, Dominio.CORPO, Classe.NORMAL))
+    reg.registrar(_evento(medidas=medidas))
+    g = reg.ler("i-001")
+    assert g.status_tampa == "inconclusivo"      # so uma lateral na tampa
+    assert g.status_corpo == "ok"                # as duas laterais no corpo
+    assert g.status_final == "inconclusivo"
