@@ -55,7 +55,7 @@ Base: estado real do repo em `cd54d98` (12 commits à frente do origin, nada pus
 4. **Reescrever os 2 commits locais** (não pushed) para consertar a mensagem do `80df6e9` e/ou squashear —
    janela segura: nada foi publicado.
 5. **`chown -R nerton` nos arquivos root-owned** e adotar a regra "todo artefato nasce como nerton"
-   (já usamos `runuser -u nerton -- cp`; falta varrer o legado).
+   (já usamos `runuser -u <usuario> -- cp`; falta varrer o legado).
 6. **Unificar venv:** aposentar `code-workspace/.venv` (3.14) e rodar tudo no `github/.venv` (3.11), com
    `make test` usando o mesmo `AI_PY`. Menos superfície de erro, um `doctor` só.
 7. **Mover `preproc.py` → `src/pocs/poc08_preproc/`** e registrar o PoC-08 (pré-processamento/geometria

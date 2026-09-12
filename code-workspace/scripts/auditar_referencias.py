@@ -128,7 +128,7 @@ def checar_higiene(repo: str, limites: int = 5) -> list[str]:
         f"cd {caminho} && "
         f"echo MEDIA=$(git ls-files | grep -icE '\\.(jpg|jpeg|png|bmp|mp4|mov|stl|step|FCStd|3mf)$'); "
         f"echo ROOTOWNED=$(find . -path ./.git -prune -o -user root -print 2>/dev/null | wc -l); "
-        f"echo GITOBJ=$(find .git/objects -not -user nerton 2>/dev/null | wc -l)"
+        f"echo GITOBJ=$(find .git/objects -not -user \"$(id -un)\" 2>/dev/null | wc -l)"
     ))
     achados = []
     for linha in out.splitlines():

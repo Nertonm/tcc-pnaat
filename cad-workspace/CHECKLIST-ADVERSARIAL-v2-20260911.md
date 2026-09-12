@@ -18,7 +18,7 @@ Workspace auditado: `/home/<usuario>/tcc-pnaat/github/cad-workspace` no <host>.
 - Cada item da v1 foi reaberto: arquivo citado lido, número reconferido, e — quando
   havia número — remedido no **FreeCAD 1.1.1 headless**
   (`/home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root/usr/bin/freecadcmd`,
-  via `runuser -u nerton --`). Scripts de verificação: `/tmp/v2_*.py` no <host>
+  via `runuser -u <usuario> --`). Scripts de verificação: `/tmp/v2_*.py` no <host>
   (listados no Anexo A, com os valores que cada um produziu).
 - Também foram lidos os artefatos brutos das auditorias em `/tmp` do <host>
   (`/tmp/k1c-audit/`, `/tmp/enc_work/`, `/tmp/pnaat_probe*.py`, `/tmp/r90.py`,
@@ -407,7 +407,7 @@ Todos os scripts foram escritos em `/tmp` do <host> (nada no workspace) e rodado
 
 ```
 SR=/home/<usuario>/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root
-runuser -u nerton -- env LD_LIBRARY_PATH=$SR/usr/lib/x86_64-linux-gnu:$SR/usr/lib \
+runuser -u <usuario> -- env LD_LIBRARY_PATH=$SR/usr/lib/x86_64-linux-gnu:$SR/usr/lib \
   QT_PLUGIN_PATH=$SR/usr/lib/x86_64-linux-gnu/qt5/plugins $SR/usr/bin/freecadcmd <script>
 ```
 

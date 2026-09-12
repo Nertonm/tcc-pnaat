@@ -2,8 +2,8 @@
 # r03-astra.sh -- roda o Codex Astra com o MCP FreeCAD no distrobox 'trabalho'.
 # Uso:  r03-astra.sh <prompt_file>   |   r03-astra.sh --status
 set -euo pipefail
-GF_USER=nerton
-WS=/home/${GF_USER}/tcc-pnaat/github/cad-workspace
+GF_USER="${TCC_USER:-$USER}"
+WS="${TCC_HOME:-$HOME/tcc-pnaat/github}/cad-workspace"
 UVX=/home/${GF_USER}/.cache/qwen-mm-freecad-venv/bin/uvx
 PORT=9875
 FREE_PKG="qwen-mm-plugins[freecad] @ git+https://github.com/QwenLM/Qwen-MM-Plugins.git@qwen-mm-plugins-freecad-v1.1.0"

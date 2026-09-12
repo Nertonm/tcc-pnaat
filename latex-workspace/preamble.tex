@@ -53,6 +53,9 @@
 \makeatother
 
 \newcommand{\tblhdr}[1]{\cellcolor{pnaatblue!18}\textcolor{pnaatblue}{\textbf{#1}}}
+% Campos a preencher: o gate `make check-final` acusa qualquer \field ou \instruction restante.
+\newcommand{\field}[1]{\textcolor{pnaatgray}{\textit{#1}}}
+\newcommand{\instruction}[1]{\par\smallskip\noindent\textcolor{pnaatgray}{\itshape #1}\par}
 \arrayrulecolor{pnaatblue!40}
 
 \AtBeginDocument{\color{bodytext}}

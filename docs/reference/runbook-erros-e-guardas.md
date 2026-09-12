@@ -30,7 +30,7 @@ Cada linha: erro → causa → guarda (onde). Atualizado 2026-09-11.
 | 6 | `tenengrad = 0` | `cv2.Sobel` do OpenCV 5.0 retorna zeros | tenengrad em numpy (diferenças centrais) + doctor mostra cv2 |
 | 7 | 400 `MissingSessionID` no meio da classificação | pool Gemini marcado "unhealthy" (429) → fallback opencode-go | REST direto `classificar_rest.py` + rotação de chaves/modelos + preflight `pool_disponivel()` + `--max-calls` + **aborta com código 3** se pool exausto |
 | 8 | rótulos errados (deformidade em garrafa normal) | IA de visão como verdade | rótulo de IA = triagem; `defective` vem de par sintético (classe no JSON) + gate; revisão visual humana |
-| 9 | `scp: Permission denied` ao sobrescrever arquivo do usuário | arquivo nerton-owned + scp como root | scp para nome novo em /tmp + `runuser -u nerton -- cp` |
+| 9 | `scp: Permission denied` ao sobrescrever arquivo do usuário | arquivo do dono do repo + scp como root | scp para nome novo em /tmp + `runuser -u <usuario> -- cp` |
 | 10 | `zip: command not found` | não instalado no <host> | usar `tar.gz` |
 | 11 | `insufficient permission ... .git/objects` | objetos root-owned | `chown -R nerton:nerton .git` |
 | 12 | mídia entrando em commits | `git add -A` em dirs com imagens | `doctor.py` FAIL se houver mídia rastreada; untrack + `.gitignore` |

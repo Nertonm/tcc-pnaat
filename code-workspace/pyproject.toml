@@ -6,8 +6,21 @@ build-backend = "setuptools.build_meta"
 name = "pnaat-pocs"
 version = "0.1.0"
 description = "PoCs do Cenário 1 (inspecao de envase) - camada de observacao"
-requires-python = ">=3.10"
-dependencies = ["pyserial>=3.5"]
+# Verificado em 3.11 (venv unico do projeto). 3.14 quebra anomalib/imgaug (runbook erro 4);
+# 3.12/3.13 nao foram testados, por isso o teto.
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "scipy",
+    "Pillow",
+    "pyserial>=3.5",
+]
+
+[project.optional-dependencies]
+anomalib = ["anomalib>=2.6.1"]
+serial = ["pyserial"]
+dev = ["pytest"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

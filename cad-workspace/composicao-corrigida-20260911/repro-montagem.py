@@ -21,7 +21,7 @@ DATUM (reportado pelo Astra, sem ele os números não reproduzem):
 
 USO (no host de bancada, dentro do squashfs-root do FreeCAD):
   SR=$HOME/.cache/qwen-mm-plugins/apps/freecad-1.1.1/squashfs-root
-  runuser -u nerton -- env \
+  runuser -u "${TCC_USER:-$USER}" -- env \
     LD_LIBRARY_PATH=$SR/usr/lib/x86_64-linux-gnu:$SR/usr/lib \
     QT_PLUGIN_PATH=$SR/usr/lib/x86_64-linux-gnu/qt5/plugins \
     $SR/usr/bin/freecadcmd repro-montagem.py

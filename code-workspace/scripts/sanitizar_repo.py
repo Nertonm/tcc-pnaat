@@ -36,7 +36,15 @@ EXT_BINARIO = EXT_MIDIA + (".pyc", ".so", ".o", ".a", ".zip", ".gz", ".tar", ".p
                            ".pack", ".idx", ".ico", ".woff", ".woff2", ".ttf", ".mp3", ".wav")
 # Excecao de midia versionada: TODAS as imagens dentro de dataset/ (captura propria do rig).
 # Video, CAD e qualquer midia fora de dataset/ continuam sendo achado.
-MIDIA_PERMITIDA = re.compile(r"^dataset/.*\.(jpg|jpeg|png|bmp|webp|heic|gif)$")
+# A regra NAO mora mais aqui: politica unica em code-workspace/scripts/politica_midia.py,
+# importada tambem por commit_gate.sh e doctor.py (antes as tres divergiam sobre dataset/).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from politica_midia import (  # noqa: E402
+    LIMITE_GRANDE_BYTES,
+    MIDIA_PERMITIDA,
+    TETO_PERMITIDO_BYTES,
+    motivo_achado,
+)
 
 # Heuristica de VALOR (evita falso positivo em palavras como "token" ou "api_key" em texto):
 RE_SEGREDO = re.compile(
@@ -49,12 +57,22 @@ RE_SEGREDO = re.compile(
 RE_IP_PRIVADO = re.compile(r"\b(?:10\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b")
 RE_CAMINHO_PESSOAL = re.compile(r"(?<![\w./-])/home/(?!<)[a-z][a-z0-9_-]{2,}|[A-Z]:\\\\?Users\\\\?[A-Za-z0-9._-]+")
 RE_HOST = re.compile(r"\b(?:gaspar|abacate|acerola|moranguinho)\b", re.I)
+# Usuario de sistema em uso operacional (runuser -u X, find -user X, GF_USER=X).
+# Nao casa nome proprio em prosa (ex.: identificacao do entregavel), nem contas genericas
+# (root/usuario/user), nem `systemctl --user` (o `-user` precisa nao ser precedido de hifen).
+RE_USUARIO_SO = re.compile(
+    r"(?:runuser\s+-u\s+|-not\s+-user\s+|(?<![-\w])-user\s+|\bGF_USER=|\bTCC_USER=|--user=)"
+    r"(?!(?:root|usuario|user|nobody|daemon|www-data)\b)([A-Za-z_][A-Za-z0-9_-]{2,})")
+SUB_USUARIO = (r"(runuser\s+-u\s+|-not\s+-user\s+|\bGF_USER=|\bTCC_USER=)[A-Za-z_][A-Za-z0-9_-]{2,}", r"\1<usuario>")
 RE_CAMADA_FERRAMENTA = re.compile(
     r"(?i)(?:mynotes|/vault/|state\.db|auth\.json|/srv/hermes|hermes-pure|hermes|\bCT2\d{2}\b)")
-LIMITE_GRANDE = 300 * 1024
+LIMITE_GRANDE = LIMITE_GRANDE_BYTES  # politica unica em politica_midia.py
 
 # O proprio sanitizador contem os padroes como regex: nao se auto-flagra.
 IGNORAR_ARQUIVOS = {"code-workspace/scripts/sanitizar_repo.py"}
+# Arquivos de politica cujo conteudo o sanitizador NUNCA reescreve: substituir quebra a sintaxe
+# ou apaga a propria regra (foi assim que `**/(fora do repo)` entrou no .gitignore).
+IGNORAR_ESCRITA = {".gitignore", ".gitattributes", "docs/SANITIZACAO.md"}
 
 
 def _git(cmd: str) -> str:
@@ -134,8 +152,12 @@ def detectar(caminhos: list[str], raiz: Path = Path(".")) -> dict[str, list[str]
             tamanho = p.stat().st_size
         except OSError:
             tamanho = 0
-        if tamanho > LIMITE_GRANDE:
-            achados["grande"].append(f"{rel} ({tamanho // 1024} KB)")
+        motivo = motivo_achado(rel, tamanho, midia=baixo.endswith(EXT_MIDIA))
+        if motivo:
+            if motivo.startswith("imagem de dataset") or "grande" in motivo:
+                achados["grande"].append(f"{rel} ({tamanho // 1024} KB)")
+            else:
+                achados["midia"].append(rel)
         if baixo.endswith(".ipynb"):
             try:
                 nb = json.loads(p.read_text(errors="replace"))
@@ -153,7 +175,8 @@ def detectar(caminhos: list[str], raiz: Path = Path(".")) -> dict[str, list[str]
             texto = p.read_text(errors="replace")
             if RE_SEGREDO.search(texto):
                 achados["segredo"].append(rel)
-            if RE_IP_PRIVADO.search(texto) or RE_CAMINHO_PESSOAL.search(texto) or RE_HOST.search(texto):
+            if (RE_IP_PRIVADO.search(texto) or RE_CAMINHO_PESSOAL.search(texto)
+                    or RE_HOST.search(texto) or RE_USUARIO_SO.search(texto)):
                 achados["infra"].append(rel)
             if RE_CAMADA_FERRAMENTA.search(texto):
                 achados["ferramenta"].append(rel)
@@ -165,7 +188,8 @@ def detectar(caminhos: list[str], raiz: Path = Path(".")) -> dict[str, list[str]
             continue
         if RE_SEGREDO.search(texto):
             achados["segredo"].append(rel)
-        if RE_IP_PRIVADO.search(texto) or RE_CAMINHO_PESSOAL.search(texto) or RE_HOST.search(texto):
+        if (RE_IP_PRIVADO.search(texto) or RE_CAMINHO_PESSOAL.search(texto)
+                or RE_HOST.search(texto) or RE_USUARIO_SO.search(texto)):
             achados["infra"].append(rel)
         if RE_CAMADA_FERRAMENTA.search(texto):
             achados["ferramenta"].append(rel)
@@ -178,7 +202,7 @@ def aplicar(achados: dict[str, list[str]], raiz: Path = Path("."), arquivos: lis
     prot = protegidos_por_receipt(raiz, arquivos)
     for rel in achados.get("ferramenta", []):
         p = raiz / rel
-        if rel in prot or rel.lower().endswith(EXT_CODIGO) or not p.is_file():
+        if rel in prot or rel in IGNORAR_ESCRITA or rel.lower().endswith(EXT_CODIGO) or not p.is_file():
             continue
         texto = p.read_text(errors="replace")
         novo = RE_CAMADA_FERRAMENTA.sub("(fora do repo)", texto)
@@ -187,12 +211,13 @@ def aplicar(achados: dict[str, list[str]], raiz: Path = Path("."), arquivos: lis
             mudados += 1
     for rel in achados["infra"]:
         p = raiz / rel
-        if rel in prot or rel.lower().endswith(EXT_CODIGO) or not p.is_file():
-            continue  # receipt ou codigo: reportado, nao reescrito
+        if rel in prot or rel in IGNORAR_ESCRITA or rel.lower().endswith(EXT_CODIGO) or not p.is_file():
+            continue  # receipt, arquivo de politica ou codigo: reportado, nao reescrito
         texto = p.read_text(errors="replace")
         novo = RE_IP_PRIVADO.sub("(host interno)", texto)
         novo = RE_CAMINHO_PESSOAL.sub("/home/<usuario>", novo)
         novo = RE_HOST.sub("<host>", novo)
+        novo = re.sub(*SUB_USUARIO, string=novo)
         if novo != texto:
             p.write_text(novo)
             mudados += 1
@@ -234,6 +259,14 @@ def _selftest() -> int:
         assert "dataset/frame_0000.jpg" not in exc["midia"], "excecao de imagem do dataset nao aplicada"
         assert "dataset/anotada.png" not in exc["midia"], "imagem do dataset deveria ser permitida"
         assert "dataset/clipe.mp4" in exc["midia"], "video deveria continuar sendo achado"
+        # contraprova da politica unica: imagem de dataset ACIMA do teto e achado; grande fora
+        # de dataset tambem; imagem de dataset abaixo do teto nao e
+        (raiz / "dataset" / "gigante.jpg").write_bytes(b"\xff\xd8\xff" + b"0" * (TETO_PERMITIDO_BYTES + 1))
+        (raiz / "fora.jpg").write_bytes(b"\xff\xd8\xff")
+        exc2 = detectar(["dataset/gigante.jpg", "fora.jpg"], raiz)
+        assert any(x.startswith("dataset/gigante.jpg") for x in exc2["grande"]), \
+            "imagem de dataset acima do teto deveria ser achado"
+        assert "fora.jpg" in exc2["midia"], "imagem fora de dataset deveria continuar sendo achado"
         # contraprova: documento limpo nao gera achado
         (raiz / "limpo.md").write_text("caminho relativo e (host interno) apenas\n")
         assert not detectar(["limpo.md"], raiz)["infra"], "falso positivo em documento limpo"
@@ -264,6 +297,27 @@ def _selftest() -> int:
         aplicar(achados, raiz, ["doc.md", "segredo.md", "foto.png", "nb.ipynb", "grande.txt"])
         assert "(host interno)" in (raiz / "doc.md").read_text()
         assert json.loads((raiz / "nb.ipynb").read_text())["cells"][0]["outputs"] == []
+
+        # usuario de sistema em uso operacional: detecta e saneia
+        (raiz / "ops.md").write_text("runuser -u fulano -- env FOO=1\nfind . -not -user fulano\n")
+        ach_ops = detectar(["ops.md", "limpo.md"], raiz)
+        assert "ops.md" in ach_ops["infra"], ach_ops
+        aplicar(ach_ops, raiz, ["ops.md", "limpo.md"])
+        txt_ops = (raiz / "ops.md").read_text()
+        assert "fulano" not in txt_ops and "<usuario>" in txt_ops, txt_ops
+        # contraprova: nome proprio em prosa (identificacao do entregavel) NAO e achado
+        (raiz / "capa.md").write_text("Integrantes: Fulano de Tal e Beltrano Souza\n")
+        assert not detectar(["capa.md"], raiz)["infra"], "falso positivo em nome proprio"
+        # contraprova: conta generica e `systemctl --user` NAO sao vazamento
+        (raiz / "ops2.md").write_text("find . -user root -print\nsystemctl --user status pnaat\n")
+        assert not detectar(["ops2.md"], raiz)["infra"], "falso positivo em conta generica"
+
+        # arquivo de politica (.gitignore) e reportado, nunca reescrito
+        (raiz / ".gitignore").write_text("**/(fora do repo)\n10.0.0.1\n")
+        ach_gi = detectar([".gitignore"], raiz)
+        assert ".gitignore" in ach_gi["infra"], ach_gi
+        aplicar(ach_gi, raiz, [".gitignore"])
+        assert "10.0.0.1" in (raiz / ".gitignore").read_text(), "reescreveu arquivo de politica"
     print("selftest OK: detecta midia, segredo, infra, camada de ferramenta, saida de notebook e arquivo grande; apply funciona")
     return 0
 

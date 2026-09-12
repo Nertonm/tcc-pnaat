@@ -67,7 +67,8 @@ docs/agent/
 # Vendor external snapshots (not publishable)
 cad-workspace/references/vendor/**
 
-# dataset/ do rig: versionado de proposito (81 frames, 1,86 MB) — o gate tem a mesma excecao
+# dataset/ do rig: versionado de proposito por decisao do grupo (125 arquivos, ~19 MiB na worktree)
+# A excecao esta declarada tambem no commit_gate.sh; a politica de midia precisa ser unificada.
 
 # resultados gerados por notebook (MVTec etc.)
 **/notebooks/results/
@@ -77,8 +78,6 @@ cad-workspace/references/vendor/**
 
 
 # Segredos e credenciais (nunca versionar)
-(fora do repo)
-**/(fora do repo)
 *.pem
 *.key
 secrets.*
@@ -90,6 +89,12 @@ secrets.*
 *.onnx
 *.h5
 *.pth
+
+# Pesos, saidas de medição e execucoes locais (nunca versionar)
+*.pt
+weights/
+runs/
+poc03_saida/
 
 # Staging de trabalho (nao e entrega)
 cad-workspace/stage*/
@@ -107,7 +112,7 @@ cad-workspace/structural-candidate-*/
 
 # artefatos gerados do PoC-01 (stream, evidencias)
 code-workspace/poc01_passagens.csv
-:poc01/
+poc01/
 
 # Kernel CAD e insumos de terceiros (nunca versionar: .step/.stl ja estavam fora)
 *.brep
@@ -121,3 +126,8 @@ code-workspace/scripts/*.bak*
 # Artefatos grandes de auditoria/staging (acima do limite do gate: ficam locais)
 cad-workspace/_backup-organizacao-20260911/*.tsv
 cad-workspace/auditoria-r07-20260911T052357Z/redux-sections.json
+# Saidas geradas do lote de impressao acima do limite do gate (ficam locais)
+cad-workspace/lote-impressao-20260911/astra2-case.json
+cad-workspace/lote-impressao-20260911/astra2-secoes.json
+# desenho de secoes do lote acima do limite do gate
+cad-workspace/lote-impressao-20260911/astra2-secoes.svg

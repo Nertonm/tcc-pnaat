@@ -17,6 +17,8 @@ class DefectClass(str, Enum):
     TAMPA_MAL_ROSQUEADA = "tampa_mal_rosqueada"
     DEFORMIDADE = "deformidade"
     INCONCLUSIVO = "inconclusivo"
+    #: Resultado de fusao que encaminha o item para analise humana (nao e classe de defeito).
+    ANALISE_HUMANA = "analise_humana"
 
 
 class Dominio(str, Enum):
@@ -42,6 +44,13 @@ CLASSES_DE_DEFEITO: dict[Dominio, tuple[DefectClass, ...]] = {
     Dominio.DIMENSAO: (),  # o check dimensional nao classifica defeito: ele veta/escala
 }
 
+#: Classes que nao representam defeito medido: nao passam pela trava dominio x classe.
+CLASSES_NEUTRAS = (
+    DefectClass.NORMAL,
+    DefectClass.INCONCLUSIVO,
+    DefectClass.ANALISE_HUMANA,
+)
+
 
 @dataclass(frozen=True)
 class ViewResult:
@@ -65,7 +74,7 @@ class ViewResult:
             raise ValueError("view_id obrigatorio")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence deve estar em [0,1]")
-        if self.defect in (DefectClass.NORMAL, DefectClass.INCONCLUSIVO):
+        if self.defect in CLASSES_NEUTRAS:
             return
         if self.defect not in CLASSES_DE_DEFEITO[self.dominio]:
             raise ValueError(

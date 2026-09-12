@@ -14,7 +14,7 @@ Os diretórios originais ficam como estão (histórico preservado). Este mapa s�
 | — | **PoC-02: classificação de tampa** | não existia no docs |
 | — | **PoC-Final: conjectura integrada** | não existia no docs |
 
-Código correspondente: `code-workspace/src/pocs/pocNN_*/` (01..07) + `pocfinal/`.
+Código correspondente: `code-workspace/src/pocs/pocNN_*/` (01..08) + `pocfinal/`.
 
 
 ---

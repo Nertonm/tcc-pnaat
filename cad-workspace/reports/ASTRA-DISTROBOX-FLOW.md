@@ -18,9 +18,9 @@ dentro do `distrobox trabalho` == o habilitado, não o (fora do repo).
 # 1. (uma vez) garantir uvx + addon
 distrobox enter trabalho -- bash -lc "codex mcp list"   # mostra qwen-mm-plugins-freecad enabled
 # 2. resolver o MCP ponta a ponta
-runuser -u nerton -- /home/<usuario>/tcc-pnaat/github/cad-workspace/tools/r03-astra.sh --status
+runuser -u <usuario> -- /home/<usuario>/tcc-pnaat/github/cad-workspace/tools/r03-astra.sh --status
 # 3. rodar o agente sobre um prompt
-runuser -u nerton -- /home/<usuario>/tcc-pnaat/github/cad-workspace/tools/r03-astra.sh prompts/codex-r03-freecad-mcp.md
+runuser -u <usuario> -- /home/<usuario>/tcc-pnaat/github/cad-workspace/tools/r03-astra.sh prompts/codex-r03-freecad-mcp.md
 ```
 
 ## Fases (gate human-in-the-loop)

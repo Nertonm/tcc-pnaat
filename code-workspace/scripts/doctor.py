@@ -80,9 +80,12 @@ def main() -> int:
         try:
             out = subprocess.run(["git", "-C", str(a.repo), "ls-files"], capture_output=True, text=True).stdout
             media = [l for l in out.splitlines() if l.lower().endswith((".jpg", ".jpeg", ".png", ".mp4", ".stl", ".step"))]
-            check("repo sem midia versionada", not media, f"{len(media)} arquivos" + (f" ex: {media[:2]}" if media else ""))
+            # Excecao declarada no commit_gate.sh: as imagens em dataset/ sao versionadas de proposito.
+            media_fora = [m for m in media if not m.startswith("dataset/")]
+            detalhe = f"{len(media_fora)} arquivo(s)" + (f" ex: {media_fora[:2]}" if media_fora else f" (dataset/ versionado: {len(media)} arquivos, excecao declarada)")
+            check("repo sem midia versionada fora de dataset/", not media_fora, detalhe)
         except Exception as e:  # noqa: BLE001
-            check("repo sem midia versionada", False, str(e), essencial=False)
+            check("repo sem midia versionada fora de dataset/", False, str(e), essencial=False)
         gi = (a.repo / ".gitignore").read_text() if (a.repo / ".gitignore").exists() else ""
         check(".gitignore cobre /dataset", "/dataset" in gi or "dataset/" in gi, "ok" if "dataset" in gi else "ausente", essencial=False)
 

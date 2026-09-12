@@ -17,10 +17,14 @@ Mapa PoC -> artefato de código
 - PoC-05 registro local         -> src/pocs/poc05_registro (upsert idempotente, reconcile)
 - PoC-06 resiliencia            -> src/pocs/poc06_resiliencia (retry contado, alerta)
 - PoC-07 dashboard              -> src/pocs/poc07_dashboard (consulta e recorrencia)
+- PoC-08 pre-processamento      -> src/pocs/poc08_preproc (flat-field, alinhamento, extração de geometria)
 - PoC-Final conjectura integrada -> src/pocs/pocfinal (trigger->fusao->registro->dashboard)
 
 Comandos
-- ambiente unico: `~/tcc-pnaat/github/.venv` (Python 3.11; CPU, visao e serial)
-- instalar: `~/tcc-pnaat/github/.venv/bin/pip install -e .`
-- testar:   `make test` (roda pytest)
+- instalar: `make install` (cria o venv único na raiz do clone) ou `python3 -m venv ../.venv && ../.venv/bin/python -m pip install -e ".[dev]"`
+- testar:   `make test`
 - PoC-04:   `make poc04` (harness de casos declarados; sai != 0 se divergir do esperado)
+
+Ambiente de referencia: Python 3.11 em venv unico na raiz do clone do projeto (CPU, visao e serial).
+O `Makefile` resolve o interpretador sozinho: usa `../.venv/bin/python` quando existe e cai para
+`.venv/bin/python` ou `python3` caso contrario.
