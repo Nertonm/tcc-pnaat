@@ -76,8 +76,8 @@ cad-workspace/references/vendor/**
 !code-workspace/notebooks/*.ipynb
 
 
-# Segredos e credenciais (nunca versionar)
-(fora do repo)
+# Segredos e credenciais (nunca versionar) 
+# (fora do repo)
 **/(fora do repo)
 *.pem
 *.key
