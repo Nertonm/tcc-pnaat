@@ -52,8 +52,9 @@ Uma direção adotada orienta os requisitos e a implementação, mas não repres
   - C: fusão por atenção entre as vistas.
 - Direção adotada: A.
 - Regra arquitetural:
-  - a vista superior decide isoladamente o domínio da tampa;
-  - as duas vistas laterais fornecem as evidências do domínio do corpo;
+  - ~~a vista superior decide isoladamente o domínio da tampa;~~ *(INCORRETO: ver emenda abaixo e D-23)*
+  - as duas vistas laterais fornecem as evidências do domínio do corpo (e da tampa);
+  - a vista de topo atua apenas como check dimensional independente;
   - não existe maioria global entre as três câmeras;
   - defeito detectado em qualquer domínio reprova o item;
   - o resultado de um domínio não pode cancelar defeito detectado pelo outro;
