@@ -105,8 +105,10 @@ tcc-pnaat/
 
 ```bash
 cd code-workspace
-python3 -m venv .venv
-.venv/bin/pip install -e . pytest numpy scipy opencv-python Pillow
+python -m venv .venv
+# Linux/macOS: source .venv/bin/activate
+# Windows:     .venv\Scripts\activate
+pip install -e .[dev]
 make test
 ```
 
