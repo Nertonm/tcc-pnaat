@@ -26,7 +26,8 @@ def _item(alinhamentos=None, faltantes=()) -> ItemCapturado:
         if v in faltantes:
             continue
         vistas.append(VistaCapturada(vista=v, imagem=f"{v.value}.jpg", capturado_em=AGORA,
-                                     alinhamento=alinhamentos.get(v, Alinhamento.OK)))
+                                     alinhamento=alinhamentos.get(v, Alinhamento.OK),
+                                     no_janela=True))   # o rig declarou a janela neste ensaio
     return ItemCapturado(item_id="i-1", trigger_em=AGORA, vistas=tuple(vistas))
 
 
@@ -105,7 +106,7 @@ def test_vista_fora_do_alinhamento_nao_e_consultada(reg):
 def test_decisor_nao_pode_mentir_sobre_a_origem(reg):
     d = DecisorFalso(mutar=lambda vistacap, dominio: (
         VistaCapturada(vista=Vista.LATERAL1, imagem="x.jpg", capturado_em=AGORA,
-                       alinhamento=Alinhamento.OK), dominio))
+                       alinhamento=Alinhamento.OK, no_janela=True), dominio))
     with pytest.raises(ErroDeOrquestracao):
         executar(_item(alinhamentos={Vista.LATERAL2: Alinhamento.OK}), d, reg, RIG)
     assert reg.contar() == 0                                 # nada foi gravado com origem falsa

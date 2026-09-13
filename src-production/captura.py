@@ -3,11 +3,14 @@
 O que este modulo faz valer:
   - tres vistas por item (RF-01/RF-01.2): `topo`, `lateral1`, `lateral2`;
   - o `item_id` vem do gatilho: captura sem identidade nao existe (levanta `ErroDeCaptura`);
-  - ROI fixa **com verificacao de alinhamento** por NCC + tolerancia de deslocamento em px, e
-    **fail-closed**: vista fora da tolerancia (ou com o gabarito ausente) nao vira evidencia — sai de
-    `vistas_utilizaveis` em vez de ser medida torta e parecer valida. Vista NAO verificada tambem nao
-    e utilizavel: sem template do rig o conjunto nao esta calibrado e o item fica inconclusivo
-    (D-04), nunca aprovado por omissao;
+  - **janela temporal** (RF-01.2): cada vista tem a sua hora REAL de captura (mtime do arquivo, no
+    source de bancada) e so entra em `vistas_utilizaveis` se estiver dentro da janela declarada do
+    rig. Vista fora da janela e identificada como faltante, como manda o contrato da interface
+    (`docs/requisitos/03-dados-interfaces.md:68-69`), e a divergencia de timestamp e reportada para o
+    registro virar `timestamp_divergente` (`DAT-03:24`);
+  - **fail-closed nas duas verificacoes**: sem janela declarada a associacao temporal nao esta
+    verificada, e vista nao verificada NAO e utilizavel — igual ao alinhamento. Nada e aprovado por
+    omissao (D-04);
   - vista ausente nao e erro: e estado. O registro converte ausencia em `inconclusivo`.
 
 Sem camera aqui: a fonte le do disco (bancada/ensaio). A fonte de camera entra quando o rig existir,
@@ -27,6 +30,8 @@ from dominio import Vista
 
 VISTAS_ESPERADAS: tuple[Vista, ...] = (Vista.TOPO, Vista.LATERAL1, Vista.LATERAL2)
 LIMITE_ALINHAMENTO = 0.80
+MOTIVO_FORA_DA_JANELA = "fora_da_janela"
+MOTIVO_JANELA_NAO_DECLARADA = "janela_nao_declarada"
 
 
 class ErroDeCaptura(Exception):
@@ -45,10 +50,18 @@ class VistaCapturada:
     imagem: Path
     capturado_em: datetime
     alinhamento: Alinhamento
+    #: True = dentro da janela declarada; False = fora dela; None = NAO VERIFICADO. O default e None
+    #: de proposito: item montado a mao nao pode afirmar "na janela" sem que ninguem tenha medido.
+    no_janela: bool | None = None
+    motivo_da_janela: str | None = MOTIVO_JANELA_NAO_DECLARADA
 
     def __post_init__(self) -> None:
         if self.capturado_em.tzinfo is None:
             raise ErroDeCaptura("captura sem fuso horario nao e rastreavel")
+
+    @property
+    def utilizavel(self) -> bool:
+        return self.alinhamento is Alinhamento.OK and self.no_janela is True
 
 
 @dataclass(frozen=True)
@@ -68,12 +81,23 @@ class ItemCapturado:
 
     @property
     def vistas_utilizaveis(self) -> tuple[VistaCapturada, ...]:
-        """Só o que passou na verificacao de alinhamento. Fail-closed por construcao."""
-        return tuple(v for v in self.vistas if v.alinhamento is Alinhamento.OK)
+        """Só o que passou no alinhamento E esta dentro da janela. Fail-closed por construcao."""
+        return tuple(v for v in self.vistas if v.utilizavel)
+
+    @property
+    def fora_da_janela(self) -> tuple[VistaCapturada, ...]:
+        """Capturadas, mas fora da janela: o registro marca o item como `timestamp_divergente`."""
+        return tuple(v for v in self.vistas if v.no_janela is False)
+
+    @property
+    def nao_verificadas(self) -> tuple[VistaCapturada, ...]:
+        """Janela nunca medida para estas vistas: nao entram como evidencia, e o motivo e declarado."""
+        return tuple(v for v in self.vistas if v.no_janela is None)
 
     @property
     def faltantes(self) -> tuple[Vista, ...]:
-        presentes = {v.vista for v in self.vistas}
+        """Vistas que nao entram como evidencia: nao capturadas OU fora da janela."""
+        presentes = {v.vista for v in self.vistas if v.no_janela is True}
         return tuple(v for v in VISTAS_ESPERADAS if v not in presentes)
 
 
@@ -124,14 +148,21 @@ class VerificadorPorTemplate:
 
 
 class FonteDeDiretorio:
-    """Le `<raiz>/<item_id>/<vista>.jpg`. Bancada e ensaio gravado — nao e camera ao vivo."""
+    """Le `<raiz>/<item_id>/<vista>.jpg`. Bancada e ensaio gravado — nao e camera ao vivo.
+
+    `janela_s` e a janela temporal declarada do rig: vista capturada fora dela nao entra como
+    evidencia. Sem `janela_s`, a associacao temporal nao esta verificada e o item fica inconclusivo —
+    o rig precisa DECLARAR a janela, senao o numero nao tem significado.
+    """
 
     nome = "diretorio"
 
     def __init__(self, raiz: str | Path, verificador: VerificadorDeAlinhamento | None = None,
+                 janela_s: float | None = None,
                  extensoes: tuple[str, ...] = (".jpg", ".jpeg", ".png")):
         self.raiz = Path(raiz)
         self.verificador = verificador
+        self.janela_s = janela_s
         self.extensoes = extensoes
 
     def capturar(self, item_id: str, trigger_em: datetime) -> ItemCapturado:
@@ -147,6 +178,8 @@ class FonteDeDiretorio:
             caminho = self._arquivo(pasta, vista)
             if caminho is None:
                 continue
+            capturado_em = datetime.fromtimestamp(caminho.stat().st_mtime).astimezone()
+            no_janela, motivo = self._na_janela(capturado_em, trigger_em)
             if self.verificador is None:
                 alinhamento = Alinhamento.NAO_VERIFICADO
             else:
@@ -154,11 +187,20 @@ class FonteDeDiretorio:
                 if imagem is None:
                     raise ErroDeCaptura(f"imagem ilegivel: {caminho}")
                 alinhamento, _ = self.verificador.verificar(imagem)
-            vistas.append(VistaCapturada(vista=vista, imagem=caminho, capturado_em=trigger_em,
-                                         alinhamento=alinhamento))
+            vistas.append(VistaCapturada(vista=vista, imagem=caminho, capturado_em=capturado_em,
+                                         alinhamento=alinhamento, no_janela=no_janela,
+                                         motivo_da_janela=motivo))
         if not vistas:
             raise ErroDeCaptura(f"nenhuma vista encontrada para o item {item_id!r}")
         return ItemCapturado(item_id=item_id, trigger_em=trigger_em, vistas=tuple(vistas))
+
+    def _na_janela(self, capturado_em: datetime, trigger_em: datetime) -> tuple[bool | None, str | None]:
+        """None = nao verificado (janela nao declarada). False = medido e fora. Sao coisas distintas:
+        confundir as duas faria a ausencia de declaracao aparecer como divergencia de timestamp."""
+        if self.janela_s is None:
+            return None, MOTIVO_JANELA_NAO_DECLARADA
+        atraso = abs((capturado_em - trigger_em).total_seconds())
+        return (atraso <= self.janela_s), (None if atraso <= self.janela_s else MOTIVO_FORA_DA_JANELA)
 
     def _arquivo(self, pasta: Path, vista: Vista) -> Path | None:
         for ext in self.extensoes:

@@ -101,7 +101,8 @@ def executar(item: ItemCapturado, decidir: Decisor, registro: Registro,
                     esteira=identidade.esteira,
                     vistas=tuple(v.vista for v in item.vistas),
                     medidas=tuple(medidas), status=_classe_do_evento(conformidade))
-    gravacao = registro.registrar(evento)
+    gravacao = registro.registrar(
+        evento, fora_da_janela=tuple(v.vista for v in item.fora_da_janela))
     return ResultadoDoEnsaio(item_id=item.item_id, status=conformidade.status, gravacao=gravacao,
                              conformidade=conformidade, medidas=tuple(medidas),
                              check_presente=check_presente)
@@ -119,13 +120,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--db", default="hub.db")
     ap.add_argument("--equipamento", default="rig-bancada")
     ap.add_argument("--localizacao", default="bancada-b")
+    ap.add_argument("--janela", type=float, default=None,
+                    help="janela temporal declarada do rig, em segundos (sem ela nada e utilizavel)")
     a = ap.parse_args(argv)
 
     from datetime import datetime, timezone
 
     from captura import FonteDeDiretorio
 
-    fonte = FonteDeDiretorio(a.captura)
+    fonte = FonteDeDiretorio(a.captura, janela_s=a.janela)
     item = fonte.capturar(a.item, datetime.now(timezone.utc))
     registro = Registro.abrir(a.db)
     try:
@@ -136,6 +139,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  vistas capturadas: {[v.vista.value for v in item.vistas]}")
         print(f"  vistas utilizaveis: {[v.vista.value for v in item.vistas_utilizaveis] or '(nenhuma)'}")
         print(f"  faltantes: {[v.value for v in item.faltantes] or '(nenhuma)'}")
+        if item.fora_da_janela:
+            print(f"  fora da janela: {[v.vista.value for v in item.fora_da_janela]}"
+                  f" (janela={a.janela}s)")
         print(f"  itens no registro: {registro.contar()} | aprovados: "
               f"{registro.contar() if resultado.aprovado else 0}")
     finally:

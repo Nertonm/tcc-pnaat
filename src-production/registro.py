@@ -92,7 +92,11 @@ def status_final(estados: dict[Dominio, str], evidencias_faltando: bool) -> str:
     return "ok"
 
 
-def qualidade_registro(laterais_decisorias: int) -> str:
+def qualidade_registro(laterais_decisorias: int, fora_da_janela: int = 0) -> str:
+    """Estados distintos do DAT-03. Divergencia de timestamp tem precedencia sobre falta de vista:
+    e a causa mais especifica, e o item nao pode ser apresentado como completo de nenhum jeito."""
+    if fora_da_janela > 0:
+        return "timestamp_divergente"
     faltando = len(VISTAS_LATERAIS) - laterais_decisorias
     if faltando <= 0:
         return "completo"
@@ -125,8 +129,12 @@ class Registro:
 
     # -------------------------------------------------- escrita
 
-    def registrar(self, evento: Evento) -> str:
-        """Grava o evento. Devolve 'inserido' ou 'repetido'. Nunca sobrescreve."""
+    def registrar(self, evento: Evento, fora_da_janela: tuple[Vista, ...] = ()) -> str:
+        """Grava o evento. Devolve 'inserido' ou 'repetido'. Nunca sobrescreve.
+
+        `fora_da_janela` sao as vistas capturadas mas fora da janela temporal (RF-01.2): elas ficam
+        registradas como auxiliares inconclusivas e o item recebe `qualidade_registro` =
+        `timestamp_divergente` (DAT-03), em vez de aparecer como completo."""
         self._validar(evento)
         existente = self.ler(evento.item_id)
         if existente is not None:
@@ -139,6 +147,7 @@ class Registro:
         dec = {v: sum(1 for m in evento.medidas
                       if m.vista is v and m.dominio is not None) for v in VISTAS_LATERAIS}
         faltando = any(dec[v] == 0 for v in VISTAS_LATERAIS)
+        divergente = len(fora_da_janela) > 0
         self._cx.execute(
             "INSERT INTO item (item_id, timestamp_trigger, status_tampa, status_corpo,"
             " discordancia_lateral, status_final, motivo_inconclusivo, qualidade_registro)"
@@ -147,8 +156,10 @@ class Registro:
              estados[Dominio.TAMPA], estados[Dominio.CORPO],
              int(discordancia(evento.medidas, Dominio.TAMPA) or discordancia(evento.medidas, Dominio.CORPO)),
              status_final(estados, faltando),
-             None if not faltando else "vista_lateral_ausente",
-             qualidade_registro(sum(1 for v in VISTAS_LATERAIS if dec[v] > 0))))
+             ("timestamp_divergente" if divergente
+              else None if not faltando else "vista_lateral_ausente"),
+             qualidade_registro(sum(1 for v in VISTAS_LATERAIS if dec[v] > 0),
+                                fora_da_janela=len(fora_da_janela))))
         for linha, classe in self._linhas(evento):
             self._cx.execute(
                 "INSERT INTO inspecao_vista (item_id, vista, dominio, papel, vista_disponivel,"

@@ -188,3 +188,24 @@ def test_dominio_com_uma_lateral_nao_e_aprovado(reg):
     assert g.status_tampa == "inconclusivo"      # so uma lateral na tampa
     assert g.status_corpo == "ok"                # as duas laterais no corpo
     assert g.status_final == "inconclusivo"
+
+
+def test_vista_fora_da_janela_marca_timestamp_divergente(reg):
+    """DAT-03: divergencia de timestamp tem estado proprio e nao vira 'completo'."""
+    from dominio import Vista as V
+    medidas = (_medida(V.LATERAL1, Dominio.TAMPA, Classe.NORMAL),
+               _medida(V.LATERAL2, Dominio.TAMPA, Classe.NORMAL),
+               _medida(V.LATERAL1, Dominio.CORPO, Classe.NORMAL),
+               _medida(V.LATERAL2, Dominio.CORPO, Classe.NORMAL))
+    reg.registrar(_evento(medidas=medidas), fora_da_janela=(V.LATERAL2,))
+    g = reg.ler("i-001")
+    assert g.qualidade_registro == "timestamp_divergente"
+    assert g.motivo_inconclusivo == "timestamp_divergente"
+
+
+def test_qualidade_distinta_para_cada_caso():
+    from registro import qualidade_registro as q
+    assert q(2, fora_da_janela=0) == "completo"
+    assert q(2, fora_da_janela=1) == "timestamp_divergente"   # divergencia manda sobre o resto
+    assert q(1, fora_da_janela=0) == "parcial_1_vista_faltante"
+    assert q(0, fora_da_janela=0) == "evidencia_insuficiente"
