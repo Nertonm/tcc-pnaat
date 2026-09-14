@@ -131,3 +131,8 @@ cad-workspace/lote-impressao-20260911/astra2-case.json
 cad-workspace/lote-impressao-20260911/astra2-secoes.json
 # desenho de secoes do lote acima do limite do gate
 cad-workspace/lote-impressao-20260911/astra2-secoes.svg
+
+# Firmware ESP32-CAM: dependencia de terceiros e artefatos gerados do ESP-IDF
+src-production/firmware/**/components/
+src-production/firmware/**/sdkconfig
+src-production/firmware/**/*.bak-*
