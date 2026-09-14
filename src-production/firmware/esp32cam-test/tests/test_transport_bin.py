@@ -18,8 +18,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from transport_bin import (  # noqa: E402
     HDR_SIZE, MAX_PAYLOAD, PAYLOAD_CRC_SIZE, SOF1, SOF2, TYPE_BEGIN, TYPE_CHUNK,
-    TYPE_END, Decoder, FrameAssembler, crc16, crc32, crc32_fast, encode_begin,
-    encode_chunk, encode_end, encode_message,
+    TYPE_END, Decoder, FrameAssembler, Message, crc16, crc32, crc32_fast,
+    encode_begin, encode_chunk, encode_end, encode_message,
 )
 
 CHUNK = 1024
@@ -265,6 +265,15 @@ def test_feed_ex_separates_channels_in_order():
     esperado = log_a + log_b * len(chunks) + log_c
     assert bytes(text) == esperado, "canal de texto nao reconstruiu os logs na ordem"
     assert tipos[0] == "text" and tipos[-1] == "text"
+
+
+def test_eventos_do_montador_tem_limite():
+    """Vazamento lento: processo longo nao pode acumular eventos sem limite."""
+    asm = FrameAssembler()
+    for _ in range(200):
+        asm.feed(Message(TYPE_CHUNK, 1, 0, b"x"))     # CHUNK sem BEGIN: rejeitado
+    assert asm.rejected >= 200
+    assert len(asm.events) <= 50, f"eventos acumulados: {len(asm.events)}"
 
 
 def test_payload_limit_enforced():

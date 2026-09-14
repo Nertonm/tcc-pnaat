@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import struct
 import zlib
+from collections import deque
 from dataclasses import dataclass, field
 
 SOF1 = 0xA5
@@ -247,7 +248,7 @@ class FrameAssembler:
     rejected: int = 0
     frames_ok: int = 0
     last_error: str = ""
-    events: list[str] = field(default_factory=list)
+    events: deque[str] = field(default_factory=lambda: deque(maxlen=50))
 
     def _note(self, text: str) -> None:
         self.last_error = text
