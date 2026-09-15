@@ -1,0 +1,74 @@
+{
+ "nome": "pnaat-preprocessamento",
+ "versao": 1,
+ "gerado_utc": "2026-09-15T18:31:35+00:00",
+ "roi_por_camera": {
+  "csi": {
+   "x": 0.0,
+   "y": 0.0,
+   "w": 0.5727,
+   "h": 0.5118
+  },
+  "desconhecida": {
+   "x": 0.166,
+   "y": 0.0867,
+   "w": 0.7509,
+   "h": 0.7526
+  },
+  "espcam": {
+   "x": 0.1091,
+   "y": 0.0,
+   "w": 0.8337,
+   "h": 1.0
+  },
+  "rig": {
+   "x": 0.2783,
+   "y": 0.0,
+   "w": 0.5551,
+   "h": 0.3163
+  },
+  "usb": {
+   "x": 0.2445,
+   "y": 0.0,
+   "w": 0.7555,
+   "h": 0.4549
+  }
+ },
+ "rotacao_graus": {
+  "csi": 0,
+  "usb": 90,
+  "espcam": 180,
+  "rig": 0,
+  "desconhecida": 0
+ },
+ "imgsz_treino": 480,
+ "letterbox": true,
+ "classes": [
+  "normal",
+  "tampa_ausente",
+  "defeito_tampa"
+ ],
+ "limiares_por_imgsz": {
+  "480": {
+   "normal": 0.3,
+   "tampa_ausente": 0.15,
+   "defeito_tampa": 0.3,
+   "calibrado": true
+  },
+  "416": {
+   "normal": null,
+   "tampa_ausente": null,
+   "defeito_tampa": null,
+   "calibrado": false,
+   "aviso": "não calibrado neste imgsz; recalibrar na val (idealmente no k-fold) antes de usar"
+  }
+ },
+ "modelo": {
+  "arquivo": "v7a-lateral.pt",
+  "sha256": "b92be4f42ccfa58feceaf3ed072bc407238ba1f5d72ad842bee8dfb7b1e77d7f",
+  "tamanho_bytes": 6226154
+ },
+ "regra_decisao": "limiar por classe; sem caixa acima do limiar -> REVISAR; \"sem peça\" é estado separado",
+ "observacao": "consome este arquivo em vez de manter cópia local; compare o campo fingerprint antes de rodar",
+ "fingerprint": "c21e74a4e24fe0c3ff7e90125a2d6bde79446c14e19a5717bd11e12658d421d5"
+}
