@@ -2777,15 +2777,15 @@ const renderDebug = () => {
 
                         return `
                         <p class="text-sm">
-                            Delay <span class="font-semibold">deste rig</span> por camera, contra o que a
-                            ultima serie <span class="font-semibold">realmente mediu</span>:
+                            Alvo <span class="font-semibold">configurado neste rig</span> por camera, contra a
+                            ultima serie <span class="font-semibold">entregue ao rig</span>:
                             ${ultima ? '<span class="font-mono text-xs">(' + ultima.serie + ')</span>' : ''}
                         </p>
 
                         <table class="mt-2 w-full text-left">
                             <thead><tr class="text-[10px] uppercase tracking-wider text-gray-500">
                                 <th class="pr-4">camera</th><th class="pr-4">configurado</th>
-                                <th class="pr-4">medido</th><th></th>
+                                <th class="pr-4">entregue</th><th></th>
                             </tr></thead>
                             <tbody>${linhas}</tbody>
                         </table>
@@ -2836,12 +2836,12 @@ const renderDebug = () => {
                         `;
                     })()}
 
-                    <p class="mt-3 text-xs text-orange-500">
-                        Este rig tem UM delay para as tres cameras. Cameras a distancias diferentes do
-                        sensor precisam de delays diferentes (<span class="font-mono">tau* = d / v</span>
-                        por camera); com um valor so, no maximo uma delas captura no instante certo.
+                    <p class="mt-3 text-xs text-gray-500">
+                        O delay e <strong>por camera</strong> e conta do trigger. A tabela mostra quando cada
+                        frame foi entregue ao rig; isso nao e o instante de exposicao do sensor. A ESP-CAM usa
+                        o frame associado ao trigger; CSI e USB iniciam em paralelo no proprio alvo.
                     </p>
-                `, 'Ate o rig aplicar delay por camera, o numero unico e o que existe — e a tela diz isso.')}
+                `, 'Delay por camera com origem e instante de entrega declarados.')}
 
                 ${painel('Teste do gatilho e captura manual', `
                     <div class="space-y-3">

@@ -775,23 +775,30 @@ def _rota_rig_delay(ctx: dict, corpo: dict) -> dict:
         raise ErroDeApi(400, "operador_ausente",
                         "informe quem muda o delay (1 a 64 caracteres imprimiveis): sem autor nao e trilha")
 
-    camera = " ".join(str(corpo.get("camera") or "").split()).lower()
-    if camera and camera not in CAMERAS_DE_CAPTURA:
+    camera_pedida = " ".join(str(corpo.get("camera") or "").split()).lower()
+    if not camera_pedida:
+        raise ErroDeApi(400, "camera_ausente", "escolha uma camera ou 'todas' explicitamente")
+    if camera_pedida != "todas" and camera_pedida not in CAMERAS_DE_CAPTURA:
         raise ErroDeApi(400, "camera_desconhecida",
-                        f"camera {camera!r} nao existe; validas: {sorted(CAMERAS_DE_CAPTURA)}")
+                        f"camera {camera_pedida!r} nao existe; validas: {sorted(CAMERAS_DE_CAPTURA)} + ['todas']")
+    camera = None if camera_pedida == "todas" else camera_pedida
 
-    anterior, _ = _delay_na_ponte(_chamar_ponte("/status"))
+    # A autoridade do delay por camera e o rig. A ponte so guarda o ramo ESP-CAM em RAM;
+    # usa-la como 'anterior' para CSI/USB produzia uma trilha semanticamente falsa.
+    estado_antes = _chamar_rig("/delay-por-camera", timeout=15.0)
+    por_camera_antes = estado_antes.get("delay_por_camera_ms") or {}
+    anterior = dict(por_camera_antes) if camera is None else por_camera_antes.get(camera)
     consulta = f"/configurar-delay?ms={ms}" + (f"&camera={camera}" if camera else "")
     resposta_rig = _chamar_rig(consulta, timeout=15.0)
-    ponte = _chamar_ponte("/status")              # leitura de volta: o que o dispositivo diz que tem
+    ponte = _chamar_ponte("/status")              # ponte e apenas leitura do ramo ESP-CAM
     vigente, salvo_em = _delay_na_ponte(ponte)
 
     trilha = Path(ctx["db"]).parent / "mudancas-de-delay.jsonl"
     with trilha.open("a", encoding="utf-8") as arquivo:
         arquivo.write(json.dumps({
-            "quando": _agora_iso(), "operador": operador, "camera": camera or "todas",
+            "quando": _agora_iso(), "operador": operador, "camera": camera_pedida,
             "anterior_ms": anterior, "novo_ms": ms,
-            "lido_de_volta_ms": vigente, "origem": "aba de debug do site",
+            "lido_de_volta_ponte_espcam_ms": vigente, "origem": "aba de debug do site",
         }, ensure_ascii=False) + "\n")
 
     # A confirmacao depende de QUEM guarda o valor. Por camera a autoridade e o rig (ele agenda a
@@ -802,12 +809,13 @@ def _rota_rig_delay(ctx: dict, corpo: dict) -> dict:
         confirmado = lido_por_camera.get(camera) == ms
         leitura = {"por_camera_ms": lido_por_camera, "ponte_ms": vigente}
     else:
-        confirmado = vigente == ms
-        leitura = {"por_camera_ms": resposta_rig.get("delay_por_camera_ms") or {}, "ponte_ms": vigente}
+        lido_por_camera = resposta_rig.get("delay_por_camera_ms") or {}
+        confirmado = all(lido_por_camera.get(c) == ms for c in CAMERAS_DE_CAPTURA)
+        leitura = {"por_camera_ms": lido_por_camera, "ponte_ms": vigente}
 
-    return {"pedido_ms": ms, "camera": camera or "todas", "rig": resposta_rig,
+    return {"pedido_ms": ms, "camera": camera_pedida, "rig": resposta_rig,
             "operador": operador, "anterior_ms": anterior,
-            "delay_ms_no_dispositivo": vigente, "delay_salvo_em": salvo_em,
+            "delay_ramo_ponte_espcam_ms": vigente, "delay_salvo_em": salvo_em,
             "leitura_de_volta": leitura,
             "confirmado": confirmado, "trilha": str(trilha)}
 
