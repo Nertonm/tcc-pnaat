@@ -1,121 +1,282 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PNAAT - Visualização de Capturas</title>
-    
-    <!-- CSS Customizado -->
+
+    <title>PNAAT • Operação</title>
+
     <link rel="stylesheet" href="css/style.css">
-    
-    <!-- Tailwind CSS -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="js/tailwind-config.js"></script>
-    
-    <!-- Icons (Lucide) -->
+
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="flex h-screen overflow-hidden antialiased transition-theme bg-light-bg dark:bg-dark-bg text-brand-black dark:text-brand-white selection:bg-brand-red selection:text-white">
 
-    <!-- App Container (Floating effect on large screens) -->
-    <div class="flex w-full h-full p-0 sm:p-4 gap-4">
-        
-        <!-- Sidebar -->
-        <aside class="w-20 lg:w-64 flex flex-col transition-theme bg-light-card dark:bg-dark-card rounded-none sm:rounded-3xl shadow-soft border border-light-border dark:border-dark-border z-20 overflow-hidden flex-shrink-0">
-            
-            <!-- Logo Area -->
-            <div class="h-20 flex items-center justify-center lg:justify-start lg:px-8 border-b border-light-border dark:border-dark-border">
-                <div class="w-10 h-10 rounded-xl bg-brand-red/10 flex items-center justify-center text-brand-red">
-                    <i data-lucide="camera" class="w-6 h-6"></i>
+<body
+    class="h-screen overflow-hidden bg-light-bg dark:bg-dark-bg text-brand-black dark:text-brand-white antialiased selection:bg-brand-red selection:text-white transition-theme">
+
+    <div class="flex h-full w-full">
+
+        <!-- SIDEBAR -->
+        <aside
+            class="app-sidebar relative z-30 flex w-[78px] lg:w-[248px] flex-shrink-0 flex-col bg-brand-black text-white dark:bg-[#0c0f12]">
+
+            <!-- Logo -->
+            <div class="flex h-24 items-center justify-center px-4 lg:justify-start lg:px-6">
+                <div class="flex items-center">
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-red shadow-[0_10px_30px_rgba(214,26,34,.25)]">
+                        <i data-lucide="scan-line" class="h-6 w-6"></i>
+                    </div>
+
+                    <div class="ml-3 hidden lg:block">
+                        <div class="text-xl font-bold tracking-tight">
+                            PNAAT
+                        </div>
+
+                        <div class="mt-0.5 text-[9px] font-semibold uppercase tracking-[.22em] text-white/35">
+                            Inspection System
+                        </div>
+                    </div>
                 </div>
-                <span class="font-bold text-xl tracking-tight ml-3 hidden lg:block gradient-text">PNAAT</span>
             </div>
-            
-            <!-- Navigation -->
-            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-2" id="sidebar-nav">
-                <button onclick="app.navigate('operacao')" class="nav-item group w-full flex items-center justify-center lg:justify-start px-3 py-3 rounded-2xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-brand-black dark:hover:text-brand-white hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5 lg:mr-3 transition-transform group-hover:scale-110"></i> 
-                    <span class="hidden lg:block">Operação</span>
+
+            <div class="hidden px-6 pb-2 pt-3 text-[10px] font-semibold uppercase tracking-[.2em] text-white/25 lg:block">
+                Navegação
+            </div>
+
+            <!-- Navegação -->
+            <nav id="sidebar-nav" class="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3 pb-4 lg:px-4">
+
+                <button data-view="operacao" onclick="app.navigate('operacao')" class="nav-item group">
+                    <span class="nav-indicator"></span>
+
+                    <span class="nav-icon">
+                        <i data-lucide="layout-dashboard"></i>
+                    </span>
+
+                    <span class="nav-label">Operação</span>
                 </button>
-                <button onclick="app.navigate('capturas')" class="nav-item group w-full flex items-center justify-center lg:justify-start px-3 py-3 rounded-2xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-brand-black dark:hover:text-brand-white hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
-                    <i data-lucide="image" class="w-5 h-5 lg:mr-3 transition-transform group-hover:scale-110"></i> 
-                    <span class="hidden lg:block">Capturas</span>
+
+                <button data-view="capturas" onclick="app.navigate('capturas')" class="nav-item group">
+                    <span class="nav-indicator"></span>
+
+                    <span class="nav-icon">
+                        <i data-lucide="images"></i>
+                    </span>
+
+                    <span class="nav-label">Capturas</span>
                 </button>
-                <button onclick="app.navigate('investigacao')" class="nav-item group w-full flex items-center justify-center lg:justify-start px-3 py-3 rounded-2xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-brand-black dark:hover:text-brand-white hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
-                    <i data-lucide="search" class="w-5 h-5 lg:mr-3 transition-transform group-hover:scale-110"></i> 
-                    <span class="hidden lg:block">Investigação</span>
+
+                <button data-view="investigacao" onclick="app.navigate('investigacao')" class="nav-item group">
+                    <span class="nav-indicator"></span>
+
+                    <span class="nav-icon">
+                        <i data-lucide="scan-search"></i>
+                    </span>
+
+                    <span class="nav-label">Investigação</span>
                 </button>
-                <button onclick="app.navigate('qualidade')" class="nav-item group w-full flex items-center justify-center lg:justify-start px-3 py-3 rounded-2xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-brand-black dark:hover:text-brand-white hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
-                    <i data-lucide="pie-chart" class="w-5 h-5 lg:mr-3 transition-transform group-hover:scale-110"></i> 
-                    <span class="hidden lg:block">Qualidade</span>
+
+                <button data-view="qualidade" onclick="app.navigate('qualidade')" class="nav-item group">
+                    <span class="nav-indicator"></span>
+
+                    <span class="nav-icon">
+                        <i data-lucide="chart-no-axes-combined"></i>
+                    </span>
+
+                    <span class="nav-label">Qualidade</span>
                 </button>
-                <button onclick="app.navigate('saude')" class="nav-item group w-full flex items-center justify-center lg:justify-start px-3 py-3 rounded-2xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-brand-black dark:hover:text-brand-white hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
-                    <i data-lucide="cpu" class="w-5 h-5 lg:mr-3 transition-transform group-hover:scale-110"></i> 
-                    <span class="hidden lg:block">Saúde da Pi</span>
+
+                <button data-view="saude" onclick="app.navigate('saude')" class="nav-item group">
+                    <span class="nav-indicator"></span>
+
+                    <span class="nav-icon">
+                        <i data-lucide="cpu"></i>
+                    </span>
+
+                    <span class="nav-label">Saúde da Pi</span>
                 </button>
-                <button onclick="app.navigate('lote')" class="nav-item group w-full flex items-center justify-center lg:justify-start px-3 py-3 rounded-2xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-brand-black dark:hover:text-brand-white hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
-                    <i data-lucide="layers" class="w-5 h-5 lg:mr-3 transition-transform group-hover:scale-110"></i> 
-                    <span class="hidden lg:block">Relatório de Lote</span>
+
+                <button data-view="lote" onclick="app.navigate('lote')" class="nav-item group">
+                    <span class="nav-indicator"></span>
+
+                    <span class="nav-icon">
+                        <i data-lucide="file-chart-column"></i>
+                    </span>
+
+                    <span class="nav-label">Relatório de Lote</span>
                 </button>
             </nav>
 
-            <!-- Footer da Sidebar (Theme toggle & User) -->
-            <div class="p-4 border-t border-light-border dark:border-dark-border">
-                <button onclick="app.toggleTheme()" class="w-full flex items-center justify-center lg:justify-start px-3 py-3 rounded-2xl text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-light-bg dark:hover:bg-dark-bg transition-colors">
-                    <div class="relative w-5 h-5 lg:mr-3">
-                        <i data-lucide="moon" class="w-5 h-5 absolute inset-0 hidden dark:block transition-transform duration-500 rotate-0 dark:rotate-360"></i>
-                        <i data-lucide="sun" class="w-5 h-5 absolute inset-0 block dark:hidden transition-transform duration-500 rotate-180 dark:rotate-0"></i>
+            <!-- Sidebar footer -->
+            <div class="border-t border-white/[.06] p-3 lg:p-4">
+
+                <div class="mb-2 hidden rounded-2xl border border-white/[.05] bg-white/[.035] p-3 lg:flex lg:items-center">
+                    <span class="status-dot status-warning mr-3"></span>
+
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-orange-300">
+                            Demonstração
+                        </div>
+
+                        <div class="mt-0.5 text-[11px] text-white/35">
+                            Dados simulados
+                        </div>
                     </div>
-                    <span class="hidden lg:block dark:hidden">Modo Escuro</span>
-                    <span class="hidden lg:block hidden dark:block">Modo Claro</span>
+                </div>
+
+                <button onclick="app.toggleTheme()" class="sidebar-footer-button">
+                    <span class="nav-icon">
+                        <i data-lucide="moon" class="hidden dark:block"></i>
+                        <i data-lucide="sun" class="block dark:hidden"></i>
+                    </span>
+
+                    <span class="nav-label dark:hidden">
+                        Modo escuro
+                    </span>
+
+                    <span class="nav-label hidden dark:block">
+                        Modo claro
+                    </span>
                 </button>
             </div>
         </aside>
 
-        <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-light-card dark:bg-dark-card rounded-none sm:rounded-3xl shadow-soft border border-light-border dark:border-dark-border">
-            
-            <!-- Header (Glassmorphism) -->
-            <header class="h-20 flex items-center justify-between px-6 sm:px-10 border-b transition-theme border-light-border dark:border-dark-border glass-card sticky top-0 z-10">
-                <div>
-                    <h1 id="page-title" class="text-2xl font-bold tracking-tight">Operação</h1>
-                    <p id="page-subtitle" class="text-sm text-gray-500 dark:text-gray-400 mt-1">Visão geral da bancada em tempo real</p>
+        <!-- MAIN -->
+        <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
+
+            <!-- TOPBAR -->
+            <header
+                class="topbar relative z-20 flex h-[76px] flex-shrink-0 items-center justify-between border-b border-light-border bg-light-surface/90 px-5 backdrop-blur-xl dark:border-dark-border dark:bg-dark-surface/90 sm:px-8">
+
+                <!-- Busca -->
+                <div class="relative hidden w-full max-w-md md:flex">
+                    <i data-lucide="search"
+                        class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"></i>
+
+                    <input id="global-search" type="text" placeholder="Buscar captura, item ou lote..."
+                        class="app-input w-full py-2.5 pl-11 pr-12">
+
+                    <span
+                        class="absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-light-border bg-white px-2 py-1 text-[10px] font-semibold text-gray-400 dark:border-dark-border dark:bg-dark-raised lg:block">
+                        /
+                    </span>
                 </div>
-                
-                <div class="flex items-center space-x-3 sm:space-x-6">
-                    <div class="hidden sm:flex flex-col items-end">
-                        <div class="flex items-center text-sm font-medium">
-                            <span class="relative flex h-3 w-3 mr-2">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-3 w-3 bg-brand-green"></span>
-                            </span>
-                            SISTEMA ONLINE
-                        </div>
-                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Latência: 12ms</span>
+
+                <!-- Mobile logo -->
+                <div class="flex items-center md:hidden">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-red">
+                        <i data-lucide="scan-line" class="h-5 w-5 text-white"></i>
                     </div>
-                    
-                    <div class="h-10 w-px bg-light-border dark:bg-dark-border hidden sm:block"></div>
-                    
-                    <div class="flex items-center space-x-3 bg-light-bg dark:bg-dark-bg px-4 py-2 rounded-2xl border border-light-border dark:border-dark-border">
-                        <i data-lucide="package" class="w-4 h-4 text-gray-500"></i>
-                        <span class="text-sm font-medium">Lote: <span class="text-brand-red ml-1">#L2024-89</span></span>
+
+                    <span class="ml-2 font-bold">
+                        PNAAT
+                    </span>
+                </div>
+
+                <!-- Ações -->
+                <div class="flex items-center gap-2 sm:gap-3">
+
+                    <div
+                        class="hidden items-center rounded-xl bg-light-bg px-3 py-2 dark:bg-dark-bg lg:flex">
+                        <span class="status-dot status-success mr-2.5"></span>
+
+                        <div class="leading-tight">
+                            <div class="text-[11px] font-semibold">
+                                Raspberry Pi online
+                            </div>
+
+                            <div class="text-[10px] text-gray-400">
+                                Latência 12 ms
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="topbar-icon-button" title="Notificações">
+                        <i data-lucide="bell" class="h-[18px] w-[18px]"></i>
+
+                        <span
+                            class="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand-red ring-2 ring-light-surface dark:ring-dark-surface"></span>
+                    </button>
+
+                    <div
+                        class="flex h-10 items-center rounded-xl border border-light-border bg-light-bg px-3 dark:border-dark-border dark:bg-dark-bg sm:px-4">
+                        <i data-lucide="package" class="mr-2 h-4 w-4 text-gray-400"></i>
+
+                        <span class="mr-1 hidden text-xs text-gray-500 dark:text-gray-400 sm:inline">
+                            Lote
+                        </span>
+
+                        <span class="text-xs font-bold text-brand-red">
+                            #L2024-89
+                        </span>
                     </div>
                 </div>
             </header>
 
-            <!-- Dynamic Content Area -->
-            <div id="content-area" class="flex-1 overflow-y-auto p-6 sm:p-10 relative">
-                <!-- Renderizado via JS -->
+            <!-- CONTENT -->
+            <div class="custom-scrollbar flex-1 overflow-y-auto">
+
+                <div class="mx-auto w-full max-w-[1600px] px-5 py-7 sm:px-8 sm:py-8 lg:px-10">
+
+                    <!-- PAGE HEADER -->
+                    <section
+                        class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
+                        <div>
+                            <div class="mb-2 flex items-center">
+                                <span
+                                    class="text-[10px] font-semibold uppercase tracking-[.18em] text-brand-red sm:text-xs">
+                                    Dashboard local
+                                </span>
+
+                                <span class="mx-2 text-gray-300 dark:text-gray-700">
+                                    /
+                                </span>
+
+                                <span class="text-[10px] text-gray-400 sm:text-xs">
+                                    Bancada de inspeção
+                                </span>
+                            </div>
+
+                            <h1 id="page-title"
+                                class="text-2xl font-bold tracking-tight sm:text-3xl">
+                                Operação
+                            </h1>
+
+                            <p id="page-subtitle"
+                                class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+                                Visão geral da bancada em tempo real
+                            </p>
+                        </div>
+
+                        <div class="demo-badge">
+                            <i data-lucide="flask-conical" class="mr-2 h-4 w-4"></i>
+                            Dados simulados
+                        </div>
+                    </section>
+
+                    <div id="content-area" class="relative min-h-[300px]">
+                        <!-- JS -->
+                    </div>
+
+                </div>
+
             </div>
         </main>
     </div>
 
-    <!-- Scripts -->
     <script src="js/data.js"></script>
     <script src="js/components.js"></script>
     <script src="js/app.js"></script>
+
     <script>
         lucide.createIcons();
     </script>
 </body>
+
 </html>
