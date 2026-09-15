@@ -242,6 +242,38 @@ Origem: `kfold-*.json` sha `f3593c2a3c1f0486` ·
 `v7aug/limiares-teste.json` sha `f0fdccc827828447` ·
 `ood-mvtec.json` sha `5fc3a93f09f8531d`
 
+
+## 3f. Teste ao vivo na câmera do host (bancada, 2026-09-15T17:00:24+00:00)
+
+Executado **sem tocar** no serviço que detém o V4L2: a leitura veio do MJPEG que ele já publica
+(o próprio serviço declara, no cabeçalho, ser o leitor único do device — então ler o stream é o
+uso previsto, não uma segunda abertura do device).
+
+| item | valor |
+|---|---|
+| fonte | stream local (1280×720) |
+| quadros processados | 250 (25 s) + 101 (10 s, com quadros salvos) |
+| latência por quadro | mediana **5.9 ms** (min 5.2 / max 1858.2 no primeiro) |
+| decisões | {'REVISAR': 101} — nada passou do limiar |
+| candidatas no nível cru (conf 0,05) | 30 de 101 quadros; confiança máxima **0,109** |
+
+Leitura honesta:
+
+1. **O encanamento roda ao vivo** — câmera → modelo → limiar por classe → decisão → evidência,
+   a 5.9 ms por quadro. Ordem de grandeza suficiente para a linha.
+2. **Sem alucinação em cena desconhecida** — a maior confiança em 101 quadros foi 0,109, ou seja
+   piso de ruído: zero alarme falso fora do domínio, no mundo real (o MVTec dava AUROC 0,5 nesse
+   tipo de pergunta; aqui a resposta é "não inventa").
+3. **Não é medida de acurácia** — não havia peça em vista e não existe a ROI por câmera do rig
+   neste contexto. O que este teste valida é runtime e comportamento na ausência de alvo.
+4. **Achado que só aparece rodando:** cena VAZIA caiu em REVISAR. Presença de peça é informação do
+   gatilho/item no rig; no pipeline final, "sem peça" precisa ser estado próprio, distinto de
+   "peça presente e incerta". A regra do silêncio vale para o segundo caso, não para o primeiro.
+
+Artefatos: `dataset/TRABALHO/inferencia_camera_teste.py` (teste de bancada, com `--url` ou
+`--camera`) · quadros anotados e resumo em `/var/tmp/teste-camera/` no host de treino (uma cópia
+do quadro e do resumo foi puxada para uma maquina separada).
+
 ## 4. Aumento de dados e preprocessing
 
 - **Offline** (`aumenta_offline.py`, equivale ao "dataset version" do Roboflow): 3× no split
