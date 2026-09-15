@@ -412,7 +412,10 @@ def _chamar_rig(rota: str, *, metodo: str = "GET", timeout: float = 10.0) -> dic
     return _chamar_servico(RIG, rota, metodo=metodo, timeout=timeout, nome="rig")
 
 
-def _chamar_ponte(rota: str = "/", *, metodo: str = "GET", timeout: float = 8.0) -> dict:
+def _chamar_ponte(rota: str = "/status", *, metodo: str = "GET", timeout: float = 8.0) -> dict:
+    # ATENCAO: "/" na ponte devolve a PAGINA HTML; o snapshot JSON (serial, sensor, delay) esta em
+    # "/status". Ler "/" fazia o painel do gatilho falhar para sempre com resposta ilegivel.
+
     return _chamar_servico(PONTE, rota, metodo=metodo, timeout=timeout, nome="ponte_gatilho")
 
 
@@ -565,12 +568,28 @@ def _rota_rig_leitura(alvo: str) -> dict:
         return {"historico": _chamar_rig("/historico")}
     if alvo == "gatilho":
         # a ponte serial e quem sabe do sensor, da serial e do delay
-        return {"ponte": _chamar_ponte("/")}
+        return {"ponte": _chamar_ponte("/status")}
     raise ErroDeApi(404, "leitura_desconhecida", f"leitura de rig desconhecida: {alvo!r}")
 
 
-def _rota_rig_delay(corpo: dict) -> dict:
-    """Configura o delay de captura gatilho->foto e LE DE VOLTA do dispositivo."""
+def _delay_na_ponte(ponte: dict) -> tuple[object, object]:
+    """Le o delay do snapshot da ponte, onde ele vive ANINHADO em `trigger`.
+
+    A ponte publica `trigger.delay_ms`/`trigger.delay_saved_at`; ler na raiz devolvia None, e a
+    confirmacao de volta ficaria falsa para sempre.
+    """
+    gatilho = ponte.get("trigger") if isinstance(ponte, dict) else None
+    if not isinstance(gatilho, dict):
+        return None, None
+    return gatilho.get("delay_ms"), gatilho.get("delay_saved_at")
+
+
+def _rota_rig_delay(ctx: dict, corpo: dict) -> dict:
+    """Configura o delay de captura, LE DE VOLTA e registra QUEM mudou.
+
+    O delay define a janela de captura: mudar sem autor nem trilha e o mesmo defeito que a correcao do
+    operador nao pode ter. Trilha = JSONL append-only ao lado do banco.
+    """
     bruto = corpo.get("ms")
     try:
         ms = int(bruto)
@@ -579,17 +598,38 @@ def _rota_rig_delay(corpo: dict) -> dict:
     if not 0 <= ms <= DELAY_MAXIMO_MS:
         raise ErroDeApi(400, "delay_invalido", f"ms fora de [0,{DELAY_MAXIMO_MS}]: {ms}")
 
+    operador = " ".join(str(corpo.get("operador") or "").split())
+    if not operador or len(operador) > 64 or any(c < " " for c in operador):
+        raise ErroDeApi(400, "operador_ausente",
+                        "informe quem muda o delay (1 a 64 caracteres imprimiveis): sem autor nao e trilha")
+
+    anterior, _ = _delay_na_ponte(_chamar_ponte("/status"))
     resposta_rig = _chamar_rig(f"/configurar-delay?ms={ms}", timeout=15.0)
-    ponte = _chamar_ponte("/")                    # leitura de volta: o que o dispositivo diz que tem
-    return {"pedido_ms": ms, "rig": resposta_rig,
-            "delay_ms_no_dispositivo": ponte.get("delay_ms"),
-            "delay_salvo_em": ponte.get("delay_saved_at"),
-            "confirmado": ponte.get("delay_ms") == ms}
+    ponte = _chamar_ponte("/status")              # leitura de volta: o que o dispositivo diz que tem
+    vigente, salvo_em = _delay_na_ponte(ponte)
+
+    trilha = Path(ctx["db"]).parent / "mudancas-de-delay.jsonl"
+    with trilha.open("a", encoding="utf-8") as arquivo:
+        arquivo.write(json.dumps({
+            "quando": _agora_iso(), "operador": operador, "anterior_ms": anterior, "novo_ms": ms,
+            "lido_de_volta_ms": vigente, "origem": "aba de debug do site",
+        }, ensure_ascii=False) + "\n")
+
+    return {"pedido_ms": ms, "rig": resposta_rig, "operador": operador, "anterior_ms": anterior,
+            "delay_ms_no_dispositivo": vigente, "delay_salvo_em": salvo_em,
+            "confirmado": vigente == ms, "trilha": str(trilha)}
 
 
 def _rota_rig_teste_trigger(ctx: dict, corpo: dict) -> dict:
     """Ensaio de bancada: pede ao rig o trigger de teste nas 3 cameras e registra o evento."""
     resposta = _chamar_rig("/teste-trigger-3-cameras", timeout=15.0)
+
+    if not resposta.get("ok"):
+        # o rig responde ok:false SEM levantar HTTP (ponte fora, por exemplo): declarar falha
+        raise ErroDeApi(502, "teste_do_gatilho_recusado_pelo_rig",
+                        f"o rig nao aceitou o teste: {resposta.get('erro') or 'sem motivo'} "
+                        f"{resposta.get('detalhe') or ''}".strip())
+
     item_id = corpo.get("item_id") or None
     evento = _registrar_ensaio_de_bancada(
         ctx, f"teste de gatilho na bancada (debug){' — item ' + item_id if item_id else ''}",
@@ -611,9 +651,28 @@ def _rota_rig_captura(ctx: dict, corpo: dict) -> dict:
 
     resposta = _chamar_rig(f"/capturar-3-cameras{consulta}", timeout=40.0)
     serie = resposta.get("serie") or resposta.get("serie_id")
+    faltando = resposta.get("fotos_parciais") or resposta.get("faltantes")
+
+    if not resposta.get("ok"):
+        # captura parcial: o rig responde HTTP 200 com ok:false. Registrar 'aceito' aqui seria declarar
+        # sucesso sobre uma captura que o proprio rig negou (e a serie fica no disco, incompleta).
+        motivo = (f"captura manual RECUSADA pelo rig (debug)"
+                  f"{' — serie ' + str(serie) if serie else ''}"
+                  f"{' — fotos_parciais: ' + json.dumps(faltando, ensure_ascii=False) if faltando else ''}"
+                  f" — {resposta.get('erro') or 'sem motivo declarado'}")
+        registro = Registro.abrir(ctx["db"])
+        try:
+            evento_id = _escrever_com_retentativa(
+                registro.registrar_gatilho, _agora_iso(), "invalido",
+                fonte="nao_declarada", motivo=motivo[:400])
+        finally:
+            registro.fechar()
+        return {"rig": resposta, "serie": serie, "parcial": True,
+                "evento": {"gatilho_id": evento_id, "motivo": motivo[:200]}}
+
     evento = _registrar_ensaio_de_bancada(
         ctx, f"captura manual na bancada (debug){' — serie ' + str(serie) if serie else ''}")
-    return {"rig": resposta, "serie": serie, "evento": evento}
+    return {"rig": resposta, "serie": serie, "parcial": False, "evento": evento}
 
 
 def _rota_correcao(ctx: dict, corpo: dict) -> dict:
@@ -827,7 +886,7 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
                 elif rota == "/api/correcao":
                     self._json(200, _rota_correcao(ctx, corpo))
                 elif rota == "/api/rig/delay":
-                    self._json(200, _rota_rig_delay(corpo))
+                    self._json(200, _rota_rig_delay(ctx, corpo))
                 elif rota == "/api/rig/teste-trigger":
                     self._json(200, _rota_rig_teste_trigger(ctx, corpo))
                 else:

@@ -2552,6 +2552,12 @@ const renderInvestigacao = id => {
     `;
 };
 
+/*: escapa texto que vem de fora (motivo livre, detalhe de erro do rig) antes de entrar em innerHTML */
+const escDoDebug = valor => String(valor === null || valor === undefined ? '' : valor)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+
 const renderDebug = () => {
     /*
      * Aba de bancada. Todo dado vem do rig (servico da camera) ou da ponte do gatilho, e toda ausencia
@@ -2560,12 +2566,14 @@ const renderDebug = () => {
      */
     const d = (typeof mockDebug !== 'undefined' && mockDebug) ? mockDebug : {};
     const ponte = (d.ponte && !d.ponte.erro) ? d.ponte : null;
+    // a ponte publica o delay ANINHADO em `trigger`; ler na raiz dava sempre vazio
+    const gatilhoDaPonte = (ponte && ponte.trigger) ? ponte.trigger : null;
     const estado = (d.estado && !d.estado.erro) ? d.estado : null;
     const rig = estado ? (estado.rig || {}) : {};
 
     const falha = (bloco, rotulo) => `
         <p class="text-sm text-brand-red">
-            ${rotulo} indisponivel: ${bloco.erro}
+            ${rotulo} indisponivel: ${escDoDebug(bloco.erro)}
         </p>`;
 
     const linha = (rotulo, valor) => `
@@ -2617,10 +2625,10 @@ const renderDebug = () => {
 
                     <p class="mt-2 text-sm ${acao.estado === 'ok' ? 'text-brand-green'
                         : acao.estado === 'falhou' ? 'text-brand-red' : 'text-gray-400'}">
-                        ${acao.estado}${acao.erro ? ` — ${acao.erro}` : ''}${acao.detalhe ? `: ${acao.detalhe}` : ''}
+                        ${escDoDebug(acao.estado)}${acao.erro ? ` — ${escDoDebug(acao.erro)}` : ''}${acao.detalhe ? `: ${escDoDebug(acao.detalhe)}` : ''}
                     </p>
 
-                    ${acao.dados ? `<pre class="custom-scrollbar mt-3 max-h-64 overflow-auto rounded-lg bg-black/5 p-3 text-[11px] leading-4 dark:bg-white/5">${JSON.stringify(acao.dados, null, 1)}</pre>` : ''}
+                    ${acao.dados ? `<pre class="custom-scrollbar mt-3 max-h-64 overflow-auto rounded-lg bg-black/5 p-3 text-[11px] leading-4 dark:bg-white/5">${escDoDebug(JSON.stringify(acao.dados, null, 1))}</pre>` : ''}
                 </section>` : ''}
 
 
@@ -2637,8 +2645,10 @@ const renderDebug = () => {
                         ${linha('idade da leitura (s)', sensor ? sensor.idade_s : '&mdash;')}
                         ${linha('transporte', ponte.transport)}
                         ${linha('inicializado (booted)', ponte.booted)}
-                        ${linha('delay no dispositivo (ms)', ponte.delay_ms)}
-                        ${linha('delay salvo em', ponte.delay_saved_at)}
+                        ${linha('delay no dispositivo (ms)', gatilhoDaPonte ? gatilhoDaPonte.delay_ms : '&mdash;')}
+                        ${linha('delay salvo em', gatilhoDaPonte ? gatilhoDaPonte.delay_saved_at : '&mdash;')}
+                        ${linha('estado do gatilho', gatilhoDaPonte ? gatilhoDaPonte.estado : '&mdash;')}
+                        ${linha('ultimo evento do gatilho', gatilhoDaPonte ? gatilhoDaPonte.ultimo_n : '&mdash;')}
                     `,
                     'A ponte e quem fala com a ESP pela serial: nivel do sensor, contadores de frame e o delay vigente saem dela.')}
 
@@ -2661,8 +2671,8 @@ const renderDebug = () => {
                 ${painel('Delay de captura (gatilho &rarr; foto)', `
                     <p class="text-sm">
                         Delay vigente no dispositivo:
-                        <span class="font-mono font-semibold">${(ponte && ponte.delay_ms !== undefined
-                            && ponte.delay_ms !== null) ? ponte.delay_ms + ' ms'
+                        <span class="font-mono font-semibold">${(gatilhoDaPonte && gatilhoDaPonte.delay_ms !== undefined
+                            && gatilhoDaPonte.delay_ms !== null) ? gatilhoDaPonte.delay_ms + ' ms'
                             : (d.ponte && d.ponte.erro ? 'indisponivel (ponte fora)' : '&mdash;')}</span>
                     </p>
 
@@ -2673,6 +2683,14 @@ const renderDebug = () => {
 
                             <input id="debug-delay-ms" type="number" min="0" max="30000" step="10"
                                    class="app-input mt-1 w-40 px-3 py-2" placeholder="0 a 30000">
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] uppercase tracking-wider text-gray-500"
+                                   for="debug-delay-operador">quem muda</label>
+
+                            <input id="debug-delay-operador" class="app-input mt-1 w-48 px-3 py-2"
+                                   placeholder="operador (vai para a trilha)" autocomplete="off">
                         </div>
 
                         <button class="secondary-button" onclick="app.configurarDelay()">
@@ -2765,7 +2783,7 @@ const renderDebug = () => {
                                     <td class="py-1.5 pr-3">${g.fonte}</td>
                                     <td class="py-1.5 pr-3">${g.estado}</td>
                                     <td class="py-1.5 pr-3 font-mono text-xs">${g.item_id || '(sem item)'}</td>
-                                    <td class="py-1.5 text-xs">${g.motivo || '&mdash;'}${g.teste ? ' [teste]' : ''}</td>
+                                    <td class="py-1.5 text-xs">${escDoDebug(g.motivo) || '&mdash;'}${g.teste ? ' [teste]' : ''}</td>
                                 </tr>`).join('')}
                         </tbody>
                     </table>` : `<p class="text-sm text-gray-400">nenhum evento de gatilho registrado</p>`),

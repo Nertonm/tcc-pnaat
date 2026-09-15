@@ -884,7 +884,9 @@ class App {
             const resposta = await fetch(`${window.PNAAT_API.base}${rota}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(corpo || {})
+                body: JSON.stringify(corpo || {}),
+                // teto de tempo: sem ele o botao fica em "enviando..." para sempre se o hub travar
+                signal: AbortSignal.timeout(60000)
             });
             const texto = await resposta.json().catch(() => ({ erro: 'resposta nao era JSON' }));
 
@@ -904,7 +906,16 @@ class App {
 
     configurarDelay() {
         const campo = document.getElementById('debug-delay-ms');
+        const campoOperador = document.getElementById('debug-delay-operador');
+        const operador = campoOperador ? campoOperador.value.trim() : '';
         const ms = campo ? Number(campo.value) : NaN;
+
+        if (!operador) {
+            mockDebug.acao = { rotulo: 'configurar delay', estado: 'falhou', erro: 'operador_ausente',
+                               detalhe: 'o delay define a janela de captura: informe quem esta mudando' };
+            this.repintarDebug();
+            return;
+        }
 
         if (!Number.isFinite(ms)) {
             mockDebug.acao = { rotulo: 'configurar delay', estado: 'falhou',
@@ -913,7 +924,8 @@ class App {
             return;
         }
 
-        this.acaoDeBancada('/api/rig/delay', { ms: ms }, `configurar delay para ${ms} ms`);
+        this.acaoDeBancada('/api/rig/delay', { ms: ms, operador: operador },
+                           `configurar delay para ${ms} ms (por ${operador})`);
     }
 
     testarGatilho() {
