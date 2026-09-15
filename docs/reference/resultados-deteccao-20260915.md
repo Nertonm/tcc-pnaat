@@ -165,6 +165,44 @@ emitiu ~35 caixas por imagem (F1 macro 0,018). O topo **não está validado** �
 captura e anotação de topo próprias antes de qualquer uso; o número de 0,675/0,725 medido
 antes (KMITL puro) já indicava isso.
 
+
+## 3d. Camada de decisão operacional (medida no candidato)
+
+O detector não decide sozinho: ele emite caixas. A decisão é uma política, e ela foi medida
+(`dataset/TRABALHO/decisao_operacional.py`) com **limiar por classe** e **regra do silêncio**
+(nada passa acima do limiar → REVISAR, nunca "normal").
+
+Limiares em uso: `normal` 0,30 · `tampa_ausente` 0,15 · `defeito_tampa` 0,30 · `deformidade` 0,60.
+
+| resultado | valor |
+|---|---|
+| imagens | 18 |
+| acerto automático | 10 (0.556) |
+| encaminhadas para REVISAR | 6 |
+| acurácia **sem contar as de revisão** | 0.833 |
+
+Confusão (verdade → decisão):
+
+```
+  tampa_ausente    -> {'tampa_ausente': 5, 'REVISAR': 4}
+  normal           -> {'normal': 2, 'defeito_tampa': 2, 'REVISAR': 1}
+  defeito_tampa    -> {'defeito_tampa': 3, 'REVISAR': 1}
+```
+
+**O ponto que importa:** nenhuma peça com defeito foi decidida como "normal". Os quatro casos
+de `tampa_ausente` em que o modelo ficava **calado** (sem caixa acima do limiar) passam a
+REVISAR; o único par de erros restante são dois alarmes falsos em peças normais (0,878 e 0,662
+de confiança). Em linha de inspeção isso é o trade-off certo: silêncio deixa de ser aprovação.
+
+| limiar | F1 macro |
+|---|---|
+| 0,05 | 0.524 |
+| 0,15 | 0.711 |
+| 0,30 | 0.605 |
+
+Origem: `decisao-operacional.json` sha256 `259afa47490d3263` ·
+`limiares-teste.json` sha256 `d999a1e0cf319abf`.
+
 ## 4. Aumento de dados e preprocessing
 
 - **Offline** (`aumenta_offline.py`, equivale ao "dataset version" do Roboflow): 3× no split

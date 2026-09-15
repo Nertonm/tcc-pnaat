@@ -15,6 +15,8 @@ RAM_ABORTA_MB=${RAM_ABORTA_MB:-1500}    # se cair disso durante a rodada, mata
 SWAP_ABORTA_MB=${SWAP_ABORTA_MB:-1024}  # swap usado maximo tolerado
 LOAD_MAX=${LOAD_MAX:-5.0}
 DISCO_MIN_GB=${DISCO_MIN_GB:-50}
+TEMP_MAX=${TEMP_MAX:-80}        # bloqueia iniciar acima disso (GPU)
+TEMP_ABORTA=${TEMP_ABORTA:-88}   # mata a rodada se passar disso
 ESPERA_S=${ESPERA_S:-60}
 MAX_ESPERAS=${MAX_ESPERAS:-20}          # ~20 min esperando a maquina liberar
 LOG=${GUARDIAO_LOG:-${PNAAT_MODELOS:-$HOME/pnaat-modelos}/guardiao.log}
@@ -33,8 +35,10 @@ gate() {
   gpu_todos=$(nvidia-smi --query-compute-apps=pid,process_name,used_gpu_memory --format=csv,noheader 2>/dev/null || true)
   gpu_uso=$(printf '%s\n' "$gpu_todos" | grep -icE 'treina|kfold|monta|yolo' || true)
   gpu_vram=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null | tr -dc '0-9')
+  gpu_temp=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | tr -dc '0-9')
+  [ -n "$gpu_temp" ] || gpu_temp=0
   disco=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
-  log "estado: RAM disp ${ram}MB | swap ${sw}MB | load ${ld} | treinos na GPU ${gpu_uso} (VRAM ${gpu_vram}MiB) | disco livre ${disco}G"
+  log "estado: RAM disp ${ram}MB | swap ${sw}MB | load ${ld} | treinos na GPU ${gpu_uso} (VRAM ${gpu_vram}MiB, ${gpu_temp}C) | disco livre ${disco}G"
   if [ "$gpu_uso" != "0" ]; then log "BLOQUEADO: ja existe treino na GPU (uma rodada por vez)"; return 1; fi
   if [ "$ram" -lt "$RAM_MIN_MB" ]; then log "BLOQUEADO: RAM disponivel ${ram}MB < ${RAM_MIN_MB}MB"; return 1; fi
   if [ "$ld" -gt "$LOAD_MAX" ] 2>/dev/null; then
@@ -42,6 +46,9 @@ gate() {
   fi
   if [ "$disco" -lt "$DISCO_MIN_GB" ]; then log "BLOQUEADO: disco livre ${disco}G < ${DISCO_MIN_GB}G"; return 1; fi
   if [ "$sw" -gt "$SWAP_ABORTA_MB" ]; then log "BLOQUEADO: swap ja em ${sw}MB"; return 1; fi
+  if [ "$gpu_temp" -gt "$TEMP_MAX" ] 2>/dev/null; then
+    log "BLOQUEADO: GPU a ${gpu_temp}C (limite ${TEMP_MAX}C)"; return 1
+  fi
   return 0
 }
 
@@ -62,6 +69,12 @@ PID=$!
 while kill -0 "$PID" 2>/dev/null; do
   sleep 60
   ram=$(ram_disp); sw=$(swap_usado)
+  t_gpu=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | tr -dc '0-9')
+  if [ -n "$t_gpu" ] && [ "$t_gpu" -gt "$TEMP_ABORTA" ] 2>/dev/null; then
+    log "WATCHDOG: GPU a ${t_gpu}C (limite ${TEMP_ABORTA}C) -> matando para proteger o hardware"
+    kill -TERM "$PID" 2>/dev/null; sleep 10; kill -KILL "$PID" 2>/dev/null; wait "$PID" 2>/dev/null
+    exit 5
+  fi
   if [ "$ram" -lt "$RAM_ABORTA_MB" ] || [ "$sw" -gt "$SWAP_ABORTA_MB" ]; then
     log "WATCHDOG: RAM ${ram}MB / swap ${sw}MB -> matando o treino para proteger a maquina"
     kill -TERM "$PID" 2>/dev/null; sleep 10; kill -KILL "$PID" 2>/dev/null

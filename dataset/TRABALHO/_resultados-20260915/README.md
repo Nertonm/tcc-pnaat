@@ -56,3 +56,23 @@ Origem: `evidencia-v6-3-rig-test.json` · sha256 `6470dd50c211dc0d`
 |---|---|
 
 Origem: `avaliacao-nossas-capturas.json` · sha256 `4266c01c4fbfc7e4`
+
+## Camada de decisão operacional (candidato v6a/v7a)
+
+| métrica | valor |
+|---|---|
+| acerto automático | 10/18 = 0.556 |
+| encaminhadas para revisão | 6 |
+| acurácia sem as de revisão | 0.833 |
+| defeito decidido como normal | **0** |
+
+Limiares por classe e regra do silêncio: `dataset/TRABALHO/decisao_operacional.py`.
+JSON: `decisao-operacional.json` · sha256 `259afa47490d3263`
+
+## Pendências declaradas (não medidas)
+
+- gate fora de domínio (MVTec) do candidato: o corpus está no repo (`dataset/benchmark/mvtec`,
+  montado como `/label-studio/files/dataset` no container) — falta rodar com o caminho do host
+- v7b (4 classes) e v7aug (A/B do aumento offline): treinando/na fila
+- k-fold por item do candidato com as listas versionadas em `<dataset>/kfold-listas/`
+- canário no rig: depende de captura física

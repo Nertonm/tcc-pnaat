@@ -31,9 +31,20 @@ if [ ! -f "$M/v7-3aug-lateral-detector-roi/dataset/manifest.json" ]; then
 fi
 
 # 3) treinos: UM POR VEZ, cada um atrás do guardião
+passo "yamls no dataset (duravel; /tmp nao sobrevive a reboot)"
+printf 'path: %s\ntrain: %s\nval: %s\nnc: 3\nnames: [normal, tampa_ausente, defeito_tampa]\n' \
+  "$M/v7-3-lateral-detector-roi/dataset" "$M/v7-3-lateral-detector-roi/dataset/images/train" \
+  "$M/v7-3-lateral-detector-roi/dataset/images/val" > "$M/v7-3-lateral-detector-roi/dataset/data-3.yaml"
+printf 'path: %s\ntrain: %s\nval: %s\nnc: 4\nnames: [normal, tampa_ausente, defeito_tampa, deformidade]\n' \
+  "$M/v7-4-lateral-detector-roi/dataset" "$M/v7-4-lateral-detector-roi/dataset/images/train" \
+  "$M/v7-4-lateral-detector-roi/dataset/images/val" > "$M/v7-4-lateral-detector-roi/dataset/data-4.yaml"
+printf 'path: %s\ntrain: %s\nval: %s\nnc: 3\nnames: [normal, tampa_ausente, defeito_tampa]\n' \
+  "$M/v7-3aug-lateral-detector-roi/dataset" "$M/v7-3aug-lateral-detector-roi/dataset/images/train" \
+  "$M/v7-3aug-lateral-detector-roi/dataset/images/val" > "$M/v7-3aug-lateral-detector-roi/dataset/data-3.yaml"
+
 passo "treino v7a (3 classes)"
 "$GUARD" $PY dataset/TRABALHO/treina_v1.py --vista lateral --tag v7a --roi --epochs 150 --imgsz 480 \
-    --data /tmp/v7_3.yaml --modelo "$BASE" --nome v7a-rig >> "$LOG" 2>&1 || morre "v7a falhou"
+    --data "$M/v7-3-lateral-detector-roi/dataset/data-3.yaml" --modelo "$BASE" --nome v7a-rig >> "$LOG" 2>&1 || morre "v7a falhou"
 W_A=$M/v7a-lateral-detector-roi/runs/v7a-rig/weights/best.pt
 [ -s "$W_A" ] || morre "peso v7a ausente"
 
@@ -61,7 +72,7 @@ fi
 
 passo "treino v7b (4 classes, corpo experimental)"
 "$GUARD" $PY dataset/TRABALHO/treina_v1.py --vista lateral --tag v7b --roi --epochs 150 --imgsz 480 \
-    --data /tmp/v7_4.yaml --modelo "$BASE" --nome v7b-rig-corpo >> "$LOG" 2>&1 || morre "v7b falhou"
+    --data "$M/v7-4-lateral-detector-roi/dataset/data-4.yaml" --modelo "$BASE" --nome v7b-rig-corpo >> "$LOG" 2>&1 || morre "v7b falhou"
 W_B=$M/v7b-lateral-detector-roi/runs/v7b-rig-corpo/weights/best.pt
 [ -s "$W_B" ] && $PY dataset/TRABALHO/avalia_limiares.py --dataset "$M/v7-4-lateral-detector-roi/dataset" \
     --peso "$W_B" --split test --confs 0.05,0.15,0.30 --imgsz 480 \
@@ -69,7 +80,7 @@ W_B=$M/v7b-lateral-detector-roi/runs/v7b-rig-corpo/weights/best.pt
 
 passo "treino v7aug (A/B do aumento offline, mesmo split)"
 "$GUARD" $PY dataset/TRABALHO/treina_v1.py --vista lateral --tag v7aug --roi --epochs 150 --imgsz 480 \
-    --data /tmp/v7_aug.yaml --modelo "$BASE" --nome v7aug-rig >> "$LOG" 2>&1 || morre "v7aug falhou"
+    --data "$M/v7-3aug-lateral-detector-roi/dataset/data-3.yaml" --modelo "$BASE" --nome v7aug-rig >> "$LOG" 2>&1 || morre "v7aug falhou"
 W_G=$M/v7aug-lateral-detector-roi/runs/v7aug-rig/weights/best.pt
 [ -s "$W_G" ] && $PY dataset/TRABALHO/avalia_limiares.py --dataset "$M/v7-3aug-lateral-detector-roi/dataset" \
     --peso "$W_G" --split test --confs 0.05,0.15,0.30 --imgsz 480 \
