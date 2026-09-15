@@ -1268,3 +1268,40 @@ calibracao do operador.
 5. **As correcoes que vivem nas maquinas sobreviveram ao boot** (verificado por leitura): atraso por
    camera, manifesto parcial, vigia do delay da ponte, aviso imediato ao rig, rota do gatilho para as 3
    cameras e o `name` inicializado. E a calibracao do operador persistiu: `{csi:1000, usb:1000, espcam:1500}`.
+
+## D-52: terceira queda em ~45 min — causa ainda nao provada, agora instrumentada
+
+**Estado depois de religar (verificado):** rig, hub e tela ativos, site respondendo (HTTP 200), gatilho
+**armado** com nivel=1, e a calibracao do operador intacta (`{csi:2500, usb:800, espcam:1200}`).
+
+**Padrao:** tres quedas em ~45 min (por volta de 16:00, 16:28 e 16:45), todas sem desligamento limpo. A
+unidade de boot do gatilho atuou nas DUAS ultimas, sempre no mesmo ponto: `desconhecido` apos o boot ->
+restart da ponte -> `armado`. Sem ela o gatilho ficaria morto a cada reboot.
+
+**Erro meu, corrigido:** a "correcao" do journal do D-51 era um bind de `/var/log/journal` NELE MESMO —
+bind nao tira nada do tmpfs do log2ram, entao nao persistia nada. Agora o bind vem do lado persistente
+(`/var/log.hdd/journal` -> `/var/log/journal`), confirmado por `findmnt`. Sem isso, o proximo incidente
+tambem ficaria sem post-mortem.
+
+**Instrumentacao nova (caixa-preta):** timer de 1 min gravando carga, memoria livre, temperatura,
+throttled, contagem de processos chromium e kiosk em `/var/log.hdd/pnaat-caixa-preta.log` (disco
+persistente, fora do tmpfs). Numa queda por travamento o journal nao registra o fim; estas amostras
+dizem o que a maquina estava sofrendo nos minutos anteriores.
+
+**Primeiras amostras (os primeiros negativos uteis):** memoria **nao** e o problema (6,2-6,8 GB livres),
+energia esta limpa (`throttled=0x0`, bit 16 tambem limpo) e temperatura e baixa (58-59 C). Um kiosk abre
+9 processos chromium, mesmo com `--renderer-process-limit=1`.
+
+**Suspeitos que sobram, com evidencia do kernel:**
+1. pilha USB/serial/camera: `uvcvideo: permanently disabling control 9a0901 (Auto Exposure), due to
+   error -5` — que explica a exposicao da webcam ser INUTILIZAVEL por software (o driver a desabilitou
+   por nao conformidade do dispositivo) — e `cp210x ttyUSB1: failed set request 0x12 status: -110`
+   (timeout de USB serial). Um stall de subsistema USB trava o kernel.
+2. cartao (`mmcblk0`, 119 GiB, raiz em ext4): nenhum erro de I/O ate agora, mas o boot traz
+   `orphan cleanup on readonly fs`, coerente com desligamento sujo. O firmware esta com `reboot=w`, ou
+   seja panic -> reboot pelo watchdog, o que casa com "reiniciou sem desligamento limpo".
+
+**Proximo passo (quando cair de novo):** `journalctl -b -1 -p err` mais as ultimas linhas da caixa-preta.
+Agora existe material. Caminhos de reducao de risco, se o padrao continuar: parar a stack de monitoracao
+em docker nesta maquina (nao e necessaria para a esteira) e/ou trocar a raiz para SSD/NVMe (o Pi 5
+suporta), deixando o cartao so para boot.
