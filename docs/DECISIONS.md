@@ -1070,3 +1070,38 @@ Limites que continuam de pe (nenhum escondido):
   isso nao foi testado;
 - as correcoes no rig e na ponte nao estao no repositorio (esses arquivos nao tem copia versionada):
   precisam de porte pelo dono, com as unidades anteriores guardadas ao lado de cada arquivo.
+
+## D-46: ciclo de calibracao do gatilho e do atraso validado de ponta a ponta
+
+O ciclo foi executado pelo CAMINHO DO OPERADOR (rotas do hub que o site usa), nao por ferramenta minha:
+ler a config (`/api/rig/delay-camera`) -> mudar UMA camera (`/api/rig/delay` com autor) -> disparar pelo
+teste de bancada (`/api/rig/teste-trigger`) -> ler o que a serie devolveu. Resultado do ciclo:
+
+| passo | evidencia |
+|---|---|
+| config antes | `{csi:0, usb:700, espcam:1500}` |
+| mudanca de uma camera | `usb` 700 -> 400 ms, autor `calibracao-e2e`, persistido |
+| teste de bancada | gatilho enviado e **evento registrado** (`gatilho_id=73`), serie nova em ~30 s |
+| o que a serie fez | `usb: config=400 pedido=400 erro=0` · `csi: 2 ms` · `espcam: 0 ms` · `parcial=None` |
+| o que o site mostra | config `{0, 400, 1500}` e medido `{csi:-76, usb:967, espcam:3764} ms` |
+| valor restaurado | `usb` de volta em 700 ms (`confirmado: true`) |
+
+Pontos que a validacao confirmou:
+- o teste de bancada entra no MESMO caminho do sensor (simular -> disparo da camera -> rig com
+  `trigger_em`), entao o atraso por camera e exercitado sem precisar passar peca na esteira;
+- cada ensaio fica registrado como evento de gatilho, entao a calibracao nao fica invisivel no registro;
+- a ponte mede a latencia do gatilho com estatistica: n=12, media **3260 ms**, min 2867, max 3732.
+
+Defeito encontrado pelo proprio ciclo e corrigido: a resposta de `/api/rig/delay` dizia
+`confirmado: false` com a mudanca APLICADA, porque comparava o `delay` da ponte (que guarda so o ramo
+dela, a ESP-CAM) com o pedido por camera. Agora a confirmacao por camera vem da leitura do RIG — que e
+quem agenda a captura — e a resposta traz as duas leituras separadas (`por_camera_ms` do rig e
+`ponte_ms` da ponte), sem misturar autoridades.
+
+O que faltava no painel e entrou: latencia medida do gatilho (ultima e estatistica) e o **lead da
+ESP-CAM** — "o pedido tem de sair ~3260 ms antes do alvo para o quadro cair nele". Sem esse numero, o
+operador tinha so o valor configurado, que nao diz quanto o quadro demora.
+
+Limites declarados da calibracao: o criterio de "o quadro esta certo" continua sendo visual (o operador
+olha a foto da serie); o lead da ESP-CAM e aplicado a mao no valor dela; e a latencia medida e do ramo
+da ponte (gatilho -> foto dela), nao das tres cameras.

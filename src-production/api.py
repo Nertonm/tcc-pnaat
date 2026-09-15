@@ -794,10 +794,22 @@ def _rota_rig_delay(ctx: dict, corpo: dict) -> dict:
             "lido_de_volta_ms": vigente, "origem": "aba de debug do site",
         }, ensure_ascii=False) + "\n")
 
+    # A confirmacao depende de QUEM guarda o valor. Por camera a autoridade e o rig (ele agenda a
+    # captura); o  da ponte e so o ramo dela (ESP-CAM). Comparar a leitura da ponte com um
+    # pedido por camera devolvia "confirmado: False" com a mudanca aplicada — confirmacao que mente.
+    if camera:
+        lido_por_camera = resposta_rig.get("delay_por_camera_ms") or {}
+        confirmado = lido_por_camera.get(camera) == ms
+        leitura = {"por_camera_ms": lido_por_camera, "ponte_ms": vigente}
+    else:
+        confirmado = vigente == ms
+        leitura = {"por_camera_ms": resposta_rig.get("delay_por_camera_ms") or {}, "ponte_ms": vigente}
+
     return {"pedido_ms": ms, "camera": camera or "todas", "rig": resposta_rig,
             "operador": operador, "anterior_ms": anterior,
             "delay_ms_no_dispositivo": vigente, "delay_salvo_em": salvo_em,
-            "confirmado": vigente == ms, "trilha": str(trilha)}
+            "leitura_de_volta": leitura,
+            "confirmado": confirmado, "trilha": str(trilha)}
 
 
 def _rota_rig_teste_trigger(ctx: dict, corpo: dict) -> dict:

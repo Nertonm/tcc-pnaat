@@ -2707,6 +2707,27 @@ const renderDebug = () => {
                         ${linha('inicializado (booted)', ponte.booted)}
                         ${linha('delay no dispositivo (ms)', gatilhoDaPonte ? gatilhoDaPonte.delay_ms : '&mdash;')}
                         ${linha('delay salvo em', gatilhoDaPonte ? gatilhoDaPonte.delay_saved_at : '&mdash;')}
+                        ${(() => {
+                            // latencia MEDIDA do gatilho: e dela que sai o lead da ESP-CAM. Sem isto o
+                            // operador so tinha o valor configurado, que nao diz quanto o quadro demora.
+                            const est = (ponte && ponte.delay) ? ponte.delay : null;
+                            const u = (est && est.ultimo) ? est.ultimo : null;
+                            const amostras = est ? (est.n || 0) : 0;
+                            if (!u || !amostras) {
+                                return linha('latencia medida', 'sem ensaio medido ainda') ;
+                            }
+                            const ms = v => (v === undefined || v === null) ? '&mdash;' : v + ' ms';
+                            return linha('latencia medida (ultima)',
+                                    'sensor&rarr;foto ' + ms(u.sensor_foto_ms) +
+                                    ' · comando&rarr;foto ' + ms(u.comando_foto_ms) +
+                                    ' · camera ' + ms(u.camera_total_ms)) +
+                                linha('latencia medida (n=' + amostras + ')',
+                                    'media ' + ms(est.media_ms) + ' · min ' + ms(est.min_ms) +
+                                    ' · max ' + ms(est.max_ms)) +
+                                linha('lead da ESP-CAM',
+                                    est.media_ms ? 'o pedido tem de sair ~' + Math.round(est.media_ms) +
+                                        ' ms antes do alvo para o quadro cair nele' : '&mdash;');
+                        })()}
                         ${linha('estado do gatilho', gatilhoDaPonte ? gatilhoDaPonte.estado : '&mdash;')}
                         ${linha('ultimo evento do gatilho', gatilhoDaPonte ? gatilhoDaPonte.ultimo_n : '&mdash;')}
                     `,
