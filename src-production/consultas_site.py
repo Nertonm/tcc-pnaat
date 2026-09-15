@@ -69,6 +69,9 @@ class ItemDetalhe:
     vistas: tuple[CapturaResumida, ...]
     evidencias: tuple[EvidenciaDoItem, ...]
     correcoes: tuple[object, ...]
+    #: decisao que VALE (ultima correcao humana) e o registro dela; `None` quando ninguem corrigiu
+    decisao_efetiva: str | None = None
+    correcao_vigente: dict[str, object] | None = None
 
 
 @dataclass(frozen=True)
@@ -148,11 +151,21 @@ def item_detalhe(painel: Painel, item_id: str) -> ItemDetalhe | None:
             "SELECT e.grandeza, e.valor, e.unidade, e.origem, e.papel, e.metodo, e.fonte"
             " FROM evidencia e JOIN inspecao_vista v ON v.id = e.inspecao_vista_id"
             " WHERE v.item_id = ? ORDER BY e.id", (item_id,)))
-    correcoes = tuple(c for c in painel.correcoes_para_auditoria() if c.item_id == item_id)
+    # consulta filtrada (nao a tabela inteira em Python): o detalhe de um item nao cresce com o
+    # historico do hub. O indice `idx_correcao_item` sustenta o WHERE.
+    correcoes = painel.correcoes_do_item(item_id)
+    vigente = correcoes[-1] if correcoes else None
     return ItemDetalhe(
         item_id=r["item_id"], lote_id=r["lote_id"], timestamp_trigger=r["timestamp_trigger"],
         status_final=r["status_final"], status_tampa=r["status_tampa"], status_corpo=r["status_corpo"],
         qualidade_registro=r["qualidade_registro"], motivo_inconclusivo=r["motivo_inconclusivo"],
+        decisao_efetiva=str(vigente.decisao_corrigida) if vigente else r["status_final"],
+        correcao_vigente=(None if vigente is None else {
+            "decisao_original": vigente.decisao_original,
+            "decisao_corrigida": vigente.decisao_corrigida,
+            "corrigido_por": vigente.corrigido_por,
+            "timestamp": vigente.timestamp,
+        }),
         discordancia_lateral=r["discordancia_lateral"], equipamento=r["equipamento"],
         localizacao=r["localizacao"], fonte_trigger=r["fonte_trigger"],
         velocidade_rig_mm_s=r["velocidade_rig_mm_s"], vistas=vistas, evidencias=evidencias,

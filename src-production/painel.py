@@ -242,6 +242,15 @@ class Painel:
 
     # -------------------------------------------------------------- 8
 
+    def correcoes_do_item(self, item_id: str) -> tuple[object, ...]:
+        """Correcoes de UM item: o detalhe nao paga a tabela inteira (com indice em item_id)."""
+        linhas = self._cx.execute(
+            "SELECT item_id, decisao_original, decisao_corrigida, corrigido_por, timestamp"
+            " FROM correcao_operador WHERE item_id = ? ORDER BY id", (item_id,)).fetchall()
+        return tuple(CorrecaoParaAuditoria(r["item_id"], r["decisao_original"],
+                                          r["decisao_corrigida"], r["corrigido_por"],
+                                          r["timestamp"]) for r in linhas)
+
     def correcoes_para_auditoria(self) -> tuple[CorrecaoParaAuditoria, ...]:
         return tuple(CorrecaoParaAuditoria(r["item_id"], r["decisao_original"], r["decisao_corrigida"],
                                            r["corrigido_por"], r["timestamp"])

@@ -371,7 +371,44 @@ def _rota_evidencia(ctx: dict, consulta: dict) -> tuple[bytes, str]:
 
 # ------------------------------------------------------------------ rota de escrita
 
+def _escrever_com_retentativa(acao, *args, tentativas: int = 3, espera_s: float = 0.3, **kwargs):
+    """Executa uma escrita aguardando o lock do registro.
+
+    O registro tem UM escritor por vez (lock do arquivo). Quando o rig esta gravando, a tentativa
+    unica devolvia 503 e o evento do gatilho se perdia. Aqui a espera e curta e crescente; se ainda
+    assim nao der, o erro sobe e a rota responde 409 declarado.
+    """
+    for tentativa in range(1, tentativas + 1):
+        try:
+            return acao(*args, **kwargs)
+        except sqlite3.OperationalError as erro:
+            if "locked" not in str(erro).lower() or tentativa == tentativas:
+                raise
+            time.sleep(espera_s * tentativa)
+
+
 def _rota_gatilho(ctx: dict, corpo: dict) -> dict:
+
+    # validacao SEMANTICA do gatilho, aqui e nao no preambulo do POST: a rota de correcao nao tem
+    # instante no corpo, e o preambulo vale para as duas.
+    instante = corpo.get("timestamp")
+    if not isinstance(instante, str):
+        raise ErroDeApi(400, "timestamp_invalido",
+                        f"timestamp tem de ser texto ISO com fuso, recebido {type(instante).__name__}")
+    try:
+        lido = datetime.fromisoformat(instante)
+    except ValueError as exc:
+        raise ErroDeApi(400, "timestamp_invalido", f"timestamp nao e ISO 8601: {instante!r}") from exc
+    if lido.tzinfo is None:
+        raise ErroDeApi(400, "timestamp_sem_fuso",
+                        f"timestamp sem fuso: {instante!r} (o registro exige fuso)")
+
+    # tipo errado aqui e erro do CLIENTE: nao pode virar 503 de banco indisponivel
+    for campo in ("ponto_id", "debounce_ms"):
+        valor = corpo.get(campo)
+        if valor is not None and not isinstance(valor, int):
+            raise ErroDeApi(400, "campo_com_tipo_errado",
+                            f"{campo} tem de ser inteiro, recebido {type(valor).__name__}")
     """RF-01.1: grava UM evento de gatilho pelo caminho unico (a API do Registro)."""
     estado = corpo.get("estado")
     if estado not in ESTADOS_DE_GATILHO:
@@ -387,15 +424,51 @@ def _rota_gatilho(ctx: dict, corpo: dict) -> dict:
     registro = Registro.abrir(ctx["db"])
     try:
         try:
-            gatilho_id = registro.registrar_gatilho(
-                timestamp, estado, fonte=fonte, ponto_id=corpo.get("ponto_id"),
-                item_id=corpo.get("item_id"), motivo=corpo.get("motivo"),
-                debounce_ms=corpo.get("debounce_ms"))
+            gatilho_id = _escrever_com_retentativa(
+                registro.registrar_gatilho, timestamp, estado, fonte=fonte,
+                ponto_id=corpo.get("ponto_id"), item_id=corpo.get("item_id"),
+                motivo=corpo.get("motivo"), debounce_ms=corpo.get("debounce_ms"))
         except EventoInvalido as exc:
             raise ErroDeApi(400, "gatilho_recusado_pelo_registro", str(exc)) from exc
     finally:
         registro.fechar()
     return {"gatilho_id": gatilho_id, "estado": estado, "fonte": fonte}
+
+
+def _rota_correcao(ctx: dict, corpo: dict) -> dict:
+    """Decisao do operador sobre um item (D-30), gravada pelo unico caminho de escrita.
+
+    A resposta nao ecoa o pedido: ela e o que o banco devolveu depois do INSERT, junto com a decisao
+    vigente lida de novo. Sem isso, "registrado" seria afirmacao da API sobre si mesma.
+    """
+    for campo in ("item_id", "decisao_corrigida", "corrigido_por"):
+        if not corpo.get(campo):
+            raise ErroDeApi(400, "campo_ausente", f"{campo} e obrigatorio para registrar a decisao")
+
+    if not isinstance(corpo.get("corrigido_por"), str):
+        raise ErroDeApi(400, "campo_com_tipo_errado",
+                        f"corrigido_por tem de ser texto, recebido {type(corpo.get('corrigido_por')).__name__}")
+
+    registro = Registro.abrir(ctx["db"])
+    try:
+        try:
+            gravado = _escrever_com_retentativa(
+                registro.corrigir, corpo["item_id"], corpo["decisao_corrigida"], corpo["corrigido_por"])
+        except EventoInvalido as exc:
+            # item que nao existe e 404 (o recurso pedido nao esta la); o resto e 400 (pedido invalido)
+            if "inexistente" in str(exc):
+                raise ErroDeApi(404, "item_inexistente", str(exc)) from exc
+            raise ErroDeApi(400, "correcao_recusada_pelo_registro", str(exc)) from exc
+
+        # leitura de volta pelo mesmo caminho que a tela usa
+        vigente = registro.correcao_vigente(str(gravado["item_id"]))
+    finally:
+        registro.fechar()
+
+    if vigente is None:
+        raise ErroDeApi(500, "correcao_nao_confirmada",
+                        "o INSERT nao aparece na leitura de volta: nao afirmo gravacao sem confirmar")
+    return {"correcao": vigente, "decisao_efetiva": vigente["decisao_corrigida"]}
 
 
 # ------------------------------------------------------------------ servidor
@@ -512,6 +585,14 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
                     self._estatico(rota)
             except ErroDeApi as exc:
                 self._json(exc.codigo, None, ok=False, erro=exc.erro, detalhe=exc.detalhe)
+            except sqlite3.OperationalError as exc:
+                if "locked" in str(exc).lower():
+                    self._json(409, None, ok=False, erro="registro_ocupado",
+                               detalhe=("o registro aceita um escritor por vez e ele esta ocupado "
+                                        "(o rig esta gravando); tente de novo em instantes"))
+                else:
+                    self._json(503, None, ok=False, erro="banco_indisponivel",
+                               detalhe=f"{type(exc).__name__}: {str(exc)[:160]}")
             except sqlite3.Error as exc:
                 self._json(503, None, ok=False, erro="banco_indisponivel",
                            detalhe=f"{type(exc).__name__}: {str(exc)[:160]}")
@@ -523,7 +604,7 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
             rota = urlparse(self.path).path
             ctx = self._contexto()
             try:
-                if rota != "/api/gatilho":
+                if rota not in ("/api/gatilho", "/api/correcao"):
                     raise ErroDeApi(404, "rota_desconhecida", rota)
                 if (self.headers.get("Transfer-Encoding") or "").lower().strip() == "chunked":
                     raise ErroDeApi(411, "transfer_encoding_nao_suportado",
@@ -552,31 +633,20 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
                 if not isinstance(corpo, dict):
                     raise ErroDeApi(400, "json_precisa_ser_objeto", type(corpo).__name__)
 
-                # o instante do gatilho e a base de toda consulta por tempo (e o dominio exige fuso):
-                # aceitar "ontem" gravava texto e cegava `datetime(timestamp)` nas consultas.
-                instante = corpo.get("timestamp")
-                if not isinstance(instante, str):
-                    raise ErroDeApi(400, "timestamp_invalido",
-                                    f"timestamp tem de ser texto ISO com fuso, recebido "
-                                    f"{type(instante).__name__}")
-                try:
-                    lido = datetime.fromisoformat(instante)
-                except ValueError as exc:
-                    raise ErroDeApi(400, "timestamp_invalido",
-                                    f"timestamp nao e ISO 8601: {instante!r}") from exc
-                if lido.tzinfo is None:
-                    raise ErroDeApi(400, "timestamp_sem_fuso",
-                                    f"timestamp sem fuso: {instante!r} (o registro exige fuso)")
-
-                # tipo errado aqui e erro do CLIENTE: nao pode virar 503 de banco indisponivel
-                for campo in ("ponto_id", "debounce_ms"):
-                    valor = corpo.get(campo)
-                    if valor is not None and not isinstance(valor, int):
-                        raise ErroDeApi(400, "campo_com_tipo_errado",
-                                        f"{campo} tem de ser inteiro, recebido {type(valor).__name__}")
-                self._json(200, _rota_gatilho(ctx, corpo))
+                if rota == "/api/gatilho":
+                    self._json(200, _rota_gatilho(ctx, corpo))
+                else:
+                    self._json(200, _rota_correcao(ctx, corpo))
             except ErroDeApi as exc:
                 self._json(exc.codigo, None, ok=False, erro=exc.erro, detalhe=exc.detalhe)
+            except sqlite3.OperationalError as exc:
+                if "locked" in str(exc).lower():
+                    self._json(409, None, ok=False, erro="registro_ocupado",
+                               detalhe=("o registro aceita um escritor por vez e ele esta ocupado "
+                                        "(o rig esta gravando); tente de novo em instantes"))
+                else:
+                    self._json(503, None, ok=False, erro="banco_indisponivel",
+                               detalhe=f"{type(exc).__name__}: {str(exc)[:160]}")
             except sqlite3.Error as exc:
                 self._json(503, None, ok=False, erro="banco_indisponivel",
                            detalhe=f"{type(exc).__name__}: {str(exc)[:160]}")

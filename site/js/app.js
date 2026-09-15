@@ -808,6 +808,109 @@ class App {
     }
 
 
+    async registrarDecisao(decisao) {
+        /*
+         * Decisao humana da D-30: grava pelo unico caminho de escrita (`POST /api/correcao`, que passa
+         * pelo `Registro`) e mostra o que o REGISTRO devolveu — nao o que foi enviado. O registro
+         * preserva a decisao original; por isso a confirmacao traz "antes".
+         */
+        const campo = document.getElementById('operador-nome');
+        const area = document.getElementById('resultado-decisao');
+        const operador = (campo ? campo.value : '').trim();
+
+        const avisar = (texto, cor) => {
+            if (!area) { return; }
+            area.className = `text-xs ${cor}`;
+            area.textContent = texto;
+        };
+
+        if (!operador) {
+            avisar('informe quem decide: o nome vai para a trilha da correção', 'text-orange-500');
+            if (campo) { campo.focus(); }
+            return;
+        }
+
+        const cartao = typeof cartaoDaInvestigacao === 'function'
+            ? cartaoDaInvestigacao(this.paramInvestigacao).cap
+            : null;
+
+        const itemNaTela = cartao ? cartao.item : null;
+        const itemDoDetalhe = (mockItemDetalhe && mockItemDetalhe.item_id) || null;
+
+        if (!itemNaTela) {
+            avisar('sem item na tela: abra um cartão em Capturas', 'text-orange-500');
+            return;
+        }
+
+        /*
+         * O alvo e o item QUE ESTA NA TELA. Se o detalhe carregado for de outro item, gravar aqui poria
+         * a decisao do operador no item errado (aconteceu no teste: a reversao foi para ITM-004 com a
+         * tela em ITM-003). Recarrega o detalhe e pede confirmacao de novo.
+         */
+        if (itemDoDetalhe !== itemNaTela) {
+            window.PNAAT_API.esquecerDetalhe();
+
+            window.PNAAT_API.item(cartao.id, () => {
+                if (this.currentView === 'investigacao') {
+                    this.navigate('investigacao', this.paramInvestigacao);
+                }
+            });
+
+            avisar(
+                `o detalhe carregado era de ${itemDoDetalhe || 'nenhum item'}: recarreguei o de `
+                + `${itemNaTela} — confirme a decisão de novo`,
+                'text-orange-500'
+            );
+            return;
+        }
+
+        const item = itemNaTela;
+
+        avisar('registrando...', 'text-gray-400');
+
+        try {
+            const resposta = await fetch(`${window.PNAAT_API.base}/api/correcao`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item_id: item, decisao_corrigida: decisao,
+                                       corrigido_por: operador })
+            });
+            const corpo = await resposta.json();
+
+            if (!resposta.ok || !corpo.ok) {
+                avisar(`não registrado: ${corpo.erro} — ${corpo.detalhe}`, 'text-brand-red');
+                return;
+            }
+
+            const dados = corpo.dados;
+            const mensagem =
+                `registrado no registro: ${dados.decisao_efetiva} por `
+                + `${dados.correcao.corrigido_por} (antes: ${dados.correcao.decisao_original}, `
+                + `em ${dados.correcao.timestamp})`;
+
+            // le o item de novo: a tela mostra o estado do registro, nao o otimismo do formulario
+            window.PNAAT_API.esquecerDetalhe();
+
+            const cartao = typeof cartaoDaInvestigacao === 'function'
+                ? cartaoDaInvestigacao(this.paramInvestigacao).cap
+                : null;
+
+            const aplicar = () => {
+                if (this.currentView !== 'investigacao') { return; }
+                this.navigate('investigacao', this.paramInvestigacao);
+                avisar(mensagem, 'text-brand-green');
+            };
+
+            if (cartao) {
+                window.PNAAT_API.item(cartao.id, aplicar);
+            } else {
+                aplicar();
+            }
+        } catch (erro) {
+            avisar(`falha de rede ao registrar: ${erro.message}`, 'text-brand-red');
+        }
+    }
+
     exportarCSV() {
         /*
          * Exporta as linhas de vista VISIVEIS na grade, com os valores CRUS do registro.

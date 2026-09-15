@@ -281,6 +281,13 @@ const PNAAT_API = {
 
     // ---------------------------------------------------------------- um item
 
+    esquecerDetalhe() {
+        /*
+         * Invalida o detalhe em cache: depois de uma escrita, a tela le o registro de novo.
+         */
+        mockItemDetalhe = null;
+    },
+
     async item(id, aoPronto) {
         /*
          * A Investigacao navega com o id do CARTAO (`CAP-<n>`), e `/api/item/<id>` responde por id de

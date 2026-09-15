@@ -2432,6 +2432,16 @@ const renderInvestigacao = id => {
                                 A decisão original permanece registrada.
                             </p>
 
+                            ${(mockItemDetalhe && mockItemDetalhe.correcao_vigente)
+                                ? `<p class="mt-2 text-xs text-brand-green">
+                                       decisão vigente: ${mockItemDetalhe.decisao_efetiva}
+                                       por ${mockItemDetalhe.correcao_vigente.corrigido_por}
+                                       em ${mockItemDetalhe.correcao_vigente.timestamp}
+                                   </p>`
+                                : `<p class="mt-2 text-xs text-gray-400">
+                                       sem correção registrada: vale a decisão do registro
+                                   </p>`}
+
 
                             <div
                                 class="
@@ -2441,11 +2451,27 @@ const renderInvestigacao = id => {
                                 "
                             >
 
+                                <label
+                                    class="block text-[11px] uppercase tracking-[.18em] text-gray-500"
+                                    for="operador-nome"
+                                >
+                                    Quem decide
+                                </label>
+
+                                <input
+                                    id="operador-nome"
+                                    class="app-input w-full px-4 py-2.5"
+                                    placeholder="nome do operador (vai para a trilha)"
+                                    autocomplete="off"
+                                >
+
+
                                 <button
                                     class="
                                         success-button
                                         w-full
                                     "
+                                    onclick="app.registrarDecisao('ok')"
                                 >
                                     <i
                                         data-lucide="circle-check"
@@ -2457,7 +2483,7 @@ const renderInvestigacao = id => {
                                         "
                                     ></i>
 
-                                    Forçar aprovação
+                                    Registrar decisão: aprovado
                                 </button>
 
 
@@ -2466,6 +2492,7 @@ const renderInvestigacao = id => {
                                         danger-button
                                         w-full
                                     "
+                                    onclick="app.registrarDecisao('defeito')"
                                 >
                                     <i
                                         data-lucide="triangle-alert"
@@ -2477,8 +2504,11 @@ const renderInvestigacao = id => {
                                         "
                                     ></i>
 
-                                    Confirmar defeito
+                                    Registrar decisão: defeito
                                 </button>
+
+
+                                <p id="resultado-decisao" class="text-xs"></p>
 
                             </div>
 
@@ -2496,7 +2526,7 @@ const renderInvestigacao = id => {
                                 "
                             >
                                 <i
-                                    data-lucide="lock-keyhole"
+                                    data-lucide="info"
 
                                     class="
                                         mr-1.5
@@ -2505,7 +2535,9 @@ const renderInvestigacao = id => {
                                     "
                                 ></i>
 
-                                Requer privilégio administrativo
+                                Esta instalação não tem autenticação: quem alcança a rede registra a
+                                decisão, e a trilha guarda o nome informado — sem senha e sem
+                                verificação de privilégio.
                             </div>
 
                         </div>

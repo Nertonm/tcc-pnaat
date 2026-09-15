@@ -340,3 +340,55 @@ def test_helper_de_evidencia_recusa_fora_da_raiz(tmp_path):
     assert _evidencia_valida(str(tmp_path / "nao-existe.jpg"), tmp_path) is None
     assert _evidencia_valida(str(texto), tmp_path) is None         # dentro, mas nao e imagem
     assert _evidencia_valida(None, tmp_path) is None
+
+# ------------------------------------------------------------------ correcao do operador (P1)
+
+def _post_correcao(base, corpo):
+    pedido = urllib.request.Request(f"{base}/api/correcao", method="POST",
+                                    data=json.dumps(corpo).encode("utf-8"),
+                                    headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(pedido, timeout=5) as resposta:
+        return resposta.status, json.loads(resposta.read())
+
+
+def test_correcao_de_inconclusivo_e_confirmada_pela_leitura_de_volta(servidor):
+    base = servidor          # o fixture ja e a base: http://127.0.0.1:<porta>
+    codigo, corpo = _post_correcao(base, {"item_id": "i-C", "decisao_corrigida": "ok",
+                                          "corrigido_por": "operador-de-teste"})
+    assert codigo == 200
+    assert corpo["dados"]["decisao_efetiva"] == "ok"
+    registro = corpo["dados"]["correcao"]
+    assert registro["decisao_original"] == "inconclusivo"
+    assert registro["corrigido_por"] == "operador-de-teste"
+
+    # a decisao vigente aparece no detalhe do item e o status do registro NAO mudou
+    with urllib.request.urlopen(f"{base}/api/item/i-C", timeout=5) as resposta:
+        detalhe = json.loads(resposta.read())["dados"]
+    assert detalhe["decisao_efetiva"] == "ok"
+    assert detalhe["status_final"] == "inconclusivo"
+    assert detalhe["correcao_vigente"]["corrigido_por"] == "operador-de-teste"
+
+
+def test_correcao_recusa_item_inexistente_com_404(servidor):
+    base = servidor          # o fixture ja e a base: http://127.0.0.1:<porta>
+    with pytest.raises(urllib.error.HTTPError) as erro:
+        _post_correcao(base, {"item_id": "nao-existe", "decisao_corrigida": "ok",
+                              "corrigido_por": "operador-de-teste"})
+    assert erro.value.code == 404
+    assert json.loads(erro.value.read())["erro"] == "item_inexistente"
+
+
+def test_correcao_recusa_pedido_incompleto_e_vocabulario(servidor):
+    base = servidor          # o fixture ja e a base: http://127.0.0.1:<porta>
+    for corpo, esperado in (
+        ({"decisao_corrigida": "ok", "corrigido_por": "op"}, "campo_ausente"),
+        ({"item_id": "i-C", "corrigido_por": "op"}, "campo_ausente"),
+        ({"item_id": "i-C", "decisao_corrigida": "ok"}, "campo_ausente"),
+        ({"item_id": "i-C", "decisao_corrigida": "tampa_ausente", "corrigido_por": "op"},
+         "correcao_recusada_pelo_registro"),
+        ({"item_id": "i-C", "decisao_corrigida": "ok", "corrigido_por": 7}, "campo_com_tipo_errado"),
+    ):
+        with pytest.raises(urllib.error.HTTPError) as erro:
+            _post_correcao(base, corpo)
+        assert erro.value.code == 400, corpo
+        assert json.loads(erro.value.read())["erro"] == esperado, corpo
