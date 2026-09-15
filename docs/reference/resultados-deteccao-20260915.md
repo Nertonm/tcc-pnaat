@@ -308,6 +308,40 @@ Scripts: `dataset/TRABALHO/otimiza_modelo.py` (export + paridade + latência),
 `dataset/TRABALHO/benchmark_justo.py` (CPU x CPU, com paridade de caixas),
 `dataset/TRABALHO/otimiza_imgsz.py` (acurácia x latência por resolução).
 
+
+## 3h. Correções de método (achadas na revisão da própria metodologia)
+
+### a) O limiar do dia foi escolhido NO TESTE — incoerência com a regra declarada
+
+O relatório declara "limiar se escolhe em validação, nunca no teste", mas as tabelas do dia
+foram varridas no teste. Refazendo pelo protocolo correto:
+
+| seleção | limiar | F1 macro no teste |
+|---|---|---|
+| escolhido no teste (errado) | 0,15 | 0,711 |
+| **escolhido na val (correto)** | **0.4** | **0.5707** |
+
+O número honesto é **0.5707**, não 0,711 — escolher no teste
+inflou ~0,14. E há um problema adicional medido: a val tem 11 imagens, então o argmax dela é
+instável (a curva vai de 0,481 a 0,611 e desaba a 0,222 em 0,50). **Seleção de limiar precisa
+do k-fold**, não de uma val de 11 imagens — fica como pendência declarada, não como número.
+
+### b) Métrica por câmera (a heterogeneidade estava declarada, não medida)
+
+Teste, com o limiar escolhido na val:
+
+| câmera | F1 macro | normal | tampa_ausente | defeito_tampa | instâncias |
+|---|---|---|---|---|---|
+| espcam | 0.65 | 0.8 | 0.75 | 0.4 | {'normal': 3, 'tampa_ausente': 5, 'defeito_tampa': 1} |
+| outra | 0.222 | 0.0 | 0.0 | 0.667 | {'normal': 1, 'tampa_ausente': 0, 'defeito_tampa': 3} |
+| rig | 0.0 | 0.0 | 0.0 | 0.0 | {'normal': 1, 'tampa_ausente': 0, 'defeito_tampa': 0} |
+| usb | 0.333 | 1.0 | 0.0 | 0.0 | {'normal': 1, 'tampa_ausente': 4, 'defeito_tampa': 0} |
+
+**Onde dói:** a `espcam` vai bem (0.65) e a **`usb` é a câmera fraca** (0.333): das 5
+instâncias acertou o normal e perdeu as 4 de `tampa_ausente`. É a webcam que sofre rotação de 90°
+e tem a pior imagem do parque. Ação para a próxima rodada: luz/enquadramento e mais dado nessa
+câmera — não mais épocas.
+
 ## 4. Aumento de dados e preprocessing
 
 - **Offline** (`aumenta_offline.py`, equivale ao "dataset version" do Roboflow): 3× no split
