@@ -793,3 +793,60 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
   e quem tem a camera); e o `index.html` carrega Tailwind e Lucide de **CDN externo**, o que contradiz a
   afirmacao do docstring do `api.py` ("nao depende de CDN") — ou se corrige a afirmacao, ou se embutem
   os arquivos.
+
+## D-39: Revisao paralela por feature do site (5 frentes) e o que cada achado virou
+
+- Metodo: snapshot congelado (site + modulos do runtime + respostas reais da API) revisado em 5 frentes
+  independentes (Operacao+Capturas, Investigacao+Lote, Saude+Qualidade, backend, infra do frontend),
+  com escopo fechado e obrigacao de citar arquivo:linha. Todo achado foi reverificado por sonda propria
+  antes de virar correcao — parecer de revisor nao e prova.
+- Corrigido e reverificado (o que importa):
+  1. Laco da Investigacao: uma abertura da vista disparava 1968 navegacoes e 1967 pedidos de detalhe (o
+     cache chamava o callback, o callback re-renderizava, o render pedia o item de novo — tudo sincrono).
+     Medido antes e depois: 1968 para 2. O callback so dispara depois de ir a rede, 404 e veredito que
+     nao se repete e resposta velha nao desenha por cima.
+  2. Filtro de vista: o select carregava o rotulo "Lateral" e o cartao o rotulo da vista ("Lateral 1"),
+     com o estado guardando o valor do select — filtrar escondia os 27 cartoes. Agora o atributo leva o
+     valor cru (lateral1), o rotulo fica no texto; medido: lateral1 -> 11 cartoes.
+  3. Contrato da API no erro do cliente: limite=abc respondia 500 falha_interna; agora 400
+     filtro_invalido, com teto de 500 declarado no payload de filtros.
+  4. Fronteira HTTP: Content-Length -1 prendia a thread (sem resposta ate o cliente desistir) e chunked
+     desincronizava o keep-alive; agora 400/411 declarados. Verbo fora do contrato virava 501 com a
+     pagina HTML do http.server; agora 405 JSON (HEAD/OPTIONS inclusos).
+  5. POST do gatilho: aceitava timestamp "ontem" (200) e gravava texto onde o dominio exige instante com
+     fuso; agora 400, e tipo errado em ponto_id/debounce_ms tambem deixa de virar 503 de banco.
+  6. Ausencia lida como aprovacao: taxa de discordancia sem base saia 0.0 (agora None), e a taxa do lote
+     sem itens idem.
+  7. Texto fixo que mentia na tela: "450 itens" mais barra de 72 por cento (lote sem meta no registro),
+     miniatura de placehold.co (rede externa) e caixa "RISCO" pintada com coordenadas fixas (geometria
+     que nao existe no registro) — os tres removidos ou trocados por dado/ausencia declarada.
+  8. Estados de servico: a API declara 7 literais e o adaptador conhecia 2, entao o proprio Site e a
+     raiz de evidencias entravam como alerta (2 notificacoes falsas por carga).
+  9. API fora: as globais ficavam vazias e a tela imprimia undefined/NaN e chegava a afirmar leitura;
+     agora tem forma declarada (ausencia) e a conta so roda com numero.
+  10. CSV: exportava as linhas carregadas com rotulo de tela, dizendo no comentario que exportava o
+     filtro; agora exporta as linhas VISIVEIS, com valor cru do registro, ausencia vazia, BOM e
+     neutralizacao de formula.
+  11. Topbar: "sem leitura" virava "no offline" e as faixas de 75/65 C e 250/100 ms eram inventadas (a
+     propria vista Saude diz que nao ha faixa declarada); agora o estado sai do que o registro declara.
+     O "Latencia 12ms" fixo no HTML tambem saiu.
+  12. Recarga de 15 s: remontava a area e apagava o texto digitado na busca (medido: o texto digitado
+     sobrevive a recarga agora); imagens com loading lazy e decoding async.
+- Pendente, com a razao (nao e esquecimento):
+  - Decisao humana da D-30 na tela: os botoes "Forcar aprovacao"/"Confirmar defeito" nao tem handler e
+    nao existe rota de escrita de correcao no backend. Falta a rota unica (via Registro) — tranche
+    propria, com teste de mutacao.
+  - Escrita do gatilho sob concorrencia: sem WAL nem fila, um escritor segurando o lock faz o POST
+    perder o evento depois do timeout. Tranche propria (journal_mode + retry + Retry-After).
+  - Desempenho: correlacao_ambiental faz 1 consulta por item (N+1) e o detalhe do item lia a tabela de
+    correcoes inteira (o indice foi criado; a query filtrada ainda nao). O listado do site varre o join
+    com b-tree temporario por request.
+  - Fronteira de evidencia por dominio: a URL identifica (item, vista) e a evidencia e (item, vista,
+    dominio) — hoje o registro tem o mesmo caminho nos dois dominios, entao e latente, nao ativo.
+  - Escape de HTML nos templates: nenhuma interpolacao escapa dado do banco. Hoje nao e exploravel (os
+    campos exibidos vem de vocabulario fechado ou de coluna que nao recebe texto livre), mas e divida
+    real: quem escrever texto livre num campo exibido ganha injecao.
+  - Acessibilidade: cartao so por mouse (sem tabindex/teclado), filtros sem rotulo, selo de API
+    indisponivel sem aria-live, sem noscript.
+  - Carga do site: 5 GETs e cerca de 17 KB a cada 15 s com no-store (sem 304), inclusive nas vistas que
+    nao usam capturas.

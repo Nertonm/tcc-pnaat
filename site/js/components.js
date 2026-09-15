@@ -107,16 +107,22 @@ const renderMetricCard = ({
 
 
 const renderOperacao = () => {
+    /*
+     * A conta so existe com numero: com a API fora as globais tem valor DECLARADO ('--'), e somar
+     * placeholder rendia "NaN%" e "--------" na tela.
+     */
+    const numerico =
+        typeof mockStats.aprovados === 'number' && typeof mockStats.reprovados === 'number';
+
     const total =
-        mockStats.aprovados +
-        mockStats.reprovados;
+        numerico
+            ? mockStats.aprovados + mockStats.reprovados
+            : null;
 
     const approvedPercentage =
-        (
-            mockStats.aprovados /
-            total *
-            100
-        ).toFixed(1);
+        total
+            ? (mockStats.aprovados / total * 100).toFixed(1)
+            : '--';
 
     return `
         <div class="fade-in-up space-y-6">
@@ -806,27 +812,20 @@ const renderOperacao = () => {
                                     "
                                 >
                                     <span class="text-gray-400">
-                                        Processamento
+                                        Lotes no registro
                                     </span>
 
                                     <span class="font-semibold">
-                                        450 itens
+                                        ${(mockLotes || []).length
+                                            ? `${(mockLotes || []).reduce((soma, lote) => soma + (lote.itens || 0), 0)} itens em ${(mockLotes || []).length} lote(s)`
+                                            : 'nenhum lote no registro'}
                                     </span>
                                 </div>
 
-                                <div class="progress-track">
-
-                                    <div
-                                        class="
-                                            progress-fill
-
-                                            bg-brand-red
-                                        "
-
-                                        style="width: 72%"
-                                    ></div>
-
-                                </div>
+                                <p class="text-xs text-gray-400">
+                                    Barra de progresso removida: o registro nao declara meta
+                                    nem denominador de lote para medir avanco.
+                                </p>
 
                             </div>
 
@@ -962,12 +961,16 @@ const renderCapturas = () => `
                         Todas as vistas
                     </option>
 
-                    <option value="Topo">
+                    <option value="topo">
                         Topo
                     </option>
 
-                    <option value="Lateral">
-                        Lateral
+                    <option value="lateral1">
+                        Lateral 1
+                    </option>
+
+                    <option value="lateral2">
+                        Lateral 2
                     </option>
                 </select>
 
@@ -1176,7 +1179,7 @@ const renderCapturas = () => `
                     data-capture-card
                     data-id="${cap.id}"
                     data-item="${cap.item}"
-                    data-view="${cap.vista}"
+                    data-view="${cap.vista_registro}"
                     data-status="${cap.status}"
 
                     onclick="app.navigate('investigacao', '${cap.id}')"
@@ -1202,7 +1205,9 @@ const renderCapturas = () => `
 
                         <img
                             src="${cap.img}"
-                            alt="${cap.id}"
+                            alt="evidencia da vista ${cap.vista} do item ${cap.item}"
+                            loading="lazy"
+                            decoding="async"
                         >
 
 
@@ -1220,7 +1225,11 @@ const renderCapturas = () => `
                                 ? `<span class="status-badge status-badge-pending ml-1">
                                        <i data-lucide="clock-3" class="mr-1.5 h-3.5 w-3.5"></i>
                                        vista ${cap.status_vista}
-                                   </span>`
+                                   </span>
+
+                                   ${cap.motivo
+                                       ? `<span class="ml-1 rounded bg-black/60 px-2 py-0.5 text-[10px] font-normal text-white">${cap.motivo}</span>`
+                                       : ''}`
                                 : ''}
                         </div>
 
@@ -1829,53 +1838,7 @@ const renderInvestigacao = id => {
                             </button>
 
 
-                            ${
-                                cap.status === 'Defeito'
-                                    ? `
-                                        <div
-                                            class="
-                                                absolute
-
-                                                border-2
-                                                border-brand-red
-
-                                                bg-brand-red/10
-                                            "
-
-                                            style="
-                                                left: 40%;
-                                                top: 31%;
-                                                width: 21%;
-                                                height: 26%;
-                                            "
-                                        >
-
-                                            <div
-                                                class="
-                                                    absolute
-
-                                                    -top-7
-                                                    left-[-2px]
-
-                                                    rounded-t-md
-
-                                                    bg-brand-red
-
-                                                    px-2
-                                                    py-1
-
-                                                    text-[10px]
-                                                    font-bold
-                                                    text-white
-                                                "
-                                            >
-                                                RISCO ${cap.confianca}
-                                            </div>
-
-                                        </div>
-                                    `
-                                    : ''
-                            }
+                            
 
                         </div>
 
@@ -2041,7 +2004,7 @@ const renderInvestigacao = id => {
                             >
 
                                 <img
-                                    src="https://placehold.co/400x300/171A1D/F9FBFD?text=Outra+Vista"
+                                    src="${PNAAT_API._semImagem(cap.item, 'outra vista', 'sem imagem registrada para esta vista')}"
 
                                     class="
                                         h-28
@@ -2725,7 +2688,7 @@ const renderSaude = () => `
             })}
 
             ${renderMetricCard({
-                title: 'CPU',
+                title: 'Carga (1 min)',
                 value: mockHealth.cpu,
                 icon: 'cpu',
                 subtitle: `Memória ${mockHealth.memoria}`
@@ -2934,8 +2897,13 @@ const renderLote = () => {
      * Cabecalho e numeros vem dos LOTES do registro. Antes: "#L2024-89" e "14 Out 2024" fixos no
      * template, com os totais GLOBAIS exibidos sob o cabecalho de um lote unico — nem o lote existia.
      */
+    /*
+     * Ordena por DATA e so depois por id: id de lote e texto, e `LOTE-10` ordena antes de `LOTE-2`
+     * (escolher "o mais recente" por ordem alfabetica acerta por acaso quando o padrao e ISO).
+     */
     const lotes = (mockLotes || []).slice().sort((a, b) =>
-        String(a.lote_id).localeCompare(String(b.lote_id)));
+        String(a.data_inicio || '').localeCompare(String(b.data_inicio || ''))
+        || String(a.lote_id).localeCompare(String(b.lote_id)));
 
     const atual = lotes.length ? lotes[lotes.length - 1] : null;
     const pct = valor => valor === null || valor === undefined

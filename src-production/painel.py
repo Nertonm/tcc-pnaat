@@ -315,7 +315,10 @@ class Painel:
             "     AND v.dominio IS NOT NULL) AS n_med FROM item i)").fetchone()
         pares = r["pares"] or 0
         disc = r["disc"] or 0
-        return DiscordanciaLateral(pares, disc, (disc / pares) if pares else 0.0)
+        # sem base a taxa e None (ausencia declarada), nunca 0.0: zero se le como "nenhuma
+        # discordancia medida", e aqui nao houve medida nenhuma. A correlacao no mesmo payload ja
+        # devolvia None nesse caso.
+        return DiscordanciaLateral(pares, disc, (disc / pares) if pares else None)
 
     # -------------------------------------------------------------- contagem separada
 

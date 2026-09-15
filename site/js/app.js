@@ -271,8 +271,35 @@ class App {
         }
 
 
+        /*
+         * A recarga de 15 s remonta a area inteira: sem guardar isto, o texto digitado na busca de
+         * Capturas desaparece no meio da digitacao (o select e restaurado por syncCaptureFiltersUI,
+         * o texto nao).
+         */
+        const buscaAntes =
+            document.getElementById('capture-search');
+
+        const valorDaBusca =
+            buscaAntes ? buscaAntes.value : null;
+
+        const buscaTinhaFoco =
+            buscaAntes ? document.activeElement === buscaAntes : false;
+
         this.contentArea.innerHTML =
             html;
+
+        if (valorDaBusca) {
+            const buscaDepois =
+                document.getElementById('capture-search');
+
+            if (buscaDepois) {
+                buscaDepois.value = valorDaBusca;
+
+                if (buscaTinhaFoco) {
+                    buscaDepois.focus();
+                }
+            }
+        }
 
 
         /*
@@ -311,8 +338,19 @@ class App {
                     ? cartaoDaInvestigacao(param).cap
                     : null;
 
-            window.PNAAT_API.item(alvo ? alvo.id : param, () => {
+            const idPedido = alvo ? alvo.id : param;
+
+            window.PNAAT_API.item(idPedido, () => {
                 if (this.currentView !== 'investigacao') {
+                    return;
+                }
+
+                // resposta de um pedido que ja nao e o da tela: nao desenha
+                const atual = typeof cartaoDaInvestigacao === 'function'
+                    ? cartaoDaInvestigacao(this.paramInvestigacao).cap
+                    : null;
+
+                if ((atual ? atual.id : this.paramInvestigacao) !== idPedido) {
                     return;
                 }
 
@@ -772,25 +810,55 @@ class App {
 
     exportarCSV() {
         /*
-         * Exporta as linhas de vista que a tela mostra — as MESMAS linhas do filtro atual, com os
-         * mesmos campos do adaptador. Antes o botao "Exportar CSV" nao tinha handler: era afirmacao
-         * funcional sem funcao.
+         * Exporta as linhas de vista VISIVEIS na grade, com os valores CRUS do registro.
+         *
+         * Antes: dizia "as MESMAS linhas do filtro atual" e exportava as 200 carregadas (o filtro so
+         * esconde cartao no DOM), com rotulos de tela — id 'CAP-26', confianca '70%', hora '06:30:26'
+         * — nem numerico nem casavel com o banco. Ausencia agora sai vazia (nao '--'), e celula que
+         * comeca com = + - @ ganha apostrofo, porque Excel/LibreOffice avaliam formula mesmo entre
+         * aspas e esses valores vem do registro (dado nao confiavel).
          */
-        if (!mockCapturas.length) {
+        const visiveis = new Set(
+            [...document.querySelectorAll('[data-capture-card]')]
+                .filter(cartao => cartao.style.display !== 'none')
+                .map(cartao => cartao.getAttribute('data-id'))
+        );
+
+        const linhasVisiveis = mockCapturas.filter(cap => visiveis.has(cap.id));
+
+        if (!linhasVisiveis.length) {
             return;
         }
 
-        const colunas = ['id', 'item', 'vista', 'dominio', 'papel', 'lote', 'timestamp',
-                         'status_vista', 'status_item', 'codigo', 'confianca', 'latencia',
-                         'qualidade', 'tem_evidencia'];
+        const colunas = ['id_registro', 'item_id', 'vista', 'vista_registro', 'dominio', 'papel', 'lote',
+                         'timestamp_trigger', 'timestamp_captura', 'status_vista', 'status_item',
+                         'codigo_defeito', 'confianca', 'latencia_ms', 'qualidade_registro',
+                         'tem_evidencia'];
 
-        const celula = valor => `"${String(valor === null || valor === undefined ? '' : valor)
-            .replace(/"/g, '""')}"`;
+        const celula = valor => {
+            if (valor === null || valor === undefined || valor === '') {
+                return '';
+            }
 
-        const linhas = mockCapturas.map(cap =>
-            colunas.map(coluna => celula(cap[coluna])).join(','));
+            let texto = String(valor);
 
-        const csv = [colunas.join(','), ...linhas].join('\n');
+            if (/^[=+\-@]/.test(texto)) {
+                texto = `'${texto}`;
+            }
+
+            return `"${texto.replace(/"/g, '""')}"`;
+        };
+
+        const linhas = linhasVisiveis.map(cap => [
+            cap.id_registro, cap.item, cap.vista, cap.vista_registro, cap.dominio_registro,
+            cap.papel, cap.lote,
+            cap.timestamp_trigger_iso, cap.timestamp_captura_iso, cap.status_vista, cap.status_item,
+            cap.codigo === '--' ? '' : cap.codigo, cap.confianca_valor, cap.latencia_valor,
+            cap.qualidade, cap.tem_evidencia
+        ].map(celula).join(','));
+
+        // BOM + CRLF: sem isso o Excel pt-BR le UTF-8 como ANSI
+        const csv = `\ufeff${[colunas.join(','), ...linhas].join('\r\n')}\r\n`;
         const arquivo = new Blob([csv], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(arquivo);
         const link = document.createElement('a');
@@ -1075,22 +1143,37 @@ class App {
             ).toLowerCase();
 
 
+        /*
+         * Sem `|| 0`: ausencia nao e zero. `parseFloat` de '--' da NaN, e NaN nao dispara limiar
+         * nenhum — que e o comportamento certo quando nao houve leitura.
+         *
+         * As faixas de 75/65 C e 250/100 ms foram retiradas: o registro nao declara faixa de alerta e a
+         * propria vista Saude diz "faixa nao declarada". Inventar limite e inventar veredito.
+         */
         const temperature =
             parseFloat(
                 mockHealth.temperatura
-            ) || 0;
+            );
 
 
         const latency =
             parseFloat(
                 mockHealth.latencia
-            ) || 0;
+            );
 
 
         const queue =
             Number(
                 mockHealth.filaImagens
-            ) || 0;
+            );
+
+
+        const semLeitura =
+            status === '' || status === 'sem leitura';
+
+
+        const leituraParcial =
+            (mockHealth.sem_leitura || []).length > 0;
 
 
         let severity =
@@ -1098,19 +1181,29 @@ class App {
 
 
         let label =
-            'Raspberry Pi online';
+            'no online';
+
+
+        if (
+            semLeitura
+        ) {
+            severity = null;
+
+            label =
+                'sem leitura do no';
+        }
 
 
         /*
          * Offline sempre é erro.
          */
-        if (
+        else if (
             status !== 'online'
         ) {
             severity = 'danger';
 
             label =
-                'Raspberry Pi offline';
+                'no offline';
         }
 
         /*
@@ -1130,15 +1223,20 @@ class App {
         /*
          * Atenção.
          */
+        /*
+         * Atencao: so o que o registro declara — fila de envio acumulando ou leitura parcial de
+         * hardware. Temperatura e latencia entram como sintoma, com o numero a vista, sem limiar
+         * inventado.
+         */
         else if (
-            temperature >= 65 ||
-            latency >= 100 ||
-            queue >= 5
+            queue >= 10 ||
+            leituraParcial
         ) {
             severity = 'warning';
 
-            label =
-                'Raspberry Pi requer atenção';
+            label = leituraParcial
+                ? `leitura parcial de hardware (${mockHealth.sem_leitura.join(', ')})`
+                : 'fila de envio acumulando';
         }
 
 
@@ -1149,9 +1247,11 @@ class App {
         );
 
 
-        dot.classList.add(
-            `status-${severity}`
-        );
+        if (severity) {
+            dot.classList.add(
+                `status-${severity}`
+            );
+        }
 
 
         statusText.textContent =
@@ -1159,7 +1259,7 @@ class App {
 
 
         latencyText.textContent =
-            `Latência ${mockHealth.latencia || '--'}`;
+            `Sonda do adaptador ${mockHealth.latencia || '--'}`;
     }
 }
 

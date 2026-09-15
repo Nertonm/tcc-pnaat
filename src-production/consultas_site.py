@@ -79,7 +79,7 @@ class LoteResumo:
     ok: int
     defeitos: int
     inconclusivos: int
-    taxa_defeito: float
+    taxa_defeito: float | None
 
 
 _SELECT_VISTA = (
@@ -160,18 +160,23 @@ def item_detalhe(painel: Painel, item_id: str) -> ItemDetalhe | None:
 
 
 def lotes_resumo(painel: Painel) -> tuple[LoteResumo, ...]:
-    """Lote com contagem por estado. Inconclusivo tem coluna propria e nao entra na taxa."""
+    """Lote com contagem por estado.
+
+    A taxa e `defeitos / itens` — o inconclusivo tem coluna propria mas ENTRA no denominador (o item
+    foi inspecionado; o que ele nao fez foi decidir). Lote sem item devolve `taxa_defeito=None`, e nao
+    0.0: zero se leria como "nenhum defeito medido" quando nao houve medida.
+    """
     linhas = painel.conexao.execute(
         "SELECT COALESCE(l.lote_id, '(sem lote)') AS lote_id, l.data_inicio AS data_inicio,"
         " COUNT(i.item_id) AS itens, SUM(i.status_final = 'ok') AS ok,"
         " SUM(i.status_final = 'defeito') AS defeitos,"
         " SUM(i.status_final = 'inconclusivo') AS inconclusivos"
         " FROM item i LEFT JOIN lote l ON l.lote_id = i.lote_id"
-        " GROUP BY l.lote_id, l.data_inicio ORDER BY lote_id").fetchall()
+        " GROUP BY l.lote_id, l.data_inicio ORDER BY l.data_inicio, lote_id").fetchall()
     return tuple(LoteResumo(lote_id=r["lote_id"], data_inicio=r["data_inicio"], itens=r["itens"],
                             ok=r["ok"] or 0, defeitos=r["defeitos"] or 0,
                             inconclusivos=r["inconclusivos"] or 0,
-                            taxa_defeito=(r["defeitos"] or 0) / r["itens"] if r["itens"] else 0.0)
+                            taxa_defeito=(r["defeitos"] or 0) / r["itens"] if r["itens"] else None)
                  for r in linhas)
 
 

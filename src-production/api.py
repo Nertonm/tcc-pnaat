@@ -30,6 +30,7 @@ import socket
 import sqlite3
 import time
 from dataclasses import asdict, is_dataclass
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -42,6 +43,12 @@ from registro import EventoInvalido, Registro
 #: adaptador de camera/modelo (servico vivo em :8099). A API NAO abre a camera: o dono da camera
 #: continua sendo um processo so, e este servidor so fala com ele.
 ADAPTADOR = os.environ.get("PNAAT_MODEL_API", "http://127.0.0.1:8099")
+
+#: teto do listado do site: acima disso o LIMIT deixa de ser controle de custo
+LIMITE_MAXIMO = 500
+
+#: teto do corpo de escrita (o gatilho manda um JSON pequeno)
+LIMITE_CORPO = 65536
 VERSAO_API = "hub-api.v1"
 ESTADOS_DE_GATILHO = ("aceito", "duplicado", "falso", "invalido")
 FONTES_DE_GATILHO = ("e18_d80nk", "vl53l0x", "ambos_correlacionados", "nao_declarada")
@@ -260,7 +267,17 @@ def _rota_resumo(ctx: dict) -> dict:
 
 
 def _rota_capturas(ctx: dict, consulta: dict) -> dict:
-    limite = int((consulta.get("limite") or ["50"])[0])
+    bruto = (consulta.get("limite") or ["50"])[0]
+    try:
+        limite = int(bruto)
+    except (TypeError, ValueError) as exc:
+        raise ErroDeApi(400, "filtro_invalido",
+                        f"limite tem de ser inteiro, recebido {bruto!r}") from exc
+    if limite < 1:
+        raise ErroDeApi(400, "filtro_invalido", f"limite tem de ser >= 1, recebido {limite}")
+    # teto explicito: sem ele `?limite=1000000000` varre o registro inteiro e o LIMIT deixa de ser
+    # controle de custo. O teto vai no payload, senao ninguem entende por que recebeu menos.
+    limite = min(limite, LIMITE_MAXIMO)
     vista = (consulta.get("vista") or [None])[0]
     estado = (consulta.get("estado") or [None])[0]
     painel = Painel.abrir(ctx["db"])
@@ -274,7 +291,8 @@ def _rota_capturas(ctx: dict, consulta: dict) -> dict:
         painel._cx.close()
     capturas = [_captura_para_site(c, ctx["evidencias"]) for c in linhas]
     return {"capturas": capturas, "total": len(capturas), "base": base,
-            "filtros": {"limite": limite, "vista": vista, "estado": estado},
+            "filtros": {"limite": limite, "limite_maximo": LIMITE_MAXIMO,
+                        "vista": vista, "estado": estado},
             "nota": "lista vazia com base > 0 significa que o filtro nao casou, nao que nada foi "
                     "inspecionado"}
 
@@ -440,6 +458,33 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
 
         # -------------------------------------------------- verbos
 
+        def _metodo_nao_suportado(self, metodo: str) -> None:
+            """Resposta JSON para verbo fora do contrato.
+
+            O `BaseHTTPRequestHandler` respondia 501 com a pagina HTML dele, contradizendo a promessa
+            do modulo ("erro e JSON: rota desconhecida responde JSON, nao a pagina de erro").
+            """
+            self._json(405, None, ok=False, erro="metodo_nao_suportado",
+                       detalhe=f"{metodo} nao entra nesta API (use GET ou POST)")
+
+        def do_DELETE(self) -> None:
+            self._metodo_nao_suportado("DELETE")
+
+        def do_PUT(self) -> None:
+            self._metodo_nao_suportado("PUT")
+
+        def do_PATCH(self) -> None:
+            self._metodo_nao_suportado("PATCH")
+
+        def do_OPTIONS(self) -> None:
+            self._metodo_nao_suportado("OPTIONS")
+
+        def do_HEAD(self) -> None:
+            self._metodo_nao_suportado("HEAD")
+
+        def do_TRACE(self) -> None:
+            self._metodo_nao_suportado("TRACE")
+
         def do_GET(self) -> None:
             pedaco = urlparse(self.path)
             rota, consulta = pedaco.path, parse_qs(pedaco.query)
@@ -480,9 +525,25 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
             try:
                 if rota != "/api/gatilho":
                     raise ErroDeApi(404, "rota_desconhecida", rota)
-                tamanho = int(self.headers.get("Content-Length") or 0)
-                if tamanho > 65536:
-                    raise ErroDeApi(413, "corpo_grande_demais", str(tamanho))
+                if (self.headers.get("Transfer-Encoding") or "").lower().strip() == "chunked":
+                    raise ErroDeApi(411, "transfer_encoding_nao_suportado",
+                                    "envie o corpo com Content-Length, sem chunked")
+
+                declarado = self.headers.get("Content-Length")
+                if declarado is None:
+                    raise ErroDeApi(411, "tamanho_ausente", "informe Content-Length")
+
+                try:
+                    tamanho = int(declarado)
+                except ValueError as exc:
+                    raise ErroDeApi(400, "tamanho_invalido",
+                                    f"Content-Length nao numerico: {declarado!r}") from exc
+
+                # negativo prende a thread no read (-1 le ate o socket fechar): recusa, nao atende
+                if tamanho < 0 or tamanho > LIMITE_CORPO:
+                    raise ErroDeApi(400, "tamanho_invalido",
+                                    f"Content-Length fora de [0,{LIMITE_CORPO}]: {tamanho}")
+
                 bruto = self.rfile.read(tamanho) if tamanho else b"{}"
                 try:
                     corpo = json.loads(bruto.decode("utf-8"))
@@ -490,6 +551,29 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
                     raise ErroDeApi(400, "json_invalido", str(exc)) from exc
                 if not isinstance(corpo, dict):
                     raise ErroDeApi(400, "json_precisa_ser_objeto", type(corpo).__name__)
+
+                # o instante do gatilho e a base de toda consulta por tempo (e o dominio exige fuso):
+                # aceitar "ontem" gravava texto e cegava `datetime(timestamp)` nas consultas.
+                instante = corpo.get("timestamp")
+                if not isinstance(instante, str):
+                    raise ErroDeApi(400, "timestamp_invalido",
+                                    f"timestamp tem de ser texto ISO com fuso, recebido "
+                                    f"{type(instante).__name__}")
+                try:
+                    lido = datetime.fromisoformat(instante)
+                except ValueError as exc:
+                    raise ErroDeApi(400, "timestamp_invalido",
+                                    f"timestamp nao e ISO 8601: {instante!r}") from exc
+                if lido.tzinfo is None:
+                    raise ErroDeApi(400, "timestamp_sem_fuso",
+                                    f"timestamp sem fuso: {instante!r} (o registro exige fuso)")
+
+                # tipo errado aqui e erro do CLIENTE: nao pode virar 503 de banco indisponivel
+                for campo in ("ponto_id", "debounce_ms"):
+                    valor = corpo.get(campo)
+                    if valor is not None and not isinstance(valor, int):
+                        raise ErroDeApi(400, "campo_com_tipo_errado",
+                                        f"{campo} tem de ser inteiro, recebido {type(valor).__name__}")
                 self._json(200, _rota_gatilho(ctx, corpo))
             except ErroDeApi as exc:
                 self._json(exc.codigo, None, ok=False, erro=exc.erro, detalhe=exc.detalhe)

@@ -39,7 +39,14 @@ const PNAAT_API = {
     // ---------------------------------------------------------------- apoio
 
     async _pega(rota) {
-        const resposta = await fetch(this.base + rota, { cache: 'no-store' });
+        /*
+         * Teto de tempo: sem ele uma API que aceita a conexao e nao responde deixa o selo preso em
+         * "carregando" para sempre e o ciclo periodico empilha requisicoes pendentes.
+         */
+        const resposta = await fetch(this.base + rota, {
+            cache: 'no-store',
+            signal: AbortSignal.timeout(8000)
+        });
 
         if (!resposta.ok) {
             throw new Error(`${rota} respondeu ${resposta.status}`);
@@ -115,7 +122,16 @@ const PNAAT_API = {
             img: c.evidencia_url || this._semImagem(c.item_id, this._rotuloVista(c.vista),
                                                      c.motivo_inconclusivo),
             tem_evidencia: c.tem_evidencia,
-            evidencia_url: c.evidencia_url
+            evidencia_url: c.evidencia_url,
+
+            // valores CRUS do registro: a tela usa os rotulos, o CSV usa estes
+            id_registro: c.id,
+            confianca_valor: c.confianca,
+            latencia_valor: c.latencia_ms,
+            timestamp_trigger_iso: c.timestamp_trigger,
+            timestamp_captura_iso: c.timestamp_captura,
+            dominio_registro: c.dominio || '',
+            vista_registro: c.vista
         }));
     },
 
@@ -274,17 +290,40 @@ const PNAAT_API = {
         const cap = mockCapturas.find(c => c.id === id);
         const itemId = cap ? cap.item : id;
 
-        // Sem esta guarda vira laco: carregar -> re-renderizar -> carregar de novo.
-        if (mockItemDetalhe && mockItemDetalhe.item_id === itemId && !mockItemDetalhe.inexistente) {
-            if (typeof aoPronto === 'function') { aoPronto(); }
-            return mockItemDetalhe;
+        /*
+         * Cache com veredito, e SEM chamar o callback quando nada foi a rede.
+         *
+         * O callback aqui era um laco: `aoPronto` re-renderiza a Investigacao, o render pede o item
+         * outra vez, o item em cache chama `aoPronto` de novo — tudo SINCRONO, sem await no meio.
+         * Medido no site servido: 1968 navegacoes e 1967 pedidos por UMA abertura da vista.
+         *
+         * 404 tambem e resposta legitima (o item nao existe no registro) e nao se repete; falha de
+         * REDE se repete, para uma oscilacao nao virar "nao existe" permanente.
+         */
+        if (mockItemDetalhe && mockItemDetalhe.item_id === itemId) {
+            if (!mockItemDetalhe.falha_de_rede) {
+                return mockItemDetalhe;
+            }
+
+            mockItemDetalhe = null;
+        }
+
+        if (!itemId) {
+            return null;
         }
 
         try {
             mockItemDetalhe = await this._pega(`/api/item/${encodeURIComponent(itemId)}`);
+            mockItemDetalhe.inexistente = false;
         } catch (erro) {
-            // 404 aqui e RESPOSTA, nao falha de rede: o item nao existe no registro.
-            mockItemDetalhe = { item_id: itemId, inexistente: true, motivo: erro.message };
+            const semRegistro = /\b404\b/.test(erro.message);
+
+            mockItemDetalhe = {
+                item_id: itemId,
+                inexistente: semRegistro,
+                falha_de_rede: !semRegistro,
+                motivo: erro.message
+            };
         }
 
         if (typeof aoPronto === 'function') { aoPronto(); }
@@ -329,10 +368,11 @@ const PNAAT_API = {
                 this._pega('/api/lotes')
             ]);
 
-            this.estado.banco = saude.banco.caminho;
-            this.estado.itens = saude.banco.itens;
-            this.estado.adaptador = saude.camera.adaptador;
-            this.estado.adaptador_ok = saude.camera.porta_aberta;
+            // sem `?.` um campo ausente derrubava a carga inteira e a tela ficava com undefined
+            this.estado.banco = saude.banco?.caminho || '--';
+            this.estado.itens = saude.banco?.itens ?? 0;
+            this.estado.adaptador = saude.camera?.adaptador || '--';
+            this.estado.adaptador_ok = Boolean(saude.camera?.porta_aberta);
             this.estado.carregada = true;
             this.estado.erro = null;
             this.estado.atualizada_em = saude.agora;
@@ -342,14 +382,26 @@ const PNAAT_API = {
             mockHealth = this._saude(saude);
             mockLotes = lotes.lotes;
             mockQualidade = this._qualidade(qualidade);
-            mockServices = (saude.servicos || []).map(s => ({
-                name: s.nome,
-                detail: s.detalhe,
-                icon: s.estado === 'ok' ? 'check-circle-2'
-                    : s.estado === 'conectado' ? 'camera' : 'triangle-alert',
-                status: s.estado,
-                state: s.estado === 'ok' || s.estado === 'conectado' ? 'ok' : 'warning'
-            }));
+            /*
+             * A API declara 7 literais de estado (ok, conectado, servindo, servido nesta origem, sem
+             * banco, sem resposta, ausente). Conhecer so 2 fazia o proprio Site e a raiz de evidencias
+             * entrarem como alerta, gerando notificacao falsa a cada carga.
+             */
+            const SAUDAVEIS = new Set(['ok', 'conectado', 'servindo', 'servido nesta origem']);
+
+            mockServices = (saude.servicos || []).map(s => {
+                const estado = String(s.estado || '').toLowerCase();
+                const saudavel = SAUDAVEIS.has(estado);
+
+                return {
+                    name: s.nome,
+                    detail: s.detalhe,
+                    icon: estado === 'conectado' ? 'camera'
+                        : saudavel ? 'check-circle-2' : 'triangle-alert',
+                    status: s.estado,
+                    state: saudavel ? 'ok' : 'warning'
+                };
+            });
             this.estado.qualidade = qualidade;
             mockNotifications = this._notificacoes();
         } catch (erro) {
@@ -357,9 +409,21 @@ const PNAAT_API = {
             this.estado.erro = erro.message;
 
             // API fora: a tela fica VAZIA e diz isso. Nao se mantem numero antigo como se fosse atual.
+            /*
+             * API fora: forma DECLARADA, nao objeto vazio. Com `{}` a tela imprimia 'undefined' e
+             * chegava a afirmar leitura ("sensor lido nesta coleta") sem ter lido nada.
+             */
             mockCapturas = [];
-            mockStats = {};
-            mockHealth = {};
+            mockStats = {
+                totalLote: '--', aprovados: '--', reprovados: '--', inconclusivos: '--',
+                taxaDefeito: '--', latenciaMedia: '--', producaoAnterior: '--',
+                tendencia: [], nota: ''
+            };
+            mockHealth = {
+                status: 'sem leitura', cpu: '--', memoria: '--', temperatura: '--',
+                armazenamento: '--', armazenamentoTotal: '--', filaImagens: '--', latencia: '--',
+                ultimoHeartbeat: '--', sem_leitura: [], banco: '--', itens: 0
+            };
             mockLotes = [];
             mockQualidade = {};
             mockServices = [];
