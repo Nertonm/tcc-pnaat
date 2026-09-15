@@ -1237,3 +1237,34 @@ do D-48 o site exige escolha explicita, mas a API mantem o caminho "sem camera =
 omita o campo ainda apaga a calibracao, e isso fica registrado na trilha com autor. Fechar esse caminho
 exigindo `camera` (ou "todas" escrito) e uma mudanca de contrato que nao foi feita durante a sessao de
 calibracao do operador.
+
+## D-51: segundo reboot (16:28) — deploy alinhado, kiosk num mecanismo so, journal finalmente fora do tmpfs
+
+**O que o reboot expos, e que ja esta corrigido:**
+
+1. **O journal nunca persistiu porque `/var/log` e tmpfs (log2ram).** `Storage=persistent` sozinho nao
+   resolve: o diretorio existe na RAM e a queda brusca leva o registro junto. Agora `/var/log/journal`
+   tem bind mount proprio por fstab (`/var/log/journal /var/log/journal none bind,nofail 0 0`), fora do
+   log2ram — o proximo incidente deixa post-mortem. Antes disso, dois reboots ficaram sem causa por
+   esse motivo, nao por falta de configuracao.
+
+2. **Dois mecanismos de kiosk, um deles apontando para o lugar errado.** O autostart do labwc ja existia
+   apontando para `localhost:8090` (pagina do RIG), e eu havia criado um `.desktop` em
+   `~/.config/autostart` — que o labwc TAMBEM executa, via `lxsession-xdg-autostart`. Resultado possivel:
+   dois chromium em kiosk numa maquina que ja roda rig e hub (suspeito plausivel da instabilidade).
+   Ficou um mecanismo so, apontando para o site (`~/pnaat-kiosk.sh`, :8091) com flags leves;
+   o `.desktop` redundante foi removido.
+
+3. **Deploy apropriado: publicado alinhado com commitado.** A primeira comparacao que fiz rodou no host
+   errado (o repositorio nao esta na maquina do rig), e os "DIVERGE" que ela imprimiu eram invalidos —
+   falha minha, corrigida. A comparacao certa (sha256 do lado do repo contra o lado publicado) achou
+   divergencias reais, copiou com backup e reiniciou o hub. Reconferido agora: `api.py`,
+   `consultas_site.py`, `app.js`, `components.js`, `api.js` e `index.html` IGUAIS ao comitado.
+
+4. **A unidade de boot do gatilho se provou em producao** (primeira ativacao real):
+   `16:29:34 gatilho em estado 'desconhecido' apos o boot: reiniciando a ponte uma vez` ->
+   `16:30:30 depois do restart: armado`. Sem ela, este reboot teria deixado o gatilho morto.
+
+5. **As correcoes que vivem nas maquinas sobreviveram ao boot** (verificado por leitura): atraso por
+   camera, manifesto parcial, vigia do delay da ponte, aviso imediato ao rig, rota do gatilho para as 3
+   cameras e o `name` inicializado. E a calibracao do operador persistiu: `{csi:1000, usb:1000, espcam:1500}`.
