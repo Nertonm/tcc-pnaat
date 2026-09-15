@@ -2552,6 +2552,227 @@ const renderInvestigacao = id => {
     `;
 };
 
+const renderDebug = () => {
+    /*
+     * Aba de bancada. Todo dado vem do rig (servico da camera) ou da ponte do gatilho, e toda ausencia
+     * se declara: se o rig nao responde, a tela diz por que — painel vazio e pior que erro, porque
+     * parece que nada aconteceu.
+     */
+    const d = (typeof mockDebug !== 'undefined' && mockDebug) ? mockDebug : {};
+    const ponte = (d.ponte && !d.ponte.erro) ? d.ponte : null;
+    const estado = (d.estado && !d.estado.erro) ? d.estado : null;
+    const rig = estado ? (estado.rig || {}) : {};
+
+    const falha = (bloco, rotulo) => `
+        <p class="text-sm text-brand-red">
+            ${rotulo} indisponivel: ${bloco.erro}
+        </p>`;
+
+    const linha = (rotulo, valor) => `
+        <div class="flex items-baseline justify-between gap-4 border-b border-black/5 py-1 dark:border-white/5">
+            <span class="text-xs uppercase tracking-wider text-gray-400">${rotulo}</span>
+            <span class="font-mono text-xs">${valor === null || valor === undefined || valor === ''
+                ? '&mdash;' : valor}</span>
+        </div>`;
+
+    const painel = (titulo, corpo, nota) => `
+        <section class="surface-card p-6">
+            <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">${titulo}</h3>
+
+            <div class="mt-3">${corpo}</div>
+
+            ${nota ? `<p class="mt-3 text-xs text-gray-400">${nota}</p>` : ''}
+        </section>`;
+
+    const acao = d.acao || null;
+    const series = (d.series && d.series.series) ? d.series.series : [];
+    const gatilhos = (d.gatilhos && d.gatilhos.gatilhos) ? d.gatilhos.gatilhos : [];
+    const sensor = (ponte && ponte.sensor) ? ponte.sensor : null;
+
+    return `
+        <div class="fade-in-up space-y-6">
+            <section class="surface-card p-6">
+                <h2 class="text-2xl font-bold tracking-tight">Debug da bancada</h2>
+
+                <p class="mt-2 max-w-3xl text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    Estado do gatilho e da camera, delay de captura, captura manual e teste do gatilho.
+                    Cada ensaio de bancada entra no registro como evento de gatilho (marcado como teste),
+                    para o disparo nao ficar invisivel. Leitura de
+                    <span class="font-mono text-xs">${d.atualizado_em || '&mdash;'}</span>.
+                </p>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <button class="secondary-button" onclick="app.carregarDebug()">
+                        <i data-lucide="refresh-cw" class="mr-2 h-4 w-4"></i> Reler estado
+                    </button>
+                </div>
+            </section>
+
+
+            ${acao ? `
+                <section class="surface-card p-6">
+                    <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">
+                        Ultima acao: ${acao.rotulo}
+                    </h3>
+
+                    <p class="mt-2 text-sm ${acao.estado === 'ok' ? 'text-brand-green'
+                        : acao.estado === 'falhou' ? 'text-brand-red' : 'text-gray-400'}">
+                        ${acao.estado}${acao.erro ? ` — ${acao.erro}` : ''}${acao.detalhe ? `: ${acao.detalhe}` : ''}
+                    </p>
+
+                    ${acao.dados ? `<pre class="custom-scrollbar mt-3 max-h-64 overflow-auto rounded-lg bg-black/5 p-3 text-[11px] leading-4 dark:bg-white/5">${JSON.stringify(acao.dados, null, 1)}</pre>` : ''}
+                </section>` : ''}
+
+
+            <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                ${painel('Gatilho (ponte serial)',
+                    !d.ponte ? '<p class="text-sm text-gray-400">lendo o estado do gatilho...</p>'
+                    : d.ponte.erro ? falha(d.ponte, 'ponte do gatilho') : `
+                        ${linha('serial aberta', ponte.serial_open)}
+                        ${linha('erro da serial', ponte.serial_last_error)}
+                        ${linha('bytes / linhas', `${ponte.serial_bytes || 0} / ${ponte.serial_lines || 0}`)}
+                        ${linha('frames ok / ruins', `${ponte.frames_ok || 0} / ${ponte.frames_bad || 0}`)}
+                        ${linha('frames texto / bin', `${ponte.frames_text || 0} / ${ponte.frames_bin || 0}`)}
+                        ${linha('nivel do sensor', sensor ? sensor.nivel : '&mdash;')}
+                        ${linha('idade da leitura (s)', sensor ? sensor.idade_s : '&mdash;')}
+                        ${linha('transporte', ponte.transport)}
+                        ${linha('inicializado (booted)', ponte.booted)}
+                        ${linha('delay no dispositivo (ms)', ponte.delay_ms)}
+                        ${linha('delay salvo em', ponte.delay_saved_at)}
+                    `,
+                    'A ponte e quem fala com a ESP pela serial: nivel do sensor, contadores de frame e o delay vigente saem dela.')}
+
+                ${painel('Camera do rig',
+                    !d.estado ? '<p class="text-sm text-gray-400">lendo o servico da camera...</p>'
+                    : d.estado.erro ? falha(d.estado, 'servico da camera') : `
+                        ${linha('camera', rig.camera)}
+                        ${linha('erro da camera', rig.erro_camera)}
+                        ${linha('tem fundo', rig.tem_fundo)}
+                        ${linha('tem referencia', rig.tem_referencia)}
+                        ${linha('referencia valida', rig.referencia_ok)}
+                        ${linha('analises registradas', rig.analises)}
+                        ${linha('roi atual', Array.isArray(rig.roi) ? rig.roi.join(', ') : rig.roi)}
+                    `,
+                    'Este servico e o dono unico da camera: e ele que tira as fotos das 3 fontes.')}
+            </div>
+
+
+            <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                ${painel('Delay de captura (gatilho &rarr; foto)', `
+                    <p class="text-sm">
+                        Delay vigente no dispositivo:
+                        <span class="font-mono font-semibold">${(ponte && ponte.delay_ms !== undefined
+                            && ponte.delay_ms !== null) ? ponte.delay_ms + ' ms'
+                            : (d.ponte && d.ponte.erro ? 'indisponivel (ponte fora)' : '&mdash;')}</span>
+                    </p>
+
+                    <div class="mt-3 flex flex-wrap items-end gap-2">
+                        <div>
+                            <label class="block text-[11px] uppercase tracking-wider text-gray-500"
+                                   for="debug-delay-ms">novo delay (ms)</label>
+
+                            <input id="debug-delay-ms" type="number" min="0" max="30000" step="10"
+                                   class="app-input mt-1 w-40 px-3 py-2" placeholder="0 a 30000">
+                        </div>
+
+                        <button class="secondary-button" onclick="app.configurarDelay()">
+                            <i data-lucide="timer-reset" class="mr-2 h-4 w-4"></i> Configurar
+                        </button>
+                    </div>
+
+                    <p class="mt-3 text-xs text-orange-500">
+                        Este rig tem UM delay para as tres cameras. Cameras a distancias diferentes do
+                        sensor precisam de delays diferentes (<span class="font-mono">tau* = d / v</span>
+                        por camera); com um valor so, no maximo uma delas captura no instante certo.
+                    </p>
+                `, 'Ate o rig aplicar delay por camera, o numero unico e o que existe — e a tela diz isso.')}
+
+                ${painel('Teste do gatilho e captura manual', `
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] uppercase tracking-wider text-gray-500"
+                                   for="debug-item-teste">item da bancada (opcional)</label>
+
+                            <input id="debug-item-teste" class="app-input mt-1 w-full px-3 py-2"
+                                   placeholder="ex.: ITM-001 (vazio = gatilho precede o item)">
+                        </div>
+
+                        <button class="secondary-button w-full" onclick="app.testarGatilho()">
+                            <i data-lucide="zap" class="mr-2 h-4 w-4"></i>
+                            Testar gatilho nas 3 cameras (bancada)
+                        </button>
+
+                        <button class="secondary-button w-full" onclick="app.capturarManual()">
+                            <i data-lucide="camera" class="mr-2 h-4 w-4"></i>
+                            Captura manual (uma foto de cada fonte)
+                        </button>
+                    </div>
+                `, 'O teste do gatilho usa a mesma rota do sensor na ponte; a captura manual nao e o fluxo do trigger.')}
+            </div>
+
+
+            ${painel('Series capturadas pelo rig',
+                !d.series ? '<p class="text-sm text-gray-400">lendo as series do rig...</p>'
+                : d.series.erro ? falha(d.series, 'lista de series') :
+                (series.length ? `
+                    <div class="space-y-4">
+                        ${series.slice(0, 6).map(s => `
+                            <div>
+                                <p class="text-xs text-gray-400">
+                                    <span class="font-mono">${s.serie}</span>
+                                    ${s.capturado_em ? ' • ' + s.capturado_em : ''}
+                                    ${s.trigger_n ? ' • trigger ' + s.trigger_n : ''}
+                                </p>
+
+                                <div class="mt-2 grid grid-cols-3 gap-2">
+                                    ${(s.fotos || []).map(f => `
+                                        <figure>
+                                            <img src="${f.url.replace('/series-3-cameras/', '/api/rig-serie/')}"
+                                                 alt="captura ${f.camera || f.nome}"
+                                                 loading="lazy" decoding="async"
+                                                 class="h-24 w-full rounded-lg object-cover">
+                                            <figcaption class="mt-1 text-[10px] text-gray-400">
+                                                ${f.camera || f.nome}
+                                            </figcaption>
+                                        </figure>`).join('')}
+                                </div>
+                            </div>`).join('')}
+                    </div>` : `<p class="text-sm text-gray-400">nenhuma serie capturada pelo rig</p>`),
+                'A imagem e servida pelo proprio hub (mesma origem), validando serie e nome do arquivo.')}
+
+
+            ${painel('Historico de gatilhos no registro',
+                !d.gatilhos ? '<p class="text-sm text-gray-400">lendo o historico do registro...</p>'
+                : d.gatilhos.erro ? falha(d.gatilhos, 'historico do registro') :
+                (gatilhos.length ? `
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-xs uppercase tracking-wider text-gray-400">
+                            <tr>
+                                <th class="pb-2 pr-3">id</th>
+                                <th class="pb-2 pr-3">quando</th>
+                                <th class="pb-2 pr-3">fonte</th>
+                                <th class="pb-2 pr-3">estado</th>
+                                <th class="pb-2 pr-3">item</th>
+                                <th class="pb-2">motivo</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            ${gatilhos.map(g => `
+                                <tr class="border-b border-black/5 dark:border-white/5 ${g.teste ? 'text-orange-500' : ''}">
+                                    <td class="py-1.5 pr-3 font-mono text-xs">${g.id}</td>
+                                    <td class="py-1.5 pr-3 font-mono text-xs">${g.timestamp}</td>
+                                    <td class="py-1.5 pr-3">${g.fonte}</td>
+                                    <td class="py-1.5 pr-3">${g.estado}</td>
+                                    <td class="py-1.5 pr-3 font-mono text-xs">${g.item_id || '(sem item)'}</td>
+                                    <td class="py-1.5 text-xs">${g.motivo || '&mdash;'}${g.teste ? ' [teste]' : ''}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                    </table>` : `<p class="text-sm text-gray-400">nenhum evento de gatilho registrado</p>`),
+                'O disparo que NAO virou item tambem entra (falso, duplicado, invalido): e o unico jeito de o gatilho ser observavel.')}
+        </div>`;
+};
+
 
 const renderQualidade = () => {
     /*

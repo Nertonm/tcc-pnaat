@@ -27,16 +27,19 @@ import json
 import mimetypes
 import os
 import socket
+import re
 import sqlite3
 import time
+import urllib.error
+import urllib.request
 from dataclasses import asdict, is_dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from consultas_site import (caminho_da_evidencia, capturas_recentes, item_detalhe, lotes_resumo,
-                            total_de_capturas)
+from consultas_site import (caminho_da_evidencia, capturas_recentes, gatilhos_recentes, item_detalhe,
+                            lotes_resumo, total_de_capturas)
 from painel import Painel
 from registro import EventoInvalido, Registro
 
@@ -44,8 +47,20 @@ from registro import EventoInvalido, Registro
 #: continua sendo um processo so, e este servidor so fala com ele.
 ADAPTADOR = os.environ.get("PNAAT_MODEL_API", "http://127.0.0.1:8099")
 
+#: servico da camera do rig (dono da camera) e ponte serial do gatilho
+RIG = os.environ.get("PNAAT_RIG", "http://127.0.0.1:8090").rstrip("/")
+PONTE = os.environ.get("PNAAT_PONTE", "http://127.0.0.1:8094").rstrip("/")
+
 #: teto do listado do site: acima disso o LIMIT deixa de ser controle de custo
 LIMITE_MAXIMO = 500
+
+#: teto do delay de captura aceito pelo rig (mesmo do servico da camera)
+DELAY_MAXIMO_MS = 30000
+
+#: nome de arquivo aceito na rota de serie: o rig produz um JPEG por camera + o manifest.
+#: Padrao (nao lista fixa) porque o nome da camera e dado do RIG: lista fixa amarrava o hub a
+#: instalacao e ainda repetia nome de host dentro do repositorio.
+ARQUIVO_DE_SERIE = re.compile(r"(?:manifest\.json|[A-Za-z0-9][A-Za-z0-9._-]{0,63}\.jpg)")
 
 #: teto do corpo de escrita (o gatilho manda um JSON pequeno)
 LIMITE_CORPO = 65536
@@ -371,6 +386,58 @@ def _rota_evidencia(ctx: dict, consulta: dict) -> tuple[bytes, str]:
 
 # ------------------------------------------------------------------ rota de escrita
 
+def _chamar_servico(base: str, rota: str, *, metodo: str = "GET", timeout: float = 10.0,
+                    nome: str = "servico") -> dict:
+    """Chama o rig/ponte e devolve o JSON dele. Falha vira erro DECLARADO, nunca resposta vazia."""
+    url = f"{base}{rota}"
+    pedido = urllib.request.Request(url, method=metodo)
+    try:
+        with urllib.request.urlopen(pedido, timeout=timeout) as resposta:
+            bruto = resposta.read()
+    except urllib.error.HTTPError as exc:
+        detalhe = exc.read(200).decode("utf-8", "replace")
+        raise ErroDeApi(502, f"{nome}_recusou", f"{url} respondeu {exc.code}: {detalhe}") from exc
+    except (urllib.error.URLError, OSError) as exc:
+        raise ErroDeApi(503, f"{nome}_sem_resposta",
+                        f"{url} nao respondeu: {type(exc).__name__}: {str(exc)[:120]}") from exc
+
+    try:
+        return json.loads(bruto.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ErroDeApi(502, f"{nome}_resposta_ilegivel",
+                        f"{url} devolveu algo que nao e JSON: {str(exc)[:120]}") from exc
+
+
+def _chamar_rig(rota: str, *, metodo: str = "GET", timeout: float = 10.0) -> dict:
+    return _chamar_servico(RIG, rota, metodo=metodo, timeout=timeout, nome="rig")
+
+
+def _chamar_ponte(rota: str = "/", *, metodo: str = "GET", timeout: float = 8.0) -> dict:
+    return _chamar_servico(PONTE, rota, metodo=metodo, timeout=timeout, nome="ponte_gatilho")
+
+
+def _registrar_ensaio_de_bancada(ctx: dict, motivo: str, item_id: str | None = None) -> dict:
+    """Grava o ensaio de bancada como evento de gatilho.
+
+    A bancada nao pode ser invisivel no registro: sem isto, o teste manual nao aparece na contagem e o
+    operador conclui que o gatilho nunca disparou. A fonte fica 'nao_declarada' (o vocabulario do
+    esquema nao tem 'manual') e o motivo diz que e ensaio — quem agrega filtra por motivo.
+    """
+    if item_id is not None and not _ITEM_ID_VALIDO(item_id):
+        raise ErroDeApi(400, "item_invalido", f"item_id fora do padrao: {item_id!r}")
+    registro = Registro.abrir(ctx["db"])
+    try:
+        try:
+            evento_id = _escrever_com_retentativa(
+                registro.registrar_gatilho, _agora_iso(), "aceito",
+                fonte="nao_declarada", item_id=item_id, motivo=motivo)
+        except EventoInvalido as exc:
+            raise ErroDeApi(400, "ensaio_recusado_pelo_registro", str(exc)) from exc
+    finally:
+        registro.fechar()
+    return {"gatilho_id": evento_id, "motivo": motivo}
+
+
 def _escrever_com_retentativa(acao, *args, tentativas: int = 3, espera_s: float = 0.3, **kwargs):
     """Executa uma escrita aguardando o lock do registro.
 
@@ -433,6 +500,120 @@ def _rota_gatilho(ctx: dict, corpo: dict) -> dict:
     finally:
         registro.fechar()
     return {"gatilho_id": gatilho_id, "estado": estado, "fonte": fonte}
+
+
+def _agora_iso() -> str:
+    return datetime.now(UTC).isoformat(timespec="seconds")
+
+
+def _ITEM_ID_VALIDO(item_id: str) -> bool:
+    return bool(re.fullmatch(r"[A-Za-z0-9._-]{1,64}", str(item_id or "")))
+
+
+def _rota_gatilhos(ctx: dict, consulta: dict) -> dict:
+    """Historico de eventos de gatilho: e o comportamento do trigger que o site nao mostrava."""
+    bruto = (consulta.get("limite") or ["50"])[0]
+    try:
+        limite = int(bruto)
+    except (TypeError, ValueError) as exc:
+        raise ErroDeApi(400, "filtro_invalido", f"limite tem de ser inteiro, recebido {bruto!r}") from exc
+    limite = max(1, min(limite, LIMITE_MAXIMO))
+
+    painel = Painel.abrir(ctx["db"])
+    try:
+        eventos = gatilhos_recentes(painel, limite=limite)
+    finally:
+        painel._cx.close()
+    return {"gatilhos": eventos, "total": len(eventos)}
+
+
+def _rota_rig_serie(resto: str) -> tuple[bytes, str]:
+    """Serve a imagem da serie que o rig capturou, validando serie/arquivo antes de buscar.
+
+    A validacao aqui e a fronteira: o hub nao repassa caminho cru para o rig, so aceita serie com
+    carimbo numerico e arquivo da lista fechada que o proprio rig produz.
+    """
+    partes = [p for p in resto.split("/") if p]
+    if len(partes) != 2:
+        raise ErroDeApi(400, "caminho_invalido", "use /api/rig-serie/<serie>/<arquivo>")
+    serie, arquivo = partes
+    if not re.fullmatch(r"[0-9-]{6,32}", serie) or not ARQUIVO_DE_SERIE.fullmatch(arquivo):
+        raise ErroDeApi(400, "serie_ou_arquivo_invalido", f"{serie!r}/{arquivo!r}")
+
+    url = f"{RIG}/series-3-cameras/{serie}/{arquivo}"
+    try:
+        with urllib.request.urlopen(url, timeout=15.0) as resposta:
+            dados = resposta.read()
+            tipo = resposta.headers.get("Content-Type") or (
+                "application/json" if arquivo.endswith(".json") else "image/jpeg")
+    except urllib.error.HTTPError as exc:
+        raise ErroDeApi(404, "arquivo_da_serie_ausente",
+                        f"o rig respondeu {exc.code} para {serie}/{arquivo}") from exc
+    except (urllib.error.URLError, OSError) as exc:
+        raise ErroDeApi(503, "rig_sem_resposta", f"{url} nao respondeu: {str(exc)[:120]}") from exc
+    return dados, tipo
+
+
+def _rota_rig_leitura(alvo: str) -> dict:
+    """Leituras do rig/ponte que a aba de debug consome (lista fechada, sem caminho livre)."""
+    if alvo == "estado":
+        return {"rig": _chamar_rig("/estado")}
+    if alvo == "series":
+        # o rig JA devolve {"series": [...]}: embrulhar de novo fazia o site ler um nivel a mais
+        return _chamar_rig("/dataset-series")
+    if alvo == "historico":
+        return {"historico": _chamar_rig("/historico")}
+    if alvo == "gatilho":
+        # a ponte serial e quem sabe do sensor, da serial e do delay
+        return {"ponte": _chamar_ponte("/")}
+    raise ErroDeApi(404, "leitura_desconhecida", f"leitura de rig desconhecida: {alvo!r}")
+
+
+def _rota_rig_delay(corpo: dict) -> dict:
+    """Configura o delay de captura gatilho->foto e LE DE VOLTA do dispositivo."""
+    bruto = corpo.get("ms")
+    try:
+        ms = int(bruto)
+    except (TypeError, ValueError) as exc:
+        raise ErroDeApi(400, "delay_invalido", f"ms tem de ser inteiro, recebido {bruto!r}") from exc
+    if not 0 <= ms <= DELAY_MAXIMO_MS:
+        raise ErroDeApi(400, "delay_invalido", f"ms fora de [0,{DELAY_MAXIMO_MS}]: {ms}")
+
+    resposta_rig = _chamar_rig(f"/configurar-delay?ms={ms}", timeout=15.0)
+    ponte = _chamar_ponte("/")                    # leitura de volta: o que o dispositivo diz que tem
+    return {"pedido_ms": ms, "rig": resposta_rig,
+            "delay_ms_no_dispositivo": ponte.get("delay_ms"),
+            "delay_salvo_em": ponte.get("delay_saved_at"),
+            "confirmado": ponte.get("delay_ms") == ms}
+
+
+def _rota_rig_teste_trigger(ctx: dict, corpo: dict) -> dict:
+    """Ensaio de bancada: pede ao rig o trigger de teste nas 3 cameras e registra o evento."""
+    resposta = _chamar_rig("/teste-trigger-3-cameras", timeout=15.0)
+    item_id = corpo.get("item_id") or None
+    evento = _registrar_ensaio_de_bancada(
+        ctx, f"teste de gatilho na bancada (debug){' — item ' + item_id if item_id else ''}",
+        item_id=item_id)
+    return {"rig": resposta, "evento": evento}
+
+
+def _rota_rig_captura(ctx: dict, corpo: dict) -> dict:
+    """Captura manual: uma foto de cada fonte (nao e o fluxo do trigger) + evento registrado."""
+    parametros = []
+    for campo in ("trigger_n", "trigger_em"):
+        valor = corpo.get(campo)
+        if valor is None:
+            continue
+        if not isinstance(valor, (int, float)) or isinstance(valor, bool):
+            raise ErroDeApi(400, "trigger_invalido", f"{campo} tem de ser numero, recebido {valor!r}")
+        parametros.append(f"{campo}={valor}")
+    consulta = ("?" + "&".join(parametros)) if parametros else ""
+
+    resposta = _chamar_rig(f"/capturar-3-cameras{consulta}", timeout=40.0)
+    serie = resposta.get("serie") or resposta.get("serie_id")
+    evento = _registrar_ensaio_de_bancada(
+        ctx, f"captura manual na bancada (debug){' — serie ' + str(serie) if serie else ''}")
+    return {"rig": resposta, "serie": serie, "evento": evento}
 
 
 def _rota_correcao(ctx: dict, corpo: dict) -> dict:
@@ -576,6 +757,13 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
                         self._json(200, _rota_lotes(ctx))
                     elif rota == "/api/qualidade":
                         self._json(200, _rota_qualidade(ctx))
+                    elif rota.startswith("/api/rig/"):
+                        self._json(200, _rota_rig_leitura(rota[len("/api/rig/"):]))
+                    elif rota == "/api/gatilhos":
+                        self._json(200, _rota_gatilhos(ctx, consulta))
+                    elif rota.startswith("/api/rig-serie/"):
+                        dados, tipo = _rota_rig_serie(rota[len("/api/rig-serie/"):])
+                        self._responde(200, dados, tipo)
                     elif rota == "/api/evidencia":
                         dados, tipo = _rota_evidencia(ctx, consulta)
                         self._responde(200, dados, tipo)
@@ -604,7 +792,8 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
             rota = urlparse(self.path).path
             ctx = self._contexto()
             try:
-                if rota not in ("/api/gatilho", "/api/correcao"):
+                if rota not in ("/api/gatilho", "/api/correcao", "/api/rig/delay",
+                                "/api/rig/teste-trigger", "/api/rig/captura"):
                     raise ErroDeApi(404, "rota_desconhecida", rota)
                 if (self.headers.get("Transfer-Encoding") or "").lower().strip() == "chunked":
                     raise ErroDeApi(411, "transfer_encoding_nao_suportado",
@@ -635,8 +824,14 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
 
                 if rota == "/api/gatilho":
                     self._json(200, _rota_gatilho(ctx, corpo))
-                else:
+                elif rota == "/api/correcao":
                     self._json(200, _rota_correcao(ctx, corpo))
+                elif rota == "/api/rig/delay":
+                    self._json(200, _rota_rig_delay(corpo))
+                elif rota == "/api/rig/teste-trigger":
+                    self._json(200, _rota_rig_teste_trigger(ctx, corpo))
+                else:
+                    self._json(200, _rota_rig_captura(ctx, corpo))
             except ErroDeApi as exc:
                 self._json(exc.codigo, None, ok=False, erro=exc.erro, detalhe=exc.detalhe)
             except sqlite3.OperationalError as exc:

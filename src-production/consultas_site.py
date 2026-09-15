@@ -134,6 +134,24 @@ def total_de_capturas(painel: Painel) -> int:
     return int(painel.conexao.execute("SELECT COUNT(*) FROM inspecao_vista").fetchone()[0])
 
 
+def gatilhos_recentes(painel: Painel, limite: int = 50) -> tuple[dict, ...]:
+    """Ultimos eventos de gatilho, mais recente primeiro.
+
+    O registro guarda o disparo que NAO virou item (falso, duplicado, invalido) — e o unico jeito de
+    isso ser observavel. `teste` marca o ensaio de bancada (motivo), para nao se confundir com o
+    disparo do sensor em producao.
+    """
+    linhas = painel.conexao.execute(
+        "SELECT id, timestamp, ponto_id, fonte, estado, item_id, motivo, debounce_ms"
+        " FROM evento_gatilho ORDER BY id DESC LIMIT ?", (limite,)).fetchall()
+    return tuple({
+        "id": linha["id"], "timestamp": linha["timestamp"], "ponto_id": linha["ponto_id"],
+        "fonte": linha["fonte"], "estado": linha["estado"], "item_id": linha["item_id"],
+        "motivo": linha["motivo"], "debounce_ms": linha["debounce_ms"],
+        "teste": bool(linha["motivo"] and ("bancada" in linha["motivo"] or "debug" in linha["motivo"])),
+    } for linha in linhas)
+
+
 def item_detalhe(painel: Painel, item_id: str) -> ItemDetalhe | None:
     """Item + vistas + evidencias + correcoes; `None` quando o item nao existe (a API devolve 404)."""
     r = painel.conexao.execute(

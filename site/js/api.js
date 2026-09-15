@@ -21,6 +21,7 @@ let mockServices = [];
 let mockNotifications = [];
 let mockLotes = [];
 let mockQualidade = {};
+let mockDebug = {};
 let mockItemDetalhe = null;
 
 const PNAAT_API = {

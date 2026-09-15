@@ -202,6 +202,12 @@ class App {
                 title: 'Relatório de Lote',
                 subtitle:
                     'Resumo consolidado e exportação'
+            },
+
+            debug: {
+                title: 'Debug da bancada',
+                subtitle:
+                    'Gatilho, delay de captura e captura manual'
             }
         };
 
@@ -266,6 +272,10 @@ class App {
                 html = renderLote();
                 break;
 
+            case 'debug':
+                html = renderDebug();
+                break;
+
             default:
                 html = renderOperacao();
         }
@@ -301,6 +311,21 @@ class App {
             }
         }
 
+
+        /*
+         * A aba de debug busca o estado do rig/ponte na PRIMEIRA entrada (e quando o operador pedir).
+         * A carga repinta a area por um metodo proprio (`repintarDebug`), SEM passar pelo navigate:
+         * navigate dispara carga e carga repinta — chamar navigate aqui fecharia laco (foi o defeito
+         * corrigido na Investigacao).
+         */
+        if (view === 'debug' && window.PNAAT_API) {
+            const semDados =
+                !mockDebug || (!mockDebug.estado && !mockDebug.ponte && !mockDebug.gatilhos);
+
+            if (semDados) {
+                this.carregarDebug();
+            }
+        }
 
         /*
          * Quando voltar para Capturas,
@@ -807,6 +832,101 @@ class App {
         );
     }
 
+
+    repintarDebug() {
+        /* Repinta SO a area de conteudo, sem passar pelo navigate (evita laco carga<->render). */
+        if (this.currentView !== 'debug') {
+            return;
+        }
+
+        this.contentArea.innerHTML = renderDebug();
+
+        this.refreshIcons();
+    }
+
+    async carregarDebug() {
+        /* Le rig, ponte, series e historico de gatilho. Cada leitura e independente e falha declarada. */
+        mockDebug = { atualizado_em: new Date().toTimeString().slice(0, 8) };
+
+        const ler = async (rota, chave) => {
+            try {
+                const resposta = await fetch(`${window.PNAAT_API.base}${rota}`, {
+                    cache: 'no-store',
+                    signal: AbortSignal.timeout(15000)
+                });
+                const corpo = await resposta.json();
+                mockDebug[chave] = (corpo && corpo.ok) ? corpo.dados : {
+                    erro: `${(corpo && corpo.erro) || 'resposta inesperada'}: ${(corpo && corpo.detalhe) || ''}`
+                };
+            } catch (erro) {
+                mockDebug[chave] = { erro: erro.message };
+            }
+
+            mockDebug.atualizado_em = new Date().toTimeString().slice(0, 8);
+            this.repintarDebug();
+        };
+
+        await Promise.all([
+            ler('/api/rig/estado', 'estado'),
+            ler('/api/rig/gatilho', 'ponte'),
+            ler('/api/rig/series', 'series'),
+            ler('/api/gatilhos?limite=25', 'gatilhos')
+        ]);
+    }
+
+    async acaoDeBancada(rota, corpo, rotulo) {
+        /* POST de bancada com resultado declarado na tela (sucesso e falha). */
+        mockDebug = mockDebug || {};
+        mockDebug.acao = { rotulo: rotulo, estado: 'enviando...' };
+        this.repintarDebug();
+
+        try {
+            const resposta = await fetch(`${window.PNAAT_API.base}${rota}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(corpo || {})
+            });
+            const texto = await resposta.json().catch(() => ({ erro: 'resposta nao era JSON' }));
+
+            mockDebug.acao = {
+                rotulo: rotulo,
+                estado: (resposta.ok && texto.ok) ? 'ok' : 'falhou',
+                erro: texto.erro || null,
+                detalhe: texto.detalhe || null,
+                dados: texto.dados || null
+            };
+        } catch (erro) {
+            mockDebug.acao = { rotulo: rotulo, estado: 'falhou', erro: 'rede', detalhe: erro.message };
+        }
+
+        this.repintarDebug();
+    }
+
+    configurarDelay() {
+        const campo = document.getElementById('debug-delay-ms');
+        const ms = campo ? Number(campo.value) : NaN;
+
+        if (!Number.isFinite(ms)) {
+            mockDebug.acao = { rotulo: 'configurar delay', estado: 'falhou',
+                               erro: 'delay_invalido', detalhe: 'informe um numero de milissegundos' };
+            this.repintarDebug();
+            return;
+        }
+
+        this.acaoDeBancada('/api/rig/delay', { ms: ms }, `configurar delay para ${ms} ms`);
+    }
+
+    testarGatilho() {
+        const campo = document.getElementById('debug-item-teste');
+        const item = campo ? campo.value.trim() : '';
+
+        this.acaoDeBancada('/api/rig/teste-trigger', item ? { item_id: item } : {},
+                           item ? `teste do gatilho (item ${item})` : 'teste do gatilho (sem item)');
+    }
+
+    capturarManual() {
+        this.acaoDeBancada('/api/rig/captura', {}, 'captura manual das 3 cameras');
+    }
 
     async registrarDecisao(decisao) {
         /*
