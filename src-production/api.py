@@ -61,6 +61,9 @@ DELAY_MAXIMO_MS = 30000
 #: nome de arquivo aceito na rota de serie: o rig produz um JPEG por camera + o manifest.
 #: Padrao (nao lista fixa) porque o nome da camera e dado do RIG: lista fixa amarrava o hub a
 #: instalacao e ainda repetia nome de host dentro do repositorio.
+#: cameras de captura do rig (o atraso e configurado por camera)
+CAMERAS_DE_CAPTURA = ("csi", "usb", "espcam")
+
 #: pasta das series do rig (mesma maquina do hub). Configuravel: o caminho e dado da instalacao.
 SERIES_DIR = Path(os.environ.get("PNAAT_SERIES_DIR")
                   or (Path.home() / "pnaat-dataset" / "series-3-cameras"))
@@ -568,11 +571,28 @@ def _series_locais(limite: int = 40) -> list[dict]:
         fotos, faltando = [], []
         manifest = destino / "manifest.json"
         declarado = {}
+        atrasos_configurados, medido_por_camera, parcial, faltando_no_manifesto = None, {}, None, []
         if manifest.is_file():
             try:
                 dados = json.loads(manifest.read_text(encoding="utf-8"))
                 declarado = {f.get("nome"): f.get("camera") for f in (dados.get("fontes") or [])
                              if isinstance(f, dict)}
+                # configurado x medido: o painel compara os dois em vez de afirmar um so
+                atrasos_configurados = dados.get("atraso_por_camera_ms")
+                parcial = dados.get("parcial")
+                faltando_no_manifesto = dados.get("faltando") or []
+                for fonte in (dados.get("fontes") or []):
+                    if isinstance(fonte, dict) and fonte.get("camera"):
+                        # o rig nomeia a camera com o prefixo da instalacao (ex.: <host>-csi): a chave
+                        # publicada e o PAPEL (csi/usb/espcam), o mesmo vocabulario da configuracao
+                        nome = str(fonte["camera"])
+                        papel = next((c for c in CAMERAS_DE_CAPTURA
+                                      if nome == c or nome.endswith("-" + c)), nome)
+                        medido_por_camera[papel] = {
+                            "atraso_efetivo_ms": fonte.get("atraso_efetivo_ms"),
+                            "atraso_configurado_ms": fonte.get("atraso_configurado_ms"),
+                            "pedido_em_epoch": fonte.get("pedido_em_epoch"),
+                        }
             except (OSError, json.JSONDecodeError):
                 declarado = {}
 
@@ -600,6 +620,10 @@ def _series_locais(limite: int = 40) -> list[dict]:
             "tem_manifesto": with_manifest,
             "fotos": fotos,
             "faltantes": faltando,
+            "atraso_por_camera_ms": atrasos_configurados,
+            "atraso_medido_por_camera": medido_por_camera,
+            "parcial": parcial,
+            "faltando_no_manifesto": faltando_no_manifesto,
             "motivo": (None if with_manifest and faltando == [] else
                        ("sem manifesto: captura interrompida" if not with_manifest
                         else f"fotos declaradas e ausentes: {faltando}")),
@@ -707,6 +731,10 @@ def _rota_rig_leitura(alvo: str) -> dict:
         return _chamar_rig("/dataset-series")
     if alvo == "historico":
         return {"historico": _chamar_rig("/historico")}
+    if alvo == "delay-camera":
+        # o atraso por camera e do rig (a ponte guarda so o dela, em RAM); devolver so o mapa
+        dados = _chamar_rig("/delay-por-camera")
+        return dados.get("delay_por_camera_ms") or dados
     if alvo == "gatilho":
         # a ponte serial e quem sabe do sensor, da serial e do delay; devolve os campos direto
         # (mesma classe de erro que o comentario do /dataset-series acima registra)
@@ -745,19 +773,27 @@ def _rota_rig_delay(ctx: dict, corpo: dict) -> dict:
         raise ErroDeApi(400, "operador_ausente",
                         "informe quem muda o delay (1 a 64 caracteres imprimiveis): sem autor nao e trilha")
 
+    camera = " ".join(str(corpo.get("camera") or "").split()).lower()
+    if camera and camera not in CAMERAS_DE_CAPTURA:
+        raise ErroDeApi(400, "camera_desconhecida",
+                        f"camera {camera!r} nao existe; validas: {sorted(CAMERAS_DE_CAPTURA)}")
+
     anterior, _ = _delay_na_ponte(_chamar_ponte("/status"))
-    resposta_rig = _chamar_rig(f"/configurar-delay?ms={ms}", timeout=15.0)
+    consulta = f"/configurar-delay?ms={ms}" + (f"&camera={camera}" if camera else "")
+    resposta_rig = _chamar_rig(consulta, timeout=15.0)
     ponte = _chamar_ponte("/status")              # leitura de volta: o que o dispositivo diz que tem
     vigente, salvo_em = _delay_na_ponte(ponte)
 
     trilha = Path(ctx["db"]).parent / "mudancas-de-delay.jsonl"
     with trilha.open("a", encoding="utf-8") as arquivo:
         arquivo.write(json.dumps({
-            "quando": _agora_iso(), "operador": operador, "anterior_ms": anterior, "novo_ms": ms,
+            "quando": _agora_iso(), "operador": operador, "camera": camera or "todas",
+            "anterior_ms": anterior, "novo_ms": ms,
             "lido_de_volta_ms": vigente, "origem": "aba de debug do site",
         }, ensure_ascii=False) + "\n")
 
-    return {"pedido_ms": ms, "rig": resposta_rig, "operador": operador, "anterior_ms": anterior,
+    return {"pedido_ms": ms, "camera": camera or "todas", "rig": resposta_rig,
+            "operador": operador, "anterior_ms": anterior,
             "delay_ms_no_dispositivo": vigente, "delay_salvo_em": salvo_em,
             "confirmado": vigente == ms, "trilha": str(trilha)}
 

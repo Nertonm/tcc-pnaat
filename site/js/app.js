@@ -869,6 +869,7 @@ class App {
         await Promise.all([
             ler('/api/rig/estado', 'estado'),
             ler('/api/rig/gatilho', 'ponte'),
+            ler('/api/rig/delay-camera', 'delayCamera'),
             ler('/api/series?limite=20', 'series'),
             ler('/api/itens-ingeridos?limite=12', 'ingeridos'),
             ler('/api/modelo', 'modelo'),
@@ -926,8 +927,13 @@ class App {
             return;
         }
 
-        this.acaoDeBancada('/api/rig/delay', { ms: ms, operador: operador },
-                           `configurar delay para ${ms} ms (por ${operador})`);
+        const campoCamera = document.getElementById('debug-delay-camera');
+        const camera = campoCamera ? campoCamera.value : '';
+        const alvo = camera ? `camera ${camera}` : 'todas as cameras';
+
+        this.acaoDeBancada('/api/rig/delay', camera ? { ms: ms, operador: operador, camera: camera }
+                                                    : { ms: ms, operador: operador },
+                           `configurar delay de ${alvo} para ${ms} ms (por ${operador})`);
     }
 
     testarGatilho() {

@@ -991,3 +991,44 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
 - Correcoes feitas nas maquinas (fora do repo — precisam de porte pelo dono): `app.py` do rig (delay por
   camera, rotas unificadas, manifesto) e `esp32cam_site.py` da ponte (aviso no instante do gatilho).
   Unidades anteriores guardadas ao lado de cada arquivo.
+
+## D-44: revisao do gatilho, do atraso por camera e do que o site apresenta (3 defeitos corrigidos)
+
+Perguntas da revisao, respondidas com sonda no dispositivo — nao por leitura de codigo:
+
+**1) O gatilho dispara a captura das 3 cameras? SIM.** Tres gatilhos (n=201, 202, 203), um deles 4 s
+depois do anterior: tres series, cada uma com as 3 fotos e manifesto, todas com `trigger_n` e
+`trigger_em` e a configuracao de atraso registrada. A ponte contabilizou os 3 (`total=9`, `ultimo_n=203`)
+e a ESP-CAM entregou quadro em todos. Defeito encontrado no caminho e corrigido: **camera que falha
+abortava a captura sem gravar manifesto**, entao a passagem existia no disco e desaparecia da lista e do
+registro — agora grava manifesto parcial com `parcial`, `faltando` e `motivo_da_falha`. (Limitacao
+declarada: esse caminho parcial foi implementado hoje e ainda nao foi exercitado por falha real de
+camera; e o espacamento testado foi de 4 s, maior que os ~3,35 s da captura — gatilho mais rapido que
+isso nao foi ensaiado.)
+
+**2) O atraso por camera esta correto? SIM, dentro do que o rig consegue agendar.** Medido nas series
+de hoje: pedido em 1 ms / 500 ms / 1500 ms contra alvos 0 / 500 / 1500 (erro 1, 0 e 0 ms). Segundo
+defeito encontrado: **o atraso da ponte divergiu do rig** (1000 ms na ponte contra 1500 ms no rig) porque
+o valor da ponte e RAM e volta ao default quando ela reinicia — o site mostrava um numero e a captura
+usava outro. Agora o rig reaplica o valor da ESP-CAM na ponte a cada start (medido: apos o restart da
+unidade do rig, a ponte passou a reportar 1500 ms sozinha). Camera invalida e recusada com a lista de
+validas, o valor persiste em `delay-por-camera.json`, e a faixa aceita e 0..30000 ms.
+
+**3) Isso esta apresentado corretamente no site? NAO ESTAVA.** O painel mostrava apenas o delay unico da
+ponte (e volatil) e nada do que o rig configura por camera, nem do que a serie mediu — o operador
+ajustava as cegas. Agora ha um painel `Delay de captura por camera` com tabela **configurado x medido**
+(o medido sai do manifesto da ultima serie, por camera), a identificacao de qual serie foi medida, o
+delay da ponte rotulado como "ramo dela" e um seletor de camera no controle de escrita. O site passou a
+mostrar tambem quando a config atual difere da que a serie usou (ex.: configurado 700 ms, serie feita
+com 500 ms), que e exatamente a informacao que faltava para calibrar.
+
+- Correcao no hub para o medido sair no mesmo vocabulario da configuracao (`csi`/`usb`/`espcam`) e nao
+  no nome de camera da instalacao, e para a trilha de mudanca de delay registrar QUAL camera mudou.
+- Falha propria, registrada por honestidade: a primeira versao desse patch substituiu a linha errada no
+  hub (`nome = str(papel)` com `papel` ainda indefinido) e isso foi ao ar, derrubando `/api/series` com
+  `UnboundLocalError`. Corrigido e reimplantado em minutos, com a rota verificada de volta
+  (`configurado {csi:0, usb:500, espcam:1500}` / `medido {csi:-74, usb:999, espcam:3363}`).
+- Limites declarados do que o rig consegue: na CSI o atraso entrega o quadro mais recente que existe (o
+  efetivo pode ser negativo em ate um intervalo de quadro — medido -74 ms); na ESP-CAM o valor
+  configurado e o instante do PEDIDO, com o quadro chegando ~2 s depois pelo pipeline dela, entao o
+  valor tem de ser adiantado para o quadro cair no alvo.

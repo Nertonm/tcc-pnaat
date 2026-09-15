@@ -2728,35 +2728,91 @@ const renderDebug = () => {
 
 
             <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                ${painel('Delay de captura (gatilho &rarr; foto)', `
-                    <p class="text-sm">
-                        Delay vigente no dispositivo:
-                        <span class="font-mono font-semibold">${(gatilhoDaPonte && gatilhoDaPonte.delay_ms !== undefined
-                            && gatilhoDaPonte.delay_ms !== null) ? gatilhoDaPonte.delay_ms + ' ms'
-                            : (d.ponte && d.ponte.erro ? 'indisponivel (ponte fora)' : '&mdash;')}</span>
-                    </p>
+                ${painel('Delay de captura por camera (gatilho &rarr; foto)', `
+                    ${(() => {
+                        const config = (d.delayCamera && !d.delayCamera.erro) ? d.delayCamera : null;
+                        const ultima = (d.series && d.series.series && d.series.series.length)
+                            ? d.series.series.find(s => s.atraso_medido_por_camera
+                                && Object.keys(s.atraso_medido_por_camera).length) : null;
+                        const medido = (ultima && ultima.atraso_medido_por_camera) || {};
+                        const cameras = ['csi', 'usb', 'espcam'];
 
-                    <div class="mt-3 flex flex-wrap items-end gap-2">
-                        <div>
-                            <label class="block text-[11px] uppercase tracking-wider text-gray-500"
-                                   for="debug-delay-ms">novo delay (ms)</label>
+                        let linhas = '';
+                        for (const cam of cameras) {
+                            const cfg = config ? config[cam] : undefined;
+                            const m = medido[cam] || {};
+                            linhas += '<tr class="border-t border-white/5">' +
+                                '<td class="py-1 pr-4 font-mono text-xs">' + cam + '</td>' +
+                                '<td class="py-1 pr-4 text-xs">' + (cfg === undefined || cfg === null
+                                    ? '&mdash;' : cfg + ' ms') + '</td>' +
+                                '<td class="py-1 pr-4 text-xs">' + (m.atraso_efetivo_ms === undefined
+                                    || m.atraso_efetivo_ms === null ? '&mdash;' : m.atraso_efetivo_ms + ' ms') +
+                                '</td>' +
+                                '<td class="py-1 text-[11px] text-gray-500">' +
+                                (m.atraso_configurado_ms === undefined || m.atraso_configurado_ms === null
+                                    ? '' : 'configurado na serie: ' + m.atraso_configurado_ms + ' ms') +
+                                '</td></tr>';
+                        }
 
-                            <input id="debug-delay-ms" type="number" min="0" max="30000" step="10"
-                                   class="app-input mt-1 w-40 px-3 py-2" placeholder="0 a 30000">
+                        return `
+                        <p class="text-sm">
+                            Delay <span class="font-semibold">deste rig</span> por camera, contra o que a
+                            ultima serie <span class="font-semibold">realmente mediu</span>:
+                            ${ultima ? '<span class="font-mono text-xs">(' + ultima.serie + ')</span>' : ''}
+                        </p>
+
+                        <table class="mt-2 w-full text-left">
+                            <thead><tr class="text-[10px] uppercase tracking-wider text-gray-500">
+                                <th class="pr-4">camera</th><th class="pr-4">configurado</th>
+                                <th class="pr-4">medido</th><th></th>
+                            </tr></thead>
+                            <tbody>${linhas}</tbody>
+                        </table>
+
+                        <p class="mt-2 text-[11px] text-gray-500">
+                            Delay da ponte (ramo dela, volatile em RAM): ${(gatilhoDaPonte
+                                && gatilhoDaPonte.delay_ms !== undefined && gatilhoDaPonte.delay_ms !== null)
+                                ? gatilhoDaPonte.delay_ms + ' ms' : (d.ponte && d.ponte.erro
+                                ? 'indisponivel (ponte fora)' : '&mdash;')}.
+                            O rig reaplica o valor da ESP-CAM na ponte a cada start.
+                            Na ESP-CAM o valor e o instante do PEDIDO: o quadro chega depois, pelo pipeline dela.
+                        </p>
+
+                        <div class="mt-3 flex flex-wrap items-end gap-2">
+                            <div>
+                                <label class="block text-[11px] uppercase tracking-wider text-gray-500"
+                                       for="debug-delay-camera">camera</label>
+
+                                <select id="debug-delay-camera" class="app-input mt-1 w-32 px-2 py-2">
+                                    <option value="">todas</option>
+                                    <option value="csi">csi</option>
+                                    <option value="usb">usb</option>
+                                    <option value="espcam">espcam</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] uppercase tracking-wider text-gray-500"
+                                       for="debug-delay-ms">novo delay (ms)</label>
+
+                                <input id="debug-delay-ms" type="number" min="0" max="30000" step="10"
+                                       class="app-input mt-1 w-36 px-3 py-2" placeholder="0 a 30000">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] uppercase tracking-wider text-gray-500"
+                                       for="debug-delay-operador">quem muda</label>
+
+                                <input id="debug-delay-operador" class="app-input mt-1 w-44 px-3 py-2"
+                                       placeholder="operador (vai para a trilha)" autocomplete="off">
+                            </div>
+
+                            <button class="secondary-button" onclick="app.configurarDelay()">
+                                <i data-lucide="timer-reset" class="mr-2 h-4 w-4"></i> Configurar
+                            </button>
                         </div>
-
-                        <div>
-                            <label class="block text-[11px] uppercase tracking-wider text-gray-500"
-                                   for="debug-delay-operador">quem muda</label>
-
-                            <input id="debug-delay-operador" class="app-input mt-1 w-48 px-3 py-2"
-                                   placeholder="operador (vai para a trilha)" autocomplete="off">
-                        </div>
-
-                        <button class="secondary-button" onclick="app.configurarDelay()">
-                            <i data-lucide="timer-reset" class="mr-2 h-4 w-4"></i> Configurar
-                        </button>
-                    </div>
+                        `;
+                    })()}
 
                     <p class="mt-3 text-xs text-orange-500">
                         Este rig tem UM delay para as tres cameras. Cameras a distancias diferentes do
