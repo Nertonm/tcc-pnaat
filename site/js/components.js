@@ -2705,7 +2705,7 @@ const renderDebug = () => {
                         ${linha('idade da leitura (s)', sensor ? sensor.idade_s : '&mdash;')}
                         ${linha('transporte', ponte.transport)}
                         ${linha('inicializado (booted)', ponte.booted)}
-                        ${linha('delay no dispositivo (ms)', gatilhoDaPonte ? gatilhoDaPonte.delay_ms : '&mdash;')}
+                        ${linha('delay na ponte (ramo ESP-CAM)', gatilhoDaPonte ? gatilhoDaPonte.delay_ms : '&mdash;')}
                         ${linha('delay salvo em', gatilhoDaPonte ? gatilhoDaPonte.delay_saved_at : '&mdash;')}
                         ${(() => {
                             // latencia MEDIDA do gatilho: e dela que sai o lead da ESP-CAM. Sem isto o
@@ -2791,7 +2791,7 @@ const renderDebug = () => {
                         </table>
 
                         <p class="mt-2 text-[11px] text-gray-500">
-                            Delay da ponte (ramo dela, volatile em RAM): ${(gatilhoDaPonte
+                            Delay no firmware da ponte (RAM, ramo dela): ${(gatilhoDaPonte
                                 && gatilhoDaPonte.delay_ms !== undefined && gatilhoDaPonte.delay_ms !== null)
                                 ? gatilhoDaPonte.delay_ms + ' ms' : (d.ponte && d.ponte.erro
                                 ? 'indisponivel (ponte fora)' : '&mdash;')}.

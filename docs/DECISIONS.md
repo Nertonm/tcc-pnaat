@@ -1105,3 +1105,35 @@ operador tinha so o valor configurado, que nao diz quanto o quadro demora.
 Limites declarados da calibracao: o criterio de "o quadro esta certo" continua sendo visual (o operador
 olha a foto da serie); o lead da ESP-CAM e aplicado a mao no valor dela; e a latencia medida e do ramo
 da ponte (gatilho -> foto dela), nao das tres cameras.
+
+## D-47: persistencia do delay — o valor da ponte nao sobrevivia a um restart dela
+
+Relato do operador: "a configuracao de delay nao esta sendo persistida corretamente". Reproduzido e
+explicado, com as tres visoes da mesma verdade:
+
+| visao | antes | depois de reiniciar SO a ponte |
+|---|---|---|
+| arquivo do rig (`delay-por-camera.json`) | `{csi:0, usb:700, espcam:1500}` | igual (persistido) |
+| firmware da ponte | 1500 ms | **1000 ms** (o default dela) |
+| painel do site | 1500 ms | **1000 ms** (destacado como "delay no dispositivo") |
+
+Causa: o delay da ponte vive em RAM no firmware dela e volta ao default (1000 ms) a cada reinicio. A
+ressincronia que eu havia feito rodava **apenas no start do rig** — e reiniciar a ponte nao reinicia o
+rig, entao o buraco continuava aberto. Agravante de leitura: o numero que o painel destacava era o da
+PONTE, rotulado como "delay no dispositivo", o que fazia parecer que a configuracao tinha se perdido
+inteira quando so um ramo havia regredido.
+
+Correcoes:
+1. **Vigia continuo no rig** (ciclo de 30 s): le o status da ponte, compara com o valor configurado para
+   a ESP-CAM e reaplica quando diverge. Nao espera reinicio de nada. Verificado derrubando a ponte de
+   proposito: ela volta a 1500 ms sozinha, sem tocar no rig.
+2. **Rotulo honesto**: o numero passou a ser "delay na ponte (ramo ESP-CAM)" e a autoridade declarada e a
+   configuracao por camera (arquivo do rig), que a tabela do painel ja mostrava.
+3. Causa raiz registrada para quem for portar: o ideal e a ponte persistir o proprio delay, em vez de
+   depender de um vigia externo. O vigia resolve o comportamento observavel hoje; o firmware e do dono.
+
+Nota de metodo, para nao repetir: no proprio teste eu rotulei uma leitura como "recem-reiniciada: 1500 ms
+(default)" quando 1500 ja era o valor REAPLICADO pelo vigia — escrevi o que esperava em vez do que medi.
+E o script de patch rodou no host errado (o `components.js` esta no repositorio, nao na maquina do rig):
+a parte do painel falhou e precisou ser aplicada no lugar certo. Ancorar o patch no host onde o arquivo
+vive, e rotular a medicao pelo que ela mostra.
