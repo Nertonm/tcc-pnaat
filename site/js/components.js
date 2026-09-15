@@ -2804,11 +2804,12 @@ const renderDebug = () => {
                                 <label class="block text-[11px] uppercase tracking-wider text-gray-500"
                                        for="debug-delay-camera">camera</label>
 
-                                <select id="debug-delay-camera" class="app-input mt-1 w-32 px-2 py-2">
-                                    <option value="">todas</option>
+                                <select id="debug-delay-camera" class="app-input mt-1 w-52 px-2 py-2">
+                                    <option value="" disabled selected>escolha a camera</option>
                                     <option value="csi">csi</option>
                                     <option value="usb">usb</option>
                                     <option value="espcam">espcam</option>
+                                    <option value="todas">todas (substitui as tres)</option>
                                 </select>
                             </div>
 

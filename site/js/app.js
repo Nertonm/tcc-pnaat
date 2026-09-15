@@ -904,6 +904,22 @@ class App {
             mockDebug.acao = { rotulo: rotulo, estado: 'falhou', erro: 'rede', detalhe: erro.message };
         }
 
+        // carregarDebug RECRIA mockDebug (faz mockDebug = {...}), entao a mensagem de resultado tem de
+        // ser aplicada DEPOIS da recarga: antes dela a recarga apagava a mensagem, e o operador nao via
+        // com que configuracao a bancada ficou.
+        const acao = mockDebug.acao;
+        const porCamera = acao && acao.dados && acao.dados.leitura_de_volta
+            && acao.dados.leitura_de_volta.por_camera_ms;
+
+        await this.carregarDebug();
+
+        if (acao) {
+            if (acao.estado === "ok" && porCamera) {
+                acao.detalhe = "configuracao agora: csi " + porCamera.csi + " ms · usb "
+                    + porCamera.usb + " ms · espcam " + porCamera.espcam + " ms";
+            }
+            mockDebug.acao = acao;
+        }
         this.repintarDebug();
     }
 
@@ -928,12 +944,21 @@ class App {
         }
 
         const campoCamera = document.getElementById('debug-delay-camera');
-        const camera = campoCamera ? campoCamera.value : '';
-        const alvo = camera ? `camera ${camera}` : 'todas as cameras';
+        const camera = campoCamera ? campoCamera.value.trim() : '';
 
-        this.acaoDeBancada('/api/rig/delay', camera ? { ms: ms, operador: operador, camera: camera }
-                                                    : { ms: ms, operador: operador },
-                           `configurar delay de ${alvo} para ${ms} ms (por ${operador})`);
+        if (!camera) {
+            // sem escolha explicita a rota aplicaria o mesmo valor nas TRES cameras e apagaria a
+            // calibracao das outras duas (foi o que aconteceu na bancada). Recusar e mais honesto.
+            mockDebug.acao = { rotulo: 'configurar delay', estado: 'falhou', erro: 'camera_nao_escolhida',
+                               detalhe: 'escolha a camera. Sem escolha o valor iria para as tres de uma '
+                                        + 'vez e apagaria a calibracao das outras duas. Se a intencao e '
+                                        + 'mesmo igualar as tres, escolha "todas (substitui as tres)".' };
+            this.repintarDebug();
+            return;
+        }
+
+        this.acaoDeBancada('/api/rig/delay', { ms: ms, operador: operador, camera: camera },
+                           `configurar delay de ${camera === 'todas' ? 'todas as cameras' : 'camera ' + camera} para ${ms} ms (por ${operador})`);
     }
 
     testarGatilho() {

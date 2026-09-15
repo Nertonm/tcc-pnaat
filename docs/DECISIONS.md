@@ -1137,3 +1137,37 @@ Nota de metodo, para nao repetir: no proprio teste eu rotulei uma leitura como "
 E o script de patch rodou no host errado (o `components.js` esta no repositorio, nao na maquina do rig):
 a parte do painel falhou e precisou ser aplicada no lugar certo. Ancorar o patch no host onde o arquivo
 vive, e rotular a medicao pelo que ela mostra.
+
+## D-48: a calibracao por camera era apagada por cada gravacao feita no site
+
+Relato: "as opcoes setadas no site nao estao sendo persistidas". Reproduzido no navegador, passo a passo:
+o seletor de camera abre em vazio (que significa "todas"), o operador digita um valor e clica — a rota
+aplica o MESMO valor nas tres cameras. Medido: com `camera` vazio e `ms=250`, o resultado foi
+`{"csi":250,"usb":250,"espcam":250}`. Cada gravacao apagava a calibracao das outras duas, e por isso
+parecia que nada persistia. A mensagem na tela ate dizia "de todas as cameras", mas o padrao do seletor
+convidava ao erro e o painel nao mostrava o resultado.
+
+Correcoes no site:
+1. o seletor exige escolha explicita (a primeira opcao e "escolha a camera", desabilitada);
+2. sem camera escolhida a gravacao e RECUSADA com o motivo, em vez de aplicar nas tres — e "todas
+   (substitui as tres)" virou opcao escrita, para quem quer mesmo igualar;
+3. depois de aplicar, a tela mostra a configuracao RESULTANTE (do campo de leitura de volta) e recarrega
+   a tabela.
+
+Detalhe de implementacao que quase fez a correcao 3 nascer inutil: `carregarDebug()` **recria
+`mockDebug` inteiro** (`mockDebug = {...}`). A primeira versao escrevia a mensagem e depois recarregava —
+a recarga apagava a mensagem e o operador nao via nada. Pego por verificacao na tela (a mensagem nao
+aparecia), nao por leitura de codigo. A mensagem passou a ser aplicada DEPOIS da recarga.
+
+Segunda metade do relato — "a espcam foi a unica que capturou a garrafa": isso e timing, e os numeros
+explicam. Na csi com atraso configurado 0, o atraso EFETIVO medido e **negativo** (-27 a -76 ms), porque
+com atraso zero a camera entrega o quadro mais recente que ja tem — um quadro ANTERIOR ao gatilho. No
+instante do gatilho a garrafa esta no sensor, rio acima, e ainda nao chegou a vista da csi. A usb, com
+700 ms (efetivo ~1,0-1,2 s), tambem ainda nao. A espcam aparece na foto porque o pipeline dela leva
+~3,3 s: o quadro sai por volta de 3,7 s, que e quando a garrafa esta la. Ou seja, o sucesso da espcam
+vinha da LATENCIA dela, nao do delay configurado — o que tambem explica o relato anterior de que "so a
+espcam obedecia ao delay".
+
+Consequencia pratica para calibrar: os atrasos de csi e usb estao curtos (0 e 700 ms contra um percurso
+de ~3-4 s ate as vistas). O caminho e o laco ja validado: escolher a camera, aplicar um valor, disparar
+o teste de bancada, olhar a foto e o numero medido — subindo em passos de ~1 s a partir de ~1,5 s.
