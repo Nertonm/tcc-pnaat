@@ -952,3 +952,42 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
      do produtor antes de qualquer uso em numero de banca.
 - Preimagem para rollback: arquivo da unidade + tar do diretorio de modelos do detector, com sha256
   proprio, guardados ao lado do detector antes da troca.
+
+## D-43: atraso POR CAMERA contado do gatilho (e o aviso tardio que o tornava inalcancavel)
+
+- Decisao: o atraso de captura passa a ser **por camera** e **relativo ao instante do gatilho** —
+  `csi`, `usb`, `espcam` cada uma com o seu valor, persistido em `delay-por-camera.json`. Antes havia
+  UM valor global em RAM (default 1000 ms) que so valia para o ramo da ESP-CAM; a CSI e a USB
+  capturavam na hora, e a ordem das fotos vinha da fila, nao de agendamento.
+- Por que "do gatilho" e nao "entre capturas": numa esteira cada camera ve a peca num instante
+  diferente (tau = d/v). Contar o atraso em fila apenas empurra a defasagem adiante.
+- Causa raiz encontrada na medicao: a ponte avisava o rig **depois** de esperar o quadro da ESP-CAM
+  (chamada dentro do `publish` do frame), entao o rig so sabia do gatilho ~3,6 s depois. Com alvos de
+  0/500/1500 ms, todos ja tinham passado: o delay por camera existia e era inalcancavel.
+  Correcao: o aviso nasce onde o gatilho e registrado (o mesmo despacho que a simulação de bancada usa,
+  entao vale para o sensor e para o ensaio), e o aviso antigo saiu para nao capturar a serie duas vezes.
+- Medicao antes/depois, mesma configuracao {csi:0, usb:500, espcam:1500}, serie por gatilho:
+
+  | camera | config | pedido (antes) | pedido (depois) | erro do alvo |
+  |---|---|---|---|---|
+  | csi | 0 ms | 3607 ms | **1 ms** | 1 ms |
+  | usb | 500 ms | 3655 ms | **500 ms** | 0 ms |
+  | espcam | 1500 ms | 4165 ms | **1500 ms** | 0 ms |
+  | total gatilho->fim | | 6418 ms | **3137 ms** | |
+
+- Verificabilidade: o manifesto passa a registrar, por camera, `atraso_configurado_ms`,
+  `pedido_em_epoch`, `capturado_em_epoch` e `atraso_efetivo_ms`, mais `atraso_por_camera_ms`. Sem isso
+  o atraso so poderia ser afirmado, nunca medido.
+- Limites declarados: a CSI entrega o quadro mais recente que existe (o instante efetivo dela pode ser
+  anterior ao alvo em ate um intervalo de quadro — medido -37 ms); e na ESP-CAM o valor configurado e o
+  instante do PEDIDO, com o quadro chegando ~2,2 s depois pelo proprio pipeline — para o quadro cair no
+  alvo, o operador configura um valor adiantado (lead).
+- Rotas: `/configurar-delay?camera=<csi|usb|espcam>&ms=N` (uma camera) e `?ms=N` (todas, compatibilidade),
+  com `/delay-por-camera` para leitura. O bloco que aparecia duas vezes era o mesmo codigo no GET e no
+  POST (nao era codigo morto, como registrei antes): virou um helper unico.
+- Kiosk: o site da bancada passa a ficar na tela da propria maquina do rig (sessao Wayland, chromium em
+  `--kiosk`, Tradutor desligado no perfil). Verificado por captura de tela e comparacao da regiao do
+  balao — nao por "parece que subiu".
+- Correcoes feitas nas maquinas (fora do repo — precisam de porte pelo dono): `app.py` do rig (delay por
+  camera, rotas unificadas, manifesto) e `esp32cam_site.py` da ponte (aviso no instante do gatilho).
+  Unidades anteriores guardadas ao lado de cada arquivo.
