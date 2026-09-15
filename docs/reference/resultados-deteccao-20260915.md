@@ -71,7 +71,8 @@ que usam split por item + quase-duplicata + base limpa.
 | misto (externo + 5× domínio) | 23 imgs (split antigo) | 0,946 | 0,498 | parcial (split com quase-duplicata) |
 | misto + ajuste fino | 23 imgs (split antigo) | 0,969 | 0,542 | **INVÁLIDA** (base viu 12/18 do teste) |
 | misto + ajuste fino | 18 imgs (split corrigido) | 0,797 | 0,412 | **INVÁLIDA** (base contaminada) |
-| base limpa + ajuste fino | 18 imgs + k-fold | **pendente** | pendente | (em execução) |
+| **base limpa + ajuste fino, 3 classes (v5)** | 18 imgs | **0,695 / 0,995 / 0,636** (normal/ausente/defeito) | 0,254 / 0,474 / 0,267 | **VÁLIDA** |
+| base limpa + ajuste fino, 4 classes (v4) | 18 imgs | 0,500 / 0,600 / 0,727 / 1,000 (deformidade) | — | válida (com 1 instância de deformidade no teste) |
 
 **Topo — modelo treinado só com KMITL (2 classes), medido nas nossas 40 capturas:**
 
@@ -117,6 +118,53 @@ não entre acerto e erro. Artefatos: mosaico com caixas e rótulos por imagem
 (`evidencia-*.png`) e JSON por imagem (`evidencia-*.json`), gerados por
 `dataset/TRABALHO/evidencia_candidato.py`.
 
+
+## 3c. Candidato de base limpa — medido (2026-09-15, tarde)
+
+Protocolo válido: split por item + quase-duplicata, base = pré-treino só externo, ajuste
+fino no nosso treino (96 imagens / 52 itens), 480 px.
+
+**3 classes (v5) — teste próprio, 18 imagens:**
+
+| classe | mAP50 | mAP50-95 |
+|---|---|---|
+| normal | 0,695 | 0,254 |
+| tampa_ausente | **0,995** | 0,474 |
+| defeito_tampa | 0,636 | 0,267 |
+
+**Tabela de limiar do candidato limpo (a decisão prática):**
+
+| limiar | F1 macro | normal P/R | tampa_ausente P/R | defeito_tampa P/R |
+|---|---|---|---|---|
+| 0,05 | 0,525 | 0,43 / 0,60 | 0,32 / **1,00** | 0,42 / **1,00** |
+| 0,15 | 0,692 | 0,60 / 0,60 | 0,47 / **1,00** | 0,71 / **1,00** |
+| **0,30** | **0,806** | 0,75 / 0,60 | 0,60 / **1,00** | **1,00 / 1,00** |
+
+Leitura: no candidato limpo o ponto útil é **0,30** (não 0,15 como no modelo contaminado):
+as duas classes de defeito ficam com recall 1,00 e `defeito_tampa` chega a precisão 1,00.
+
+**4 classes (v4), com `corpo_deformidade` como 4ª classe:**
+
+| limiar | F1 macro | deformidade (tp/fp/fn) | custo observado |
+|---|---|---|---|
+| 0,15 | 0,733 | 1 / 0 / 0 | — |
+| 0,30 | 0,794 | 1 / 0 / 0 | `defeito_tampa` cai de 1,00 para 0,727 de F1 |
+
+A 4ª classe **funciona como sinal** (a única instância do teste foi detectada sem falso
+positivo nos dois limiares), mas custa ~0,27 de F1 em `defeito_tampa` no limiar 0,30.
+Com 1 instância no teste isso é indício, não garantia: a decisão de manter `deformidade`
+no escopo precisa de mais anotação de corpo (o piso é ~20 por split).
+
+**Impacto medido da contaminação:** o modelo com base contaminada dava 0,797 de mAP50 médio
+no mesmo teste; o candidato limpo tem média por classe ≈0,775. A inflação existia, mas era
+pequena (~0,02). O número realmente inflado foi o do split antigo (0,969), que além da base
+contaminada também tinha quase-duplicata cruzando treino e teste.
+
+**Topo (t5, ajuste fino a partir do KMITL):** não transfere. No teste de 2 imagens o modelo
+emitiu ~35 caixas por imagem (F1 macro 0,018). O topo **não está validado** — o caminho é
+captura e anotação de topo próprias antes de qualquer uso; o número de 0,675/0,725 medido
+antes (KMITL puro) já indicava isso.
+
 ## 4. Aumento de dados e preprocessing
 
 - **Offline** (`aumenta_offline.py`, equivale ao "dataset version" do Roboflow): 3× no split
@@ -129,6 +177,11 @@ não entre acerto e erro. Artefatos: mosaico com caixas e rótulos por imagem
 - **Preprocessing**: captura com exposição/ganho/WB travados, luz difusa sem cintilação,
   exposição curta; depois derotação → ROI → letterbox preservando proporção, o mesmo
   pipeline em treino e inferência, com as constantes amarradas ao modelo.
+
+**Pendências declaradas:** k-fold de 5 dobras por item (em execução na hora de fechar
+este texto) para o candidato v5; FPR fora de domínio (MVTec) do candidato limpo; evidência
+visual (mosaico + JSON por imagem) do candidato limpo; reconstrução v6 com as imagens do
+projeto 19 (equipe) já incluídas, que é o dado mais novo do dia.
 
 ## 5. Limitações (declarar, não esconder)
 
