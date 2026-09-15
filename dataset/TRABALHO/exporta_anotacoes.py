@@ -33,7 +33,34 @@ CLASSES = {"normal", "tampa_ausente", "defeito_tampa", "deformidade", "inconclus
 COERENCIAS = {"concorda_com_a_fonte", "conflita_com_quase_duplicata", "rotulo_da_fonte_errado",
               "excluir_do_treino", "imagem_ruim"}
 # projetos que contam: 3 = fila de trabalho | 4 = corpus (revisao das caixas das fontes)
-PROJETOS = (3, 11, 13, 14, 19)   # 4 foi removido; 11/13/14/19 sao onde a equipe anota
+PROJETOS_FIXOS = (3, 11, 13, 14, 19)   # fallback se o banco não responder
+EXCLUIR = {4}                          # 4 = corpus (revisão das caixas das fontes), não é fila
+
+
+def projetos_com_anotacao() -> tuple:
+    """Descobre no banco os projetos que TÊM anotação.
+
+    Lista fixa já falhou uma vez (projeto 22, 139 anotações, ficou de fora e o export saiu
+    calado com dado velho). A fonte é o banco do Label Studio, somente leitura.
+    """
+    import sqlite3
+    db = "/srv/label-studio/data/label_studio.sqlite3"
+    try:
+        con = sqlite3.connect(f'file:{db}?mode=ro', uri=True)
+        ids = sorted(r[0] for r in con.execute(
+            'select distinct t.project_id from task_completion tc '
+            'join task t on t.id = tc.task_id where t.project_id is not null'))
+        con.close()
+        ids = [i for i in ids if i not in EXCLUIR]
+        if ids:
+            return tuple(ids)
+        print('[export] banco sem projetos com anotação; usando fallback')
+    except Exception as exc:  # noqa: BLE001
+        print(f'[export] falha lendo o banco ({exc}); usando fallback fixo')
+    return PROJETOS_FIXOS
+
+
+PROJETOS = projetos_com_anotacao()
 
 creds = dict(l.split("=", 1) for l in open("/srv/label-studio/credenciais.env").read().splitlines() if "=" in l)
 TOKEN = creds["LABEL_STUDIO_USER_TOKEN"].strip()
