@@ -342,6 +342,59 @@ instâncias acertou o normal e perdeu as 4 de `tampa_ausente`. É a webcam que s
 e tem a pior imagem do parque. Ação para a próxima rodada: luz/enquadramento e mais dado nessa
 câmera — não mais épocas.
 
+
+## 3i. Revisão do fluxo de treinamento e pré-processamento
+
+Método: mapa produtor→consumidor de cada etapa, com o elo mais frágil medido em vez de
+suposto (a lição do dia: cada número que eu supus hoje estava errado em algum grau).
+
+### Achado 1 (grave) — treino recorta a ROI, deploy não
+
+O treino usa `roi-por-camera.json` (csi 0,573×0,512 · usb 0,756×0,455 · espcam 0,834×1,000).
+O `/opt/pnaat-vision/roi.json` do rig está com **todas as câmeras em quadro inteiro**
+(w=h=1,0). Medido com a mesma ferramenta e o mesmo protocolo, a 416 px:
+
+| entrada | F1 macro @0,15 | normal | tampa_ausente | defeito_tampa |
+|---|---|---|---|---|
+| recorte da ROI (treino) | **0.5902** | 0.8 | 0.5 | 0.4706 |
+| quadro inteiro (deploy) | 0.4165 | 0.4444 | 0.7143 | 0.0909 |
+
+Custo: **0.174 de F1 macro**, e a classe `defeito_tampa`
+desaba (0.4706 -> 0.0909) com 17 falsos positivos espalhados pelo quadro. Correção: sincronizar o
+`roi.json` do deploy com o do treino — mesma tabela, mesmo recorte.
+
+### Achado 2 — trocar `imgsz` invalida o limiar
+
+A 480 o F1@0,15 é 0,711; a 416, o MESMO limiar dá 0.5902. Os limiares foram
+calibrados a 480 — recomendar 416 sem recalibrar cria um pacote internamente inconsistente.
+Ou fica 480 com os limiares atuais, ou vai para 416 e recalibra na val (e, idealmente, no k-fold).
+
+### Achado 3 — `treino-v1-args.yaml` declarava o que a medição contradiz
+
+Dizia `imgsz: 320` e `epochs: 60`; o que produziu os números foi 480 e 150. Alinhado no repo,
+com os achados registrados no próprio arquivo.
+
+### Achado 4 — captura não trava exposição/ganho/WB
+
+Confirmado no código do capture do rig: nenhuma referência a `exposure`/`AWB`/`gain`.
+Era item declarado como pendente; agora está confirmado em código, não em suposição.
+
+### Achado 5 — fallback de ROI é fail-open
+
+Sem `roi.json`, o capture **segue com o quadro inteiro** e só imprime um aviso. Com o Achado 1
+medido, isso significa degradação silenciosa de 0,17 de F1. Fallback deveria falhar alto (ou
+marcar a captura como não-conforme).
+
+### O que está correto no fluxo (verificado, não presumido)
+
+- split por item + quase-duplicata (dHash) antes do treino;
+- ROI derivada das caixas anotadas, cobertura 1,000, mesma tabela usada para treinar;
+- exclusões (`excluir_do_treino`) aplicadas no montador, com contagem;
+- aumento só no treino, com close_mosaic nas últimas épocas;
+- val/teste sem aumento, seed fixa, determinismo reproduzível entre execuções;
+- `crop_fraction: 1.0` e `rect: false` (letterbox) coerentes com a câmera fixa;
+- hsv_h baixo (0,008) preservando a cor da tampa como sinal, `flipud: 0` (garrafa não vira).
+
 ## 4. Aumento de dados e preprocessing
 
 - **Offline** (`aumenta_offline.py`, equivale ao "dataset version" do Roboflow): 3× no split

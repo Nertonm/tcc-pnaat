@@ -1,0 +1,45 @@
+# Argumentos de treino do detector v1 (PNAAT)
+# Justificativa de cada valor: docs/reference/augmentacao-e-preprocessing-pnaat.md
+# Regra que vale acima de tudo: o split é POR ITEM (dataset/TRABALHO/monta_v1_detector.py),
+# e validação/teste são imagem real, sem aumento.
+
+imgsz: 480            # MEDIDO em 2026-09-15: 480 > 416 > 320 no nosso teste; 320 perde ~0,05 de mAP50
+epochs: 150            # MEDIDO: com patience=15 o treino para sozinho (44-92 épocas); 60 é curto
+batch: 16
+workers: 2
+seed: 7
+patience: 15
+pretrained: true
+optimizer: auto
+cos_lr: true
+close_mosaic: 10      # últimas 10 épocas sem mosaic, para o modelo ver imagem limpa
+
+# ---- aumento (escolhido para o nosso caso, não é o default) ----
+hsv_h: 0.008          # quase nenhum: a cor azul da tampa é sinal de classe
+hsv_s: 0.3            # saturação varia com iluminação, mas não pode apagar a cor
+hsv_v: 0.4            # é a variação real que temos (manhã/tarde, luz da bancada)
+degrees: 8.0          # rig fixa: inclinação pequena só cobre folga mecânica
+translate: 0.1        # a garrafa não fica sempre no mesmo pixel
+scale: 0.4            # distância garrafa-câmera varia: o aumento mais útil aqui
+shear: 0.0            # câmera fixa; shear inventaria geometria que não existe
+perspective: 0.0      # idem
+flipud: 0.0           # garrafa não aparece de cabeça para baixo
+fliplr: 0.5           # tampa é praticamente simétrica: dobra o dado de graça
+mosaic: 1.0           # contexto e anti-overfit
+mixup: 0.03           # baixo: mistura pode criar estado de tampa impossível
+copy_paste: 0.3       # cola instância do MESMO domínio (ajuda as classes raras)
+erasing: 0.4          # oclusão por mão/cabo/reflexo é real na linha
+crop_fraction: 1.0    # 1.0 preserva a cena inteira
+
+# ---- multi-escala desligado: a câmera é fixa, variar escala global não representa nada
+multi_scale: false
+rect: false
+
+# ---- revisão de 2026-09-15 (achados no fluxo):
+# 1. pré-processamento tem de ser IGUAL em treino e inferência: o treino recorta a ROI
+#    (roi-por-camera.json). Medido: sem o recorte, F1 macro cai de 0,590 para 0,417
+#    (defeito_tampa 0,471 -> 0,091, com 17 falsos positivos no quadro inteiro).
+# 2. mudar imgsz INVALIDA o limiar calibrado: a 480 o F1@0,15 é 0,711; a 416 o mesmo
+#    limiar dá 0,590. Se for para 416, recalibre os limiares a 416.
+# 3. captura não trava exposição/ganho/WB (confirmado no código do capture): luz oscila
+#    entre capturas e isso entra como variação não controlada no treino.
