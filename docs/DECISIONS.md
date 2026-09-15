@@ -1207,3 +1207,33 @@ o reboot sem desligamento limpo. Fica como LIKELY, nao como fato.
 **E um ganho que se confirmou:** no reboot os dispositivos trocaram de numero (`1a86` foi para ttyUSB1 e
 o `CP2102` para ttyUSB0). Como a ponte usa os caminhos `by-id`, ESP-CAM e no de trigger continuaram nos
 papeis certos — a correcao de antes evitou que a troca de enumeracao virasse troca de funcao.
+
+## D-50: "pus pra alterar e nao foi" — o formulario de delay era apagado pela repintura automatica
+
+Relato: "eu pus pra alterar e nao foi". A trilha de mudancas mostrou que a alteracao do operador
+**chegou** (`19:24:38 camera=usb novo=2000ms por=wetwt`), entao o caminho de escrita nunca esteve
+quebrado: o que nao funcionava era a interface deixar o operador terminar. Medido no navegador: os
+campos preenchidos sobreviviam ate ~12 s e apareciam VAZIOS aos ~25 s — o painel se repinta sozinho em
+ciclo e cada repintura recria os inputs. Na pratica o operador digita, o refresh apaga, ele clica em
+cima de campos vazios e conclui que a alteracao nao foi. Meus testes anteriores nao pegaram isso porque
+eu preenchia os campos imediatamente antes de clicar, escondendo exatamente a janela onde o defeito vive.
+
+Duas tentativas, e a segunda armadilha e a mesma que ja tinha aparecido na mensagem de resultado:
+1. guardar o formulario em `mockDebug` — `carregarDebug()` **recria** esse objeto a cada ciclo, entao o
+   formulario era apagado junto (o estado passou para a instancia: `this.delayForm`);
+2. mesmo na instancia, os campos continuavam sendo apagados: o painel se repinta por DOIS caminhos
+   (`navigate` e `repintarDebug`) e o ciclo automatico usa o PRIMEIRO. Instrumentar um caminho so nao
+   resolvia.
+
+Correcao final e generica: listener de `input`/`change` no documento (guarda o que o operador digita,
+casando por id) + `MutationObserver` na area de conteudo (reaplica depois de QUALQUER troca de DOM,
+venha de onde vier). Verificado com o fluxo real: campos intactos apos 15, 30 e 50 s de repinturas, e o
+clique aplicou (`configuracao agora: csi 0 ms · usb 0 ms · espcam 1500 ms`). O campo de busca ja era
+preservado a mao no render; o formulario de delay passa a ter o mesmo cuidado, de forma central.
+
+Resposta a pergunta "o gatilho esta sendo alterado no site em todas as cameras?": SIM, e a trilha mostra
+as ocorrencias — a API aceita `ms` sem `camera` e nesse caso aplica nas TRES (compatibilidade). Depois
+do D-48 o site exige escolha explicita, mas a API mantem o caminho "sem camera = todas": um script que
+omita o campo ainda apaga a calibracao, e isso fica registrado na trilha com autor. Fechar esse caminho
+exigindo `camera` (ou "todas" escrito) e uma mudanca de contrato que nao foi feita durante a sessao de
+calibracao do operador.

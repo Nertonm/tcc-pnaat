@@ -42,6 +42,37 @@ class App {
 
         this.navigate('operacao');
 
+        /*
+         * O painel de debug se repinta por DOIS caminhos (navigate e repintarDebug) e o ciclo
+         * automatico usa o primeiro — instrumentar um so deixava os campos do formulario de delay
+         * sendo apagados antes do clique. Aqui o cuidado e generico: escuta o que o operador digita e
+         * reaplica depois de QUALQUER troca de conteudo (o campo de busca ja era preservado a mao no
+         * render; o formulario inteiro passa a ter o mesmo tratamento).
+         */
+        const guardarCampoDeDelay = (evento) => {
+            const alvo = evento && evento.target;
+            if (alvo && alvo.id && alvo.id.indexOf('debug-delay-') === 0) {
+                this.delayForm = Object.assign({}, this.delayForm, { [alvo.id]: alvo.value });
+            }
+        };
+        document.addEventListener('input', guardarCampoDeDelay);
+        document.addEventListener('change', guardarCampoDeDelay);
+
+        if (window.MutationObserver && this.contentArea) {
+            new MutationObserver(() => {
+                const form = this.delayForm;
+                if (!form) {
+                    return;
+                }
+                for (const id of Object.keys(form)) {
+                    const el = document.getElementById(id);
+                    if (el && el.value !== form[id]) {
+                        el.value = form[id];
+                    }
+                }
+            }).observe(this.contentArea, { childList: true, subtree: true });
+        }
+
 
         /*
          * A vista ja montou com dado vazio; agora os numeros chegam da API e a tela e remontada.
@@ -839,7 +870,34 @@ class App {
             return;
         }
 
+        // O painel se repinta em ciclo e o metodo troca o innerHTML inteiro: sem isto os campos do
+        // formulario de delay sao RECRIADOS e o que o operador digitou/escolheu se perde antes de ele
+        // clicar — o botao nao aplica e parece que "a alteracao nao foi". Guardar antes, devolver depois.
+        const campos = ['debug-delay-camera', 'debug-delay-ms', 'debug-delay-operador'];
+        const digitado = {};
+        for (const id of campos) {
+            const el = document.getElementById(id);
+            if (el) {
+                digitado[id] = el.value;
+            }
+        }
+        if (Object.keys(digitado).length) {
+            // NAO guardar em mockDebug: carregarDebug recria esse objeto a cada ciclo e o formulario
+            // era apagado junto (mesma armadilha que ja tinha derrubado a mensagem de resultado).
+            this.delayForm = Object.assign({}, this.delayForm, digitado);
+        }
+
         this.contentArea.innerHTML = renderDebug();
+
+        const form = this.delayForm;
+        if (form) {
+            for (const id of campos) {
+                const el = document.getElementById(id);
+                if (el && form[id] !== undefined) {
+                    el.value = form[id];
+                }
+            }
+        }
 
         this.refreshIcons();
     }
