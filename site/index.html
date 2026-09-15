@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNAAT - Visualização de Capturas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#D61A22',
+                            white: '#F9FBFD',
+                            black: '#1E2022',
+                            green: '#5D6B42'
+                        },
+                        dark: {
+                            bg: '#141517',
+                            card: '#1E2022',
+                            border: '#2A2C30'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* Tema Claro */
+        body { background-color: theme('colors.brand.white'); color: theme('colors.brand.black'); transition: all 0.3s ease; }
+        .card { background-color: #ffffff; border-color: #e5e7eb; }
+        
+        /* Tema Escuro */
+        .dark body { background-color: theme('colors.dark.bg'); color: theme('colors.brand.white'); }
+        .dark .card { background-color: theme('colors.dark.card'); border-color: theme('colors.dark.border'); }
+        .dark .nav-item:hover { background-color: theme('colors.dark.border'); }
+        
+        /* Animações */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; opacity: 0; }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Transições suaves */
+        .transition-theme { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden antialiased transition-theme">
+
+    <!-- Sidebar -->
+    <aside class="w-64 flex flex-col border-r transition-theme border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card z-20 shadow-sm">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-dark-border">
+            <i data-lucide="camera" class="w-6 h-6 text-brand-red mr-2"></i>
+            <span class="font-bold text-lg tracking-tight">PNAAT Vision</span>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-nav">
+            <button onclick="app.navigate('operacao')" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-dark-border transition-colors">
+                <i data-lucide="activity" class="w-5 h-5 mr-3 opacity-70"></i> Operação
+            </button>
+            <button onclick="app.navigate('capturas')" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-dark-border transition-colors">
+                <i data-lucide="image" class="w-5 h-5 mr-3 opacity-70"></i> Capturas
+            </button>
+            <button onclick="app.navigate('investigacao')" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-dark-border transition-colors">
+                <i data-lucide="search" class="w-5 h-5 mr-3 opacity-70"></i> Investigação
+            </button>
+            <button onclick="app.navigate('qualidade')" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-dark-border transition-colors">
+                <i data-lucide="check-circle" class="w-5 h-5 mr-3 opacity-70"></i> Qualidade
+            </button>
+            <button onclick="app.navigate('saude')" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-dark-border transition-colors">
+                <i data-lucide="cpu" class="w-5 h-5 mr-3 opacity-70"></i> Saúde da Pi
+            </button>
+            <button onclick="app.navigate('lote')" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-dark-border transition-colors">
+                <i data-lucide="package" class="w-5 h-5 mr-3 opacity-70"></i> Relatório de Lote
+            </button>
+        </nav>
+
+        <!-- Footer da Sidebar (Theme toggle) -->
+        <div class="p-4 border-t border-gray-200 dark:border-dark-border">
+            <button onclick="app.toggleTheme()" class="w-full flex items-center justify-center px-3 py-2 border border-gray-200 dark:border-dark-border rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-dark-border transition-colors">
+                <i data-lucide="moon" class="w-4 h-4 mr-2 hidden dark:block"></i>
+                <i data-lucide="sun" class="w-4 h-4 mr-2 block dark:hidden"></i>
+                <span class="dark:hidden">Modo Escuro</span>
+                <span class="hidden dark:block">Modo Claro</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 flex items-center justify-between px-8 border-b transition-theme border-gray-200 dark:border-dark-border bg-brand-white/80 dark:bg-dark-bg/80 backdrop-blur-sm z-10">
+            <h1 id="page-title" class="text-xl font-semibold">Operação</h1>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center text-sm">
+                    <span class="w-2.5 h-2.5 rounded-full bg-brand-green mr-2 animate-pulse"></span>
+                    <span class="text-gray-500 dark:text-gray-400">Sistema Online</span>
+                </div>
+                <div class="px-3 py-1 bg-gray-100 dark:bg-dark-card rounded-md text-sm font-medium border border-gray-200 dark:border-dark-border shadow-sm">
+                    Lote: <span class="text-brand-red">#L2024-89</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <div id="content-area" class="flex-1 overflow-y-auto p-8 bg-brand-white dark:bg-dark-bg transition-theme">
+            <!-- Renderizado via JS -->
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
