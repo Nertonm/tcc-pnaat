@@ -45,7 +45,7 @@ from registro import EventoInvalido, Registro
 
 #: adaptador de camera/modelo (servico vivo em :8099). A API NAO abre a camera: o dono da camera
 #: continua sendo um processo so, e este servidor so fala com ele.
-ADAPTADOR = os.environ.get("PNAAT_MODEL_API", "http://127.0.0.1:8099")
+ADAPTADOR = os.environ.get("PNAAT_MODEL_API", "http://127.0.0.1:8093")
 
 #: servico da camera do rig (dono da camera) e ponte serial do gatilho
 RIG = os.environ.get("PNAAT_RIG", "http://127.0.0.1:8090").rstrip("/")
@@ -574,6 +574,7 @@ def _series_locais(limite: int = 40) -> list[dict]:
         manifest = destino / "manifest.json"
         declarado = {}
         atrasos_configurados, medido_por_camera, parcial, faltando_no_manifesto = None, {}, None, []
+        dados: dict = {}
         if manifest.is_file():
             try:
                 dados = json.loads(manifest.read_text(encoding="utf-8"))
@@ -624,6 +625,8 @@ def _series_locais(limite: int = 40) -> list[dict]:
             "faltantes": faltando,
             "atraso_por_camera_ms": atrasos_configurados,
             "atraso_medido_por_camera": medido_por_camera,
+            "trigger_n": (dados.get("trigger_n") if manifest.is_file() else None),
+            "origem_trigger": (dados.get("origem_trigger") if manifest.is_file() else None),
             "parcial": parcial,
             "faltando_no_manifesto": faltando_no_manifesto,
             "motivo": (None if with_manifest and faltando == [] else
