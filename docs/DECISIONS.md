@@ -887,3 +887,37 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
 - Pendente e declarado: a leitura da serie direto do rig (URL) ainda nao existe — a ferramenta le um
   diretorio local; e a ingestao nao decide o CORPO (nao ha modelo do corpo) nem mede a janela (o
   `t_ms`/`dur_ms` do firmware continuam sendo descartados pela ponte).
+
+## D-41: gatilho fechando a serie de 3 (e o padrao de payload das rotas do rig/ponte)
+
+- Decisao: as rotas `/api/rig/*` do hub devolvem os campos **direto** em `dados`, sem embrulhar num
+  nivel a mais. `estado` e `gatilho` embrulhavam (`{"rig": ...}`, `{"ponte": ...}`) e os dois paineis
+  da aba de debug apareciam VAZIOS com a ponte saudavel — falha silenciosa de tela, que e pior que erro
+  visivel. O comentario do `/dataset-series` ja registrava essa mesma classe de erro.
+- Provado por: `/api/rig/gatilho` passou a devolver `serial_open/serial_bytes/serial_lines/frames_ok/
+  frames_bad/frames_text/frames_bin/transport/baud/sensor` na raiz de `dados`, e o painel no navegador
+  passou a mostrar `bytes/linhas 168157/71`, `frames ok/ruins 5/0`, `sensor nivel 1`, `transporte bin`.
+- Decisao operacional: o **gatilho fecha a serie de 3**. A ponte avisava o rig em `/capturar-trigger`,
+  que grava apenas `espcam-trigger.jpg` — medido: um gatilho nao produzia serie nenhuma. O docstring da
+  propria funcao dizia "para fechar a serie de 3". Agora chama `/capturar-3-cameras?trigger_n=&trigger_em=`
+  (rota que ja valida os parametros) e o timeout subiu para 90 s (a perna da ESP-CAM tem espera de ate 45 s).
+- Provado por: `/simular?n=11` -> serie `20260915-141121-748` com `csi` + `usb` +
+  `espcam` + `manifest.json`, com `trigger_n=11`, `trigger_em` e `delay_trigger_ate_fim_ms=6105`.
+- Medicoes que fecharam o diagnostico (numeros, nao impressao):
+  - baud da ESP-CAM: a 921600 a ponte **nao recebe quadro nenhum** (0 em 20 s); a 460800 entrega em
+    2-3 s; 230400 e 115200 tambem entregam. Hoje a instalacao usa 460800.
+  - o baud pedido era perdido em toda reabertura da porta (a camera reinicia ao abrir): a ponte so
+    reaplicava o TRANSPORTE, nao o baud -> reaplicacao do baud pos-boot + `ExecStartPost` na unit.
+- Estado de operacao: a ponte serial ganhou unit (`pnaat-ponte.service`) com as portas por `by-id`
+  (ESP-CAM e no de trigger nao trocam de papel no reboot) e vem no boot; antes subia a mao.
+- Correcoes feitas direto nas maquinas (nao estao no repo — precisam de porte pelo dono):
+  - rig `app.py`: `from io import BytesIO` no topo (era usado sem import na perna da ESP-CAM -> o rig
+    abortava a captura depois da CSI e NAO gravava manifesto: era a causa das series parciais de hoje).
+  - ponte `esp32cam_site.py`: reaplicacao do baud pos-boot, `--baud`/POST `/baud` lembrados, rota do
+    gatilho para `/capturar-3-cameras`, timeout 90 s.
+  - unit nova `/etc/systemd/system/pnaat-ponte.service`.
+- Limites que continuam de pe (declarados, nao escondidos): as 3 fotos ainda sao sequenciais (a
+  defasagem medida entre cameras e de 801 ms a 4,8 s, entao nao sao o mesmo instante do item); o delay
+  segue UM valor global volatil (a ponte agora MEDE sensor->foto: 3890 ms e 6105 ms nos ensaios); a
+  ingestao da serie no registro ainda e manual; e a decisao exige o artefato (torch), que vive no host
+  do modelo e nao no runtime do hub.

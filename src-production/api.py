@@ -665,15 +665,17 @@ def _rota_itens_ingeridos(ctx: dict, consulta: dict) -> dict:
 def _rota_rig_leitura(alvo: str) -> dict:
     """Leituras do rig/ponte que a aba de debug consome (lista fechada, sem caminho livre)."""
     if alvo == "estado":
-        return {"rig": _chamar_rig("/estado")}
+        # o rig devolve os campos direto; embrulhar num nivel a mais fazia o painel ler vazio
+        return _chamar_rig("/estado")
     if alvo == "series":
         # o rig JA devolve {"series": [...]}: embrulhar de novo fazia o site ler um nivel a mais
         return _chamar_rig("/dataset-series")
     if alvo == "historico":
         return {"historico": _chamar_rig("/historico")}
     if alvo == "gatilho":
-        # a ponte serial e quem sabe do sensor, da serial e do delay
-        return {"ponte": _chamar_ponte("/status")}
+        # a ponte serial e quem sabe do sensor, da serial e do delay; devolve os campos direto
+        # (mesma classe de erro que o comentario do /dataset-series acima registra)
+        return _chamar_ponte("/status")
     raise ErroDeApi(404, "leitura_desconhecida", f"leitura de rig desconhecida: {alvo!r}")
 
 
