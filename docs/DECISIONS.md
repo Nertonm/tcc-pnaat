@@ -921,3 +921,34 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
   segue UM valor global volatil (a ponte agora MEDE sensor->foto: 3890 ms e 6105 ms nos ensaios); a
   ingestao da serie no registro ainda e manual; e a decisao exige o artefato (torch), que vive no host
   do modelo e nao no runtime do hub.
+
+## D-42: v7a-lateral no detector que o site mostra (candidato, nao promovido)
+
+- Decisao: a entrega `v7a-lateral` (peso + meta + contrato de runtime) foi instalada no detector que
+  alimenta o site, com o peso **conferido por sha256 em tres pontos** (entrega de origem -> copia no
+  alvo -> arquivo que o container le): `b92be4f42ccfa58f…`, 6.225.154 B. O `v0-lateral.pt` continua
+  instalado e continua servivel **por nome na requisicao** (`model_name`), ou seja o rollback existe
+  sem trocar arquivo. A unidade passou a se chamar e a se DESCREVER como v7a (descricao que mente e
+  defeito, mesmo com o numero certo).
+- Estado que o site mostra (aba de debug, painel "Modelo que o detector serve"): contrato lido da
+  pasta de entrega (imutavel, com sha proprio) + estado vivo do detector (`/health`). O painel exibe
+  papel ("candidato medido, nao promovido"), classes, limiares por classe, regra, k-fold, decisao
+  operacional, imgsz e as **limitacoes declaradas pelo produtor** — sem promover nada.
+- Canario do modelo SERVIDO (nao do treino), 5 series reais x 2 cameras x 2 modelos, consultando o
+  detector em execucao: v7a decidiu 1 vez (`normal=0,0896`) e devolveu "nada passou" em 14; v0 decidiu
+  4 vezes (`tampa_alterada` entre 0,087 e 0,207). Com a confianca de canario (0,05), o comportamento
+  observado e o do contrato: nada passou -> REVISAR.
+- Latencia medida aqui e CPU: ~155 ms (v7a) contra ~78 ms (v0). O "5,9 ms/quadro" do LEIA-ME e numero
+  de GPU — numero sem contexto de execucao vira promessa falsa.
+- Divergencias que ficam registradas (achadas na verificacao, nao silenciadas):
+  1. **Nome da terceira classe**: `data.yaml` do conjunto anotado diz `tampa_mal_rosqueada`, o peso v0
+     emite `tampa_alterada` e o contrato do v7a declara `defeito_tampa`. Os limiares do contrato sao
+     indexados por nome de classe: quem implementar o contrato literalmente PERDE essa classe.
+  2. **imgsz do servico**: o preprocessador do detector redimensiona para 320; o contrato recomenda 416
+     na borda. A diferenca e de configuracao de servico, nao do peso.
+  3. **Contradicao nos documentos da entrega**: o LEIA-ME declara "teste proprio (18 imagens): mAP50
+     0.0000" e o meta do mesmo pacote declara `teste_proprio_map50: 0.7753`. A medida de aceitacao
+     citada nos dois e o k-fold (0,6708 ± 0,1487); a divergencia do teste proprio precisa de resposta
+     do produtor antes de qualquer uso em numero de banca.
+- Preimagem para rollback: arquivo da unidade + tar do diretorio de modelos do detector, com sha256
+  proprio, guardados ao lado do detector antes da troca.

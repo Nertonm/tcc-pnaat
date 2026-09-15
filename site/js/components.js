@@ -2558,6 +2558,66 @@ const escDoDebug = valor => String(valor === null || valor === undefined ? '' : 
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 
+// Painel do modelo servido: contrato da entrega (imutavel) + estado vivo do detector.
+// Montado por concatenacao de proposito: template aninhado aqui ja custou uma crase desbalanceada.
+const renderModelo = (d, painel, linha, falha, escDoDebug) => {
+    if (!d || !d.modelo) {
+        return painel('Modelo que o detector serve',
+            '<p class="text-sm text-gray-400">lendo o modelo...</p>', null);
+    }
+    const m = d.modelo;
+    if (m.erro_contrato) {
+        return painel('Modelo que o detector serve',
+            falha({ erro: m.erro_contrato }, 'contrato do modelo'),
+            'Sem contrato nao ha como saber classes, limiares nem limitacoes do que esta servido.');
+    }
+
+    const c = m.contrato || {};
+    const s = m.saude || {};
+    const mm = c.metricas_medidas || {};
+    const linhas = [];
+
+    linhas.push(linha('servindo agora', m.erro_detector
+        ? '<span class="text-brand-red">detector fora: ' + escDoDebug(m.erro_detector) + '</span>'
+        : escDoDebug(s.model_name || '-') + ' ' + (s.model_loaded ? '(carregado)' : '(NAO carregado)')));
+    linhas.push(linha('declarado no contrato', escDoDebug(m.declarado_no_contrato || '-')));
+    linhas.push(linha('papel', escDoDebug(c.papel || '-')));
+    linhas.push(linha('peso', escDoDebug(c.arquivo || '-') + ' - ' + (c.tamanho_mb || '?') +
+        ' MB - sha ' + escDoDebug((c.sha256 || '').slice(0, 12)) + '...'));
+    linhas.push(linha('classes do contrato', escDoDebug((c.classes || []).join(' | '))));
+    linhas.push(linha('limiares por classe', escDoDebug(JSON.stringify((c.decisao || {}).limiares || {}))));
+    linhas.push(linha('regra de decisao', escDoDebug((c.decisao || {}).regra || '-')));
+    linhas.push(linha('k-fold (5 dobras)', escDoDebug(mm.kfold_5_dobras_mAP50 || '-')));
+
+    const op = mm.decisao_operacional;
+    linhas.push(linha('decisao operacional', op
+        ? op.acertos + '/' + op.total + ' - ' + op.revisar + ' em revisao - acuracia ' +
+          op.acuracia_sem_revisao + ' - defeito decidido como normal: ' + op.defeito_decidido_como_normal
+        : '-'));
+
+    const e = c.entrada || {};
+    linhas.push(linha('imgsz', 'treinado ' + e.imgsz_treinado + ' - recomendado na borda ' +
+        e.imgsz_recomendado_borda));
+
+    const limites = c.limitacoes_declaradas || [];
+    let bloco = '';
+    if (limites.length) {
+        let itens = '';
+        for (const x of limites) {
+            itens += '<li>- ' + escDoDebug(x) + '</li>';
+        }
+        bloco = '<div class="mt-2 rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">' +
+            '<p class="text-[10px] font-bold uppercase tracking-wide text-orange-500">' +
+            'Limitacoes declaradas pelo produtor</p>' +
+            '<ul class="mt-1 space-y-1 text-xs text-gray-300">' + itens + '</ul></div>';
+    }
+
+    return painel('Modelo que o detector serve', linhas.join('') + bloco,
+        'O contrato vem da entrega do produtor (pasta imutavel, com sha proprio) e o estado acima e '
+        + 'lido do detector agora. Candidato medido, nao promovido.');
+};
+
+
 const renderDebug = () => {
     /*
      * Aba de bancada. Todo dado vem do rig (servico da camera) ou da ponte do gatilho, e toda ausencia
@@ -2728,6 +2788,8 @@ const renderDebug = () => {
                 `, 'O teste do gatilho usa a mesma rota do sensor na ponte; a captura manual nao e o fluxo do trigger.')}
             </div>
 
+
+            ${renderModelo(d, painel, linha, falha, escDoDebug)}
 
             ${painel('Fotos capturadas (series do rig)',
                 !d.series ? '<p class="text-sm text-gray-400">lendo as series...</p>'

@@ -871,6 +871,7 @@ class App {
             ler('/api/rig/gatilho', 'ponte'),
             ler('/api/series?limite=20', 'series'),
             ler('/api/itens-ingeridos?limite=12', 'ingeridos'),
+            ler('/api/modelo', 'modelo'),
             ler('/api/gatilhos?limite=25', 'gatilhos')
         ]);
     }

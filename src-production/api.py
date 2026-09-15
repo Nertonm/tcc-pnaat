@@ -50,6 +50,7 @@ ADAPTADOR = os.environ.get("PNAAT_MODEL_API", "http://127.0.0.1:8099")
 #: servico da camera do rig (dono da camera) e ponte serial do gatilho
 RIG = os.environ.get("PNAAT_RIG", "http://127.0.0.1:8090").rstrip("/")
 PONTE = os.environ.get("PNAAT_PONTE", "http://127.0.0.1:8094").rstrip("/")
+DETECTOR = os.environ.get("PNAAT_DETECTOR", "http://127.0.0.1:8093").rstrip("/")
 
 #: teto do listado do site: acima disso o LIMIT deixa de ser controle de custo
 LIMITE_MAXIMO = 500
@@ -63,6 +64,10 @@ DELAY_MAXIMO_MS = 30000
 #: pasta das series do rig (mesma maquina do hub). Configuravel: o caminho e dado da instalacao.
 SERIES_DIR = Path(os.environ.get("PNAAT_SERIES_DIR")
                   or (Path.home() / "pnaat-dataset" / "series-3-cameras"))
+
+#: entrega do modelo do detector (pasta imutavel do produtor: peso, meta e contrato de runtime)
+ENTREGA_MODELOS = Path(os.environ.get("PNAAT_ENTREGA_MODELOS")
+                       or (Path.home() / "pnaat-v0-yolo" / "ENTREGA-v7a"))
 
 ARQUIVO_DE_SERIE = re.compile(r"(?:manifest\.json|[A-Za-z0-9][A-Za-z0-9._-]{0,63}\.jpg)")
 
@@ -517,6 +522,36 @@ def _ITEM_ID_VALIDO(item_id: str) -> bool:
     return bool(re.fullmatch(r"[A-Za-z0-9._-]{1,64}", str(item_id or "")))
 
 
+def _rota_modelo(ctx: dict) -> dict:
+    """Contrato do modelo servido + estado vivo do detector.
+
+    Nao julga o modelo: devolve o que a entrega declara (nome, sha, classes, limiares, metricas e
+    limitacoes) e o que o detector responde agora (carregado, qual peso). A divergencia entre o nome
+    de classe do contrato e o que o peso emite aparece na tela como fato, nao como detalhe escondido.
+    """
+    caminho = ENTREGA_MODELOS / "modelo.json"
+    contrato, erro_contrato = None, None
+    if caminho.is_file():
+        try:
+            contrato = json.loads(caminho.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            erro_contrato = f"{type(exc).__name__}: {exc}"
+    else:
+        erro_contrato = f"entrega ausente: {caminho}"
+
+    saude, erro_detector = None, None
+    try:
+        with urllib.request.urlopen(DETECTOR + "/health", timeout=6) as resposta:
+            saude = json.loads(resposta.read().decode())
+    except Exception as exc:                      # detector fora e estado, nao excecao do painel
+        erro_detector = f"{type(exc).__name__}: {exc}"
+
+    return {"contrato": contrato, "entrega": str(caminho), "erro_contrato": erro_contrato,
+            "saude": saude, "erro_detector": erro_detector,
+            "servido": (saude or {}).get("model_name"),
+            "declarado_no_contrato": (contrato or {}).get("arquivo")}
+
+
 def _series_locais(limite: int = 40) -> list[dict]:
     """Lista as series que EXISTEM na pasta, com o que cada uma tem — parciais incluidas.
 
@@ -932,6 +967,8 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
                     elif rota.startswith("/api/series/"):
                         dados, tipo = _rota_serie_local(rota[len("/api/series/"):])
                         self._responde(200, dados, tipo)
+                    elif rota == "/api/modelo":
+                        self._json(200, _rota_modelo(ctx))
                     elif rota == "/api/itens-ingeridos":
                         self._json(200, _rota_itens_ingeridos(ctx, consulta))
                     elif rota.startswith("/api/rig-serie/"):
