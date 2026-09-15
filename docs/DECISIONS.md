@@ -674,3 +674,29 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
   garrafas — e a perda é silenciosa, porque a janela simplesmente não abre.
 - A decidir: passo e velocidade definitivos da bancada, medidos no ensaio real (o número acima é
   calculado com os parâmetros do firmware, não medido com a esteira em movimento).
+
+## D-36: O site le da API canonica; os mocks do draft sao retirados
+
+- Contexto: o draft do site (`site/`) trazia dados inventados em `js/data.js` (`mockCapturas`,
+  `mockStats`, `mockHealth`) e nenhuma chamada de rede. O registro ja grava, o painel ja responde e
+  o relatorio ja apresenta; faltava o elo que o navegador consome.
+- Opções:
+  - A: manter os mocks como fallback e preencher com a API quando ela responder.
+  - B: servir uma API sobre o `src-production/` e o site consumir dela, sem mock nenhum.
+  - C: montar um servidor de dashboard separado (segunda pipeline) so para a tela.
+- Direção adotada: B, em `src-production/api.py` (biblioteca padrão, sem framework novo), servindo
+  `/api/*` e os arquivos do site **na mesma origem** — sem CORS, sem CDN, sem build.
+- Regra:
+  - GET usa conexão read-only (`mode=ro`); POST passa pela API do `Registro` (caminho único);
+  - ausência declarada: consulta sem base devolve `null` + motivo, nunca 0;
+  - `status_item` e `status_vista` são campos distintos com nomes distintos — a linha `corpo/ok` de
+    um item `defeito` não pode ser lida como defeito (achado da primeira rodada de revisão);
+  - os chips da tela de capturas contam **linhas de vista** e passam a dizer isso ("Linhas OK"),
+    porque "OK 15" se lia como 15 garrafas aprovadas;
+  - evidência ausente vira placeholder **local** (SVG declarando a ausência), nunca imagem externa
+    de placeholder e nunca imagem quebrada silenciosa.
+- Alternativa não adotada A, por ser exatamente o defeito: número inventado sobrevive à queda da API
+  e é acreditado. Com B, API fora = tela vazia + aviso com o motivo.
+- Alternativa não adotada C: uma segunda pipeline de tela repetiria a divergência que a D-30 fecha.
+- Nota operacional: a porta 8080 do host já é do dashboard anterior (`ctgit-dashboard-site-1`). A API
+  do hub sobe na **8090** para não colidir; unificar as duas telas é decisão em aberto.

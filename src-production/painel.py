@@ -98,9 +98,20 @@ class SeparacaoNaoConfirmada:
 
 @dataclass(frozen=True)
 class GatilhoPorFonte:
-    fonte_trigger: str
-    itens: int
-    falso_disparo_observavel: bool
+    fonte: str
+    eventos: int
+    aceitos: int
+    falsos: int
+    duplicados: int
+    invalidos: int
+    taxa_falso: float
+
+
+@dataclass(frozen=True)
+class PerdaDeDeteccao:
+    """O que NAO da para medir so com o gatilho: item que passou sem disparar."""
+    instrumentada: bool
+    motivo: str
 
 
 @dataclass(frozen=True)
@@ -247,13 +258,21 @@ class Painel:
     # -------------------------------------------------------------- 10
 
     def gatilho_por_fonte(self) -> tuple[GatilhoPorFonte, ...]:
-        """Itens por fonte de gatilho. Disparo falso e perda de deteccao NAO sao observaveis no
-        schema atual (nao existe evento de gatilho sem item): a flag abaixo diz isso em vez de
-        devolver um zero que pareceria 'nenhum falso disparo'."""
+        """Taxa de disparo falso por fonte (consulta 10). Agora e observavel: o evento de gatilho
+        existe separado do item, entao o disparo que nao virou item entra na conta."""
         linhas = self._cx.execute(
-            "SELECT COALESCE(fonte_trigger,'(nao declarada)') AS fonte, COUNT(*) AS n"
-            " FROM item GROUP BY fonte ORDER BY n DESC").fetchall()
-        return tuple(GatilhoPorFonte(r["fonte"], r["n"], False) for r in linhas)
+            "SELECT COALESCE(fonte,'nao_declarada') AS fonte, COUNT(*) AS eventos,"
+            " SUM(estado='aceito') AS aceitos, SUM(estado='falso') AS falsos,"
+            " SUM(estado='duplicado') AS duplicados, SUM(estado='invalido') AS invalidos"
+            " FROM evento_gatilho GROUP BY fonte ORDER BY eventos DESC").fetchall()
+        return tuple(GatilhoPorFonte(r["fonte"], r["eventos"], r["aceitos"] or 0, r["falsos"] or 0,
+                                     r["duplicados"] or 0, r["invalidos"] or 0,
+                                     (r["falsos"] or 0) / r["eventos"]) for r in linhas)
+
+    def perda_de_deteccao(self) -> PerdaDeDeteccao:
+        """Item que passou sem disparar o gatilho NAO e observavel pelo proprio gatilho: exige
+        referencia externa (contagem por encoder). Declarado aqui em vez de reportado como zero."""
+        return PerdaDeDeteccao(False, "exige referencia externa (contagem do encoder KY-040, D-21)")
 
     # -------------------------------------------------------------- 11
 
@@ -308,6 +327,16 @@ class Painel:
         """Só `ok`. Inconclusivo NAO entra (regra da §3)."""
         return int(self._cx.execute(
             "SELECT COUNT(*) FROM item WHERE status_final = 'ok'").fetchone()[0])
+
+    @property
+    def conexao(self):
+        """Handle SOMENTE leitura para as consultas de apresentacao (`consultas_site`).
+
+        Existe para as listagens do site pararem de tocar em `_cx`: quem lista usa um nome
+        publico, e o modulo que so responde indicador nao vira o unico caminho de leitura.
+        A conexao e a mesma que `abrir()` criou em modo read-only.
+        """
+        return self._cx
 
 
 def _pearson(pares) -> float | None:

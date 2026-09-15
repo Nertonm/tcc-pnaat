@@ -1018,7 +1018,7 @@ const renderCapturas = () => `
                         sm:inline
                     "
                 >
-                    ${mockCapturas.length} registros exibidos
+                    ${mockCapturas.length} linhas de vista exibidas
                 </span>
 
                 <button
@@ -1091,7 +1091,7 @@ const renderCapturas = () => `
                     dark:text-black
                 "
             >
-                Todas ${mockCapturas.length}
+                Todas as linhas ${mockCapturas.length}
             </div>
 
             <div
@@ -1108,7 +1108,7 @@ const renderCapturas = () => `
                     text-brand-green
                 "
             >
-                OK ${mockCapturas.filter(item => item.status === 'OK').length}
+                Linhas OK ${mockCapturas.filter(item => item.status === 'OK').length}
             </div>
 
             <div
@@ -1125,7 +1125,7 @@ const renderCapturas = () => `
                     text-brand-red
                 "
             >
-                Defeitos ${mockCapturas.filter(item => item.status === 'Defeito').length}
+                Linhas com defeito ${mockCapturas.filter(item => item.status === 'Defeito').length}
             </div>
 
             <div
@@ -1142,7 +1142,7 @@ const renderCapturas = () => `
                     text-orange-500
                 "
             >
-                Pendentes ${mockCapturas.filter(item => item.status === 'Pendente').length}
+                Linhas pendentes ${mockCapturas.filter(item => item.status === 'Pendente').length}
             </div>
 
         </section>

@@ -7,7 +7,7 @@ Este diretório contém a proposta de interface (draft) para o site local de aco
 - `index.html`: Layout principal, sidebar, e container dos painéis. Importa o TailwindCSS via CDN (ótimo para rodar local sem build).
 - `js/app.js`: Lógica principal de roteamento (troca de telas) e alternância entre Modo Claro/Escuro.
 - `js/components.js`: Contém o HTML/Templates de cada painel planejado (Operação, Capturas, Investigação, etc.).
-- `js/data.js`: Mock de dados (Fixtures) para simular o comportamento da API antes que o backend esteja pronto.
+- `js/api.js`: **fonte de dados real** — conversa com a API local do hub (`src-production/api.py`, mesma origem) e preenche as globais que os templates consomem. Os mocks (`js/data.js`) foram retirados: numero inventado que sobrevive a queda da API e acreditado, e a tela agora fica vazia com aviso quando a API nao responde.
 
 ## Como Visualizar
 

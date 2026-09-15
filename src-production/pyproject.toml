@@ -16,7 +16,7 @@ dev = ["pytest"]
 
 [tool.setuptools]
 # modulos soltos na raiz da arvore (layout escolhido: sem subpacote src/)
-py-modules = ["decisao", "dominio"]
+py-modules = ["api", "apresentacao", "captura", "classificador", "conformidade", "consultas_site", "decisao", "dominio", "fonte_gatilho", "identidade", "orquestracao", "painel", "registro"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

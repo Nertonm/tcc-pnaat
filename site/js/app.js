@@ -41,6 +41,15 @@ class App {
 
 
         this.navigate('operacao');
+
+
+        /*
+         * A vista ja montou com dado vazio; agora os numeros chegam da API e a tela e remontada.
+         * A recarga periodica so roda com a aba visivel (api.js).
+         */
+        if (window.PNAAT_API) {
+            window.PNAAT_API.iniciar(() => this.navigate(this.currentView));
+        }
     }
 
 
