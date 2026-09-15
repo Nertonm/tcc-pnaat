@@ -12,7 +12,7 @@ set -uo pipefail
 
 RAM_MIN_MB=${RAM_MIN_MB:-4000}          # RAM disponivel minima para iniciar
 RAM_ABORTA_MB=${RAM_ABORTA_MB:-1500}    # se cair disso durante a rodada, mata
-SWAP_ABORTA_MB=${SWAP_ABORTA_MB:-1024}  # swap usado maximo tolerado
+SWAP_ABORTA_MB=${SWAP_ABORTA_MB:-2048}  # swap usado maximo tolerado
 LOAD_MAX=${LOAD_MAX:-5.0}
 DISCO_MIN_GB=${DISCO_MIN_GB:-50}
 TEMP_MAX=${TEMP_MAX:-80}        # bloqueia iniciar acima disso (GPU)
@@ -75,7 +75,9 @@ while kill -0 "$PID" 2>/dev/null; do
     kill -TERM "$PID" 2>/dev/null; sleep 10; kill -KILL "$PID" 2>/dev/null; wait "$PID" 2>/dev/null
     exit 5
   fi
-  if [ "$ram" -lt "$RAM_ABORTA_MB" ] || [ "$sw" -gt "$SWAP_ABORTA_MB" ]; then
+  # swap alto SOZINHO não é aperto: exige também RAM disponível baixa (senão é falso positivo —
+  # foi o que abortou um k-fold com 6,6 GB de RAM livre em 2026-09-15)
+  if [ "$ram" -lt "$RAM_ABORTA_MB" ] || { [ "$sw" -gt "$SWAP_ABORTA_MB" ] && [ "$ram" -lt 4000 ]; }; then
     log "WATCHDOG: RAM ${ram}MB / swap ${sw}MB -> matando o treino para proteger a maquina"
     kill -TERM "$PID" 2>/dev/null; sleep 10; kill -KILL "$PID" 2>/dev/null
     wait "$PID" 2>/dev/null

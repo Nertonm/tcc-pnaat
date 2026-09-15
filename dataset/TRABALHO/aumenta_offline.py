@@ -46,6 +46,33 @@ def sha(p: Path) -> str:
     return h.hexdigest()
 
 
+def _kernel_movimento(k: int, angulo: float):
+    """Kernel linear (arrasto) girado: é o que a garrafa em movimento na esteira faz."""
+    import cv2
+    import numpy as np
+    kern = np.zeros((k, k), dtype=np.float32)
+    kern[k // 2, :] = 1.0
+    M = cv2.getRotationMatrix2D((k / 2 - 0.5, k / 2 - 0.5), angulo, 1.0)
+    kern = cv2.warpAffine(kern, M, (k, k))
+    s = kern.sum()
+    return kern / s if s else kern
+
+
+def _embaca(img, tipo: str, rnd):
+    """Aplica o blur com cv2 e devolve PIL. Severidade amostrada na faixa REAL medida."""
+    import cv2
+    import numpy as np
+    a = np.array(img)[:, :, ::-1].copy()          # RGB -> BGR
+    if tipo == 'gauss':
+        a = cv2.GaussianBlur(a, (0, 0), rnd.uniform(1.0, 3.0))
+    elif tipo == 'forte':
+        a = cv2.GaussianBlur(a, (0, 0), rnd.uniform(4.0, 7.0))
+    elif tipo == 'movimento':
+        k = rnd.choice([5, 7, 9, 11])
+        a = cv2.filter2D(a, -1, _kernel_movimento(k, rnd.uniform(0, 180)))
+    return Image.fromarray(a[:, :, ::-1])
+
+
 def le_label(p: Path) -> list[tuple[int, float, float, float, float]]:
     out = []
     for linha in p.read_text().splitlines():
@@ -120,7 +147,19 @@ def main() -> int:
                     f = 1 + rnd.uniform(-0.15, 0.15)
                     img = ImageEnhance.Contrast(img).enhance(f)
                     ops.append(f'contraste={f:.2f}')
-                if rnd.random() < 0.3:
+                # BLUR calibrado na nitidez real (espcam 378 · usb 155 · rig 15 de var Laplaciano):
+                # sem isso o modelo não via nada parecido com os casos borrados que precisa pegar
+                sorte = rnd.random()
+                if sorte < 0.20:
+                    img = _embaca(img, 'gauss', rnd)
+                    ops.append('blur_gauss')
+                elif sorte < 0.35:
+                    img = _embaca(img, 'forte', rnd)
+                    ops.append('blur_forte')
+                elif sorte < 0.52:
+                    img = _embaca(img, 'movimento', rnd)
+                    ops.append('blur_movimento')
+                elif sorte < 0.62:
                     img = img.filter(ImageFilter.GaussianBlur(radius=rnd.uniform(0.4, 1.0)))
                     ops.append('blur_leve')
                 if rnd.random() < 0.3:
