@@ -274,6 +274,40 @@ Artefatos: `dataset/TRABALHO/inferencia_camera_teste.py` (teste de bancada, com 
 `--camera`) · quadros anotados e resumo em `/var/tmp/teste-camera/` no host de treino (uma cópia
 do quadro e do resumo foi puxada para uma maquina separada).
 
+
+## 3g. Otimização para a borda — medida, não presumida
+
+Três caminhos testados no candidato, todos no MESMO teste de 18 imagens. A latência da borda é
+medida em **CPU** (é o que a linha tem); a do host, na GPU, aparece só como referência.
+
+| formato | tamanho | mAP50 | latência CPU (mediana) | paridade de caixas (IoU≥0,5) |
+|---|---|---|---|---|
+| torch (fp32) | 6.23 MB | 0.6261 | 37.1 ms | referência |
+| ONNX fp32 | 12.19 MB | 0.4713 | 46.1 ms | 16/18 = 0.889 |
+| ONNX INT8 | 3.32 MB | 0.4897 | 72.4 ms | 15/18 = 0.833 |
+| torch na GPU (referência) | 6.23 MB | — | 7,6 ms | — |
+
+**O export não compensou.** Na CPU as duas variantes ONNX ficaram mais lentas que o torch e cerca
+de 0,14 de mAP50 abaixo, com paridade de caixas de 83–89% (ou seja: o export muda a predição, não
+só o formato). O único ganho é tamanho de arquivo (INT8 = metade), que não é restrição neste
+problema. **Decisão medida: manter torch** — exportar aqui seria complexidade que perde.
+
+**O ganho real está na resolução de entrada** (torch, CPU, mesmas 18 imagens):
+
+| imgsz | mAP50 | latência CPU | ganho de latência | perda de mAP50 |
+|---|---|---|---|---|
+| 320 | 0.5761 | ~20 ms | +58% | -0,0500 |
+| **416** | **0.6047** | ~30 ms | **+39%** | **-0,0214** |
+| 480 (atual) | 0.6261 | 48,7 ms | — | — |
+
+**Recomendação para a borda: `imgsz=416`** — corta ~39% do tempo por quadro pagando 0,021 de mAP50
+(~3% do valor), dentro da tolerância declarada de 0,03. Se a linha exigir mais folga, 320 dobra a
+economia a um custo já visível (0,05).
+
+Scripts: `dataset/TRABALHO/otimiza_modelo.py` (export + paridade + latência),
+`dataset/TRABALHO/benchmark_justo.py` (CPU x CPU, com paridade de caixas),
+`dataset/TRABALHO/otimiza_imgsz.py` (acurácia x latência por resolução).
+
 ## 4. Aumento de dados e preprocessing
 
 - **Offline** (`aumenta_offline.py`, equivale ao "dataset version" do Roboflow): 3× no split
