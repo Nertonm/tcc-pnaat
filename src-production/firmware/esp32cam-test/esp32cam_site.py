@@ -56,8 +56,8 @@ EXT_REF_RE = re.compile(r"ext_ref=(\d+)")
 TRIG_ACCEPTED_RE = re.compile(r"TRIGGER_ACCEPTED source=(\S+) event=(\d+) ext_ref=(\d+)")
 TRIGGER_BAUD = 115200
 ALLOWED_PREFIXES = ("CMD_BAUD ",)
-BAUD_ACK_RE = re.compile(r"BAUD_ACK ok=1 de=(\d+) para=(\d+)")
-BAUD_ATIVO_RE = re.compile(r"BAUD_ATIVO (\d+)")
+BAUD_ACK_RE = re.compile(r"BAUD_ACK ok=1 de=(\d{4,7}) para=(\d{4,7})")
+BAUD_ATIVO_RE = re.compile(r"BAUD_ATIVO (\d{4,7})")
 
 BEGIN_RE = re.compile(
     rb"FRAME_BEGIN v=1 encoding=base64 source=([a-z0-9_]+) event=(\d+) trigger_us=(\d+) "
