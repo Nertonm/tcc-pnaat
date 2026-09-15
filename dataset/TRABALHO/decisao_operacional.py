@@ -62,8 +62,12 @@ def main() -> int:
                                vt.boxes.cls.cpu().numpy().astype(int)):
                 cand.append((float(c), nomes.get(int(k), str(k))))
         cand.sort(reverse=True)
-        # limiar por classe: primeira caixa cuja classe passa o SEU limiar
-        escolhida = next((cl for c, cl in cand if c >= limiares.get(cl, 1.0)), None)
+        # limiar por classe COM viés de segurança: defeito acima do limiar dele vence "normal"
+        # (medido no v8a: sem isso, 1 peça com defeito saiu como normal)
+        DEFEITO = ('tampa_ausente', 'defeito_tampa', 'deformidade')
+        passa = [(c, cl) for c, cl in cand if c >= limiares.get(cl, 1.0)]
+        escolhida = next((cl for c, cl in passa if cl in DEFEITO), None) \
+            or next((cl for c, cl in passa), None)
         decisao[img.name] = escolhida or 'REVISAR'
         # verdade = classe majoritária das caixas anotadas
         verdade[img.name] = nomes.get(Counter(ids).most_common(1)[0][0], 'sem_caixa') if ids else 'sem_caixa'

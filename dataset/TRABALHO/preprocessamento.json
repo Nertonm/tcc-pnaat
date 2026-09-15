@@ -52,14 +52,19 @@
   "480": {
    "normal": 0.3,
    "tampa_ausente": 0.15,
-   "defeito_tampa": 0.25,
+   "defeito_tampa": 0.15,
    "calibrado": true,
    "f1_val_por_classe": {
     "normal": 0.545,
     "tampa_ausente": 0.8,
     "defeito_tampa": 0.615
    },
-   "fonte": "calibra_limiar_val.py"
+   "fonte": "calibra_limiar_val.py",
+   "objetivo": "minimizar DEFEITO NAO DETECTADO (não F1): com 0,15 nenhum dos 5 defeitos do teste passou como normal; custo medido: 4 alarmes falsos em 27 imagens",
+   "f1_otimo_alternativo": {
+    "defeito_tampa": 0.25,
+    "obs": "maximiza F1 mas deixa 1 defeito sair como normal — não usar na linha"
+   }
   },
   "416": {
    "normal": null,
