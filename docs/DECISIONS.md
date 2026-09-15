@@ -457,7 +457,9 @@ como premissa silenciosa.
 ## D-28: Vocabulario canonico das classes
 
 - Decisão: as classes são declaradas **por domínio**, e nenhuma classe pode ser emitida fora do seu domínio.
-  - domínio da tampa (PoC-02): `normal`, `tampa_ausente`, `tampa_mal_rosqueada`, `inconclusivo`;
+  - domínio da tampa (PoC-02): `normal`, `tampa_ausente`, `defeito_tampa`, `inconclusivo`
+    (**emendada pela D-31**: `tampa_mal_rosqueada` deixou de ser classe e passou a ser código do
+    catálogo, que agrupa mal rosqueada, danificada e aberta);
   - domínio do corpo (PoC-03, RF-04): `normal`, `deformidade`, `inconclusivo`. O vocabulário é fixado aqui
     para o domínio não ficar sem nome; `deformidade` não é classe válida no domínio da tampa, e as classes
     de tampa não são válidas no domínio do corpo;
@@ -479,7 +481,7 @@ como premissa silenciosa.
   - cada vista emite uma medida por dominio (tampa/corpo) e o par dominio x classe e validado: classe
     incoerente com o dominio e recusada na criacao da medida;
   - **defeito detectado em qualquer vista do dominio reprova** o item, com precedencia declarada
-    (`tampa_ausente` > `tampa_mal_rosqueada`; empate de classe resolvido por maior confianca);
+    (`tampa_ausente` > `defeito_tampa`; empate de classe resolvido por maior confianca) [D-31];
   - **aprovacao exige todos os dominios medidos emitindo `normal` com qualidade ok**; qualquer
     ausencia, qualidade insuficiente ou inconclusivo produz `inconclusivo` -- nunca aprovacao silenciosa;
   - o **check dimensional** (topo) nao classifica nem aprova: `escalona`/qualidade ruim/motivo
@@ -551,3 +553,124 @@ Cada atualização deve registrar:
 - impacto nos requisitos, arquitetura, dados e testes.
 
 A nova evidência deve atualizar a posição sem apagar o histórico anterior. Direção adotada, componente instalado e meta numérica não equivalem a resultado validado. Evidência ausente, inválida ou inconclusiva não pode ser promovida a aprovação.
+
+## D-31: Três classes na tampa (o detalhe vai para o catálogo)
+
+- Contexto: o vocabulário da tampa tinha `normal`, `tampa_ausente`, `tampa_mal_rosqueada` e `inconclusivo`,
+  e as classes de terceiros não mapeadas (tampa danificada 363, aberta 311, molhada 394, não conferida 114)
+  ficavam paradas por falta de destino. Isso espalhava o dado por muitos rótulos com poucos itens cada.
+- Decisão: a decisão da tampa passa a usar **três classes** — `normal`, `tampa_ausente`, `defeito_tampa`.
+  `defeito_tampa` **funde** mal rosqueada, danificada e aberta. `tampa:molhada` fica **separada para
+  avaliação** (394 imagens, fila `wp-I`): depende do caso, não é automaticamente defeito.
+- O detalhe **não se perde**: o catálogo (`taxonomia_defeito`) mantém `TAMPA_MAL_ROSQUEADA`,
+  `TAMPA_DANIFICADA` e `TAMPA_ABERTA` — os três apontando para a classe `defeito_tampa`. Decide-se
+  simples; reporta-se detalhado; desdobrar depois é só mudar a projeção.
+- Dado medido (imagens, origens únicas): `normal` 3.898 · `tampa_ausente` 821 · `defeito_tampa` 1.327 ·
+  em avaliação 394 · inconclusivo 114. A classe de defeito passa de 653 para 1.327 (**2,03x**).
+- Emenda: **RF-05/RNF-02** — o alvo `>=90%` passa a valer para `defeito_tampa` em vez de
+  `mal_rosqueada`. Gate mais fácil de atingir e menos informativo; a granularidade fica nos códigos.
+- Histórico preservado: a medição de 0,977 (n=44) continua interpretável — as 44 imagens têm exatamente
+  os três estados, então a fusão **renomeia** uma classe sem tirar nem pôr imagem.
+- Consequência técnica: o `CHECK` da coluna `classe` no esquema muda, e o esquema não migra (decisão
+  declarada) — o banco é recriado. Feito em 2026-09-13, quando o banco não tinha dado de produção.
+- Implementado em: `src-production/dominio.py` (enum + `VOCABULARIO`), `conformidade.py` (precedência),
+  `registro.py` (`MAPA_CODIGO`), `esquema.sql` (CHECK + catálogo), `classificador.py` (prefixo ->
+  `DEFEITO_TAMPA`). Os arquivos de dado mantêm o nome granular (`tampa_mal_rosqueada_frame_*`): é a
+  camada 1 (célula) do desenho de nomes.
+
+---
+
+## D-32 — Autoridade entre o processo determinístico e o processo de IA
+
+**Data:** 2026-09-13 · **Substitui, na parte de autoridade:** a D-30 (que dava a decisão ao
+classificador com a geometria como auxiliar).
+
+**Decisão:** o sistema passa a ter **dois processos** com autoridade declarada por classe:
+
+- **Processo A (determinístico, com restrição)** — válido somente com rig fixo, câmera calibrada
+  (intrínsecos + extrínsecos), iluminação estável, ROI declarada e profundidade fixa. Extrai a
+  referência (a silhueta da peça), a escala em **mm**, a pose e as métricas de qualidade. Decide as
+  classes que têm **assinatura física mensurável** (ausência de tampa, folga do anel acima do limite
+  de especificação, altura/diâmetro fora da faixa da peça). Quando não consegue medir, devolve
+  `inconclusivo` **com o motivo** — nunca um número inventado. Não requer imagem de defeito rotulada.
+- **Processo B (IA generalista)** — recebe o mesmo **recorte canônico** no treino e na inferência (o
+  padrão de dados). Decide as classes de **aparência e sutileza** (defeito fino de rosqueamento,
+  estado de rótulo, domínio alheio). Requer dado rotulado e o **controle de domínio** como gate.
+- **Discordância:** se A mede e B discorda, o item **não é aprovado** — vai para `inconclusivo` com as
+  duas evidências no registro. Nunca se escolhe a evidência mais conveniente.
+- **Rastro:** o registro grava **qual processo decidiu** e com que evidência (o campo `papel` das
+  evidências passa a distinguir `decisorio` e `auxiliar`).
+- **Avaliação separada:** cada processo é avaliado no seu domínio de validade (A: erro da medida em mm
+  contra paquímetro numa amostra; B: matriz de confusão por classe com o controle de domínio). Métrica
+  combinada só se publica com a base declarada: quantos itens cada um decidiu e quantos ficaram
+  inconclusivos.
+
+**Por que:** separar autoridade por assinatura física permite **atribuir o erro a quem errou** (hoje,
+num número só, não se sabe se foi medição, recorte ou modelo), e **desbloqueia entrega**: A não
+precisa de imagem de defeito, então pode ser construído e validado enquanto a coleta de B acumula.
+
+**Critério de fechamento:** A validado com a medida em mm contra paquímetro numa amostra; B com o
+controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo publicada por motivo.
+
+## D-33: Calibração do atraso trigger → captura medida pelo próprio rig (sem encoder)
+
+- Contexto: o sensor de presença está a `d` mm do centro da ROI da câmera e a captura precisa
+  ocorrer no atraso `tau* = d / v`. Nem a velocidade da esteira nem a escala mm/pixel do
+  enquadramento são conhecidos a priori.
+- Opções:
+  - A: encoder (KY-040) para medir `v`, régua para `d`, cálculo de `tau* = d/v`.
+  - B: rajada de quadros por passagem do item; a reta `offset(tau) = v*tau - d` medida na imagem dá a
+    velocidade pela inclinação, o atraso pela raiz e a escala mm/pixel pelo intercepto com `d` da régua.
+  - C: ajuste manual por tentativa e erro até a garrafa "parecer centralizada".
+- Direção adotada: B em `src/pocs/expansao_sincronizacao/` (instrumento
+  `scripts/calibrar_delay_trigger.py`). O encoder permanece como verificação cruzada quando
+  disponível — vira teste independente, não pré-requisito da captura.
+- Regra:
+  - nada é aplicado sem veredito PASS (`n >= 5` amostras, `r2 >= 0,9`, resíduo <= tolerância, `tau* > 0`);
+  - a janela da rajada tem de cobrir `tau*`; fora disso o número é extrapolação e o relatório avisa;
+  - `d` é medido a régua e declarado no comando — é a única entrada que o método não mede sozinho.
+- A decidir: rodada de bancada com a esteira real. O ensaio sem hardware (log de eventos real +
+  câmera sintética) confere com a verdade injetada com erro de 0,0% a 0,5% em `tau*` e `v`.
+- Alternativa não adotada C, por não produzir nem número nem incerteza.
+- Alternativa A não descartada: se o encoder entrar, o confronto encoder × reta passa a ser a
+  evidência de que a escala mm/pixel está correta.
+
+## D-34: Medição fail-closed: amostra cortada não entra no ajuste e o atraso é por vista
+
+- Opções:
+  - A: usar o centróide de toda massa que aparecer na banda, inclusive item cortado pela borda.
+  - B: descartar a amostra cujo item toque a borda do quadro e calibrar uma vez por vista.
+  - C: manter um atraso global único para as três câmeras.
+- Direção adotada: B.
+- Regra:
+  - item com massa na primeira ou na última coluna da banda é **descartado**: o centróide mediria
+    apenas o pedaço visível. Medido em 2026-09-14: o mesmo ensaio dava 50% de erro em `tau*` com as
+    amostras cortadas e 0,0% sem elas;
+  - o atraso é gravado **por vista** (`~/poc03/delay.json`, chave `vistas`), porque cada câmera tem a
+    sua distância ao trigger; calibrar uma vista não apaga as outras;
+  - o consumidor é fail-closed: vista não calibrada devolve `FileNotFoundError`/`KeyError`, nunca zero;
+  - ensaio reprovado com corte na borda é diagnóstico de trigger **fora do campo de visão**, não bug.
+- A decidir: se na montagem final o trigger ficar fora do campo de visão, escolher entre aproximar a
+  câmera, abrir a lente ou reduzir a distância trigger→ROI.
+- Alternativa não adotada A, por contaminar a medida de forma invisível (o ajuste "passa" com número
+  errado — pior que falhar).
+- Alternativa não adotada C, porque as distâncias ao trigger são diferentes por construção.
+
+## D-35: Teto de velocidade da esteira derivado do firmware do trigger
+
+- Contexto: "concordar a velocidade da esteira com o trigger" tem três limites independentes, e o
+  menor deles manda.
+- Opções:
+  - A: escolher a velocidade por percepção (a esteira "parece" adequada).
+  - B: derivar o teto dos parâmetros reais do firmware (`esp/main.py`) e do orçamento de captura.
+- Direção adotada: B, com os valores do firmware atual: `DEBOUNCE_MS=20` e `STABLE_READS=5` exigem
+  **100 ms** de presença estável para abrir a janela; `ARM_MS=500` e `GUARD_MS=500` impõem **0,5 s** de
+  re-armadura após cada item.
+- Regra: o teto é `min(passo / (vistas*77 ms + rearme + margem), passo / 0,5 s, comprimento / 0,1 s)`.
+  Com passo de 80 mm e três vistas: **~107 mm/s, ditado pelo orçamento de captura**; a 100 mm/s o
+  intervalo é 800 ms com 49 ms de folga (apertado).
+- Consequência operacional: para correr mais rápido é preciso aumentar o passo (mais espaço entre
+  itens) ou reduzir o número de vistas. Aumentar a velocidade sem mexer nisso faz o trigger perder
+  garrafas — e a perda é silenciosa, porque a janela simplesmente não abre.
+- A decidir: passo e velocidade definitivos da bancada, medidos no ensaio real (o número acima é
+  calculado com os parâmetros do firmware, não medido com a esteira em movimento).

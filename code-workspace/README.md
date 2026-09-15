@@ -24,6 +24,7 @@ Comandos
 - instalar: `make install` (cria o venv único na raiz do clone) ou `python3 -m venv ../.venv && ../.venv/bin/python -m pip install -e ".[dev]"`
 - testar:   `make test`
 - PoC-04:   `make poc04` (harness de casos declarados; sai != 0 se divergir do esperado)
+- calibrar atraso trigger->captura: `make calibrar-delay` (física pura), `make calibrar-delay-integracao` (caminho do ensaio sem hardware) ou `make calibrar-delay-bancada DIST=150 PASSOS=5` (bancada real)
 
 Ambiente de referencia: Python 3.11 em venv unico na raiz do clone do projeto (CPU, visao e serial).
 O `Makefile` resolve o interpretador sozinho: usa `../.venv/bin/python` quando existe e cai para

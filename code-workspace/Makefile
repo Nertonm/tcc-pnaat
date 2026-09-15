@@ -6,7 +6,7 @@ MODEL ?= patchcore
 
 # .PHONY e obrigatorio: sem ele, alvos com nome de diretorio existente (demo/, dataset/)
 # sao tratados como "up to date" e o comando nao roda.
-.PHONY: test test-vision sanitizar sanitizar-apply doctor validar dataset treino clean install demo controle poc04 simular-poc01 hooks
+.PHONY: test test-vision sanitizar sanitizar-apply doctor validar dataset treino clean install demo controle poc04 simular-poc01 calibrar-delay calibrar-delay-bancada calibrar-delay-integracao hooks
 
 # instala o gate neste clone (core.hooksPath e config local: precisa rodar em cada checkout)
 hooks:
@@ -68,3 +68,17 @@ poc04:
 # PoC-01 sem hardware: mesma logica do firmware, eventos identicos no terminal
 simular-poc01:
 	PYTHONPATH=src $(PY) scripts/simular_trigger.py --caso todos
+
+# calibra o atraso trigger->captura contra verdade conhecida (sem hardware)
+calibrar-delay:
+	$(PY) scripts/calibrar_delay_trigger.py --fonte simulado --distancia-mm 150
+
+# calibra na bancada real: trigger (supervisor poc01) + camera; exige a distancia medida
+calibrar-delay-bancada:
+	@test -n "$(DIST)" || (echo 'uso: make calibrar-delay-bancada DIST=150 [PASSOS=5]'; exit 2)
+	$(PY) scripts/calibrar_delay_trigger.py --fonte log --distancia-mm $(DIST) --passagens $(or $(PASSOS),5) --aplicar
+
+# ensaio de integracao SEM hardware: log de ensaio isolado + camera sintetica; cobre o
+# caminho real do ensaio, o caso infeasivel (tem de reprovar) e o delay.json acumulado
+calibrar-delay-integracao:
+	bash scripts/calibrar_delay_ensaio.sh

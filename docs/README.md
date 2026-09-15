@@ -8,6 +8,19 @@ A fonte de verdade do documento formal é `latex-workspace/`: `main.tex` gera o 
 
 O recorte atual é: Cenário 1, inspeção de envase. O núcleo propõe observação multi-view, classificação por domínio, registro rastreável e dashboard usando um nó de observação. O documento não assume controle da velocidade da esteira, atuação física, ejeção, hub central, MQTT ou múltiplos nós como capacidades do núcleo.
 
+## Trabalho de 13-14/09/2026 (dataset, modelos e revisão)
+
+| Documento | O que responde |
+|---|---|
+| `reference/revisao-ponta-a-ponta-20260914.md` | Estado do repositório, o que foi organizado, os achados (bug polygon→AABB em 5.718 instâncias, gap de domínio dos detectores) e as pendências com dono |
+| `reference/modelos-e-pesos.md` | Cada peso/modelo: onde está, o que mediu, o que serve e o que não serve, e a sequência correta de retreino |
+| `design/reconciliacao-approach-20260913.md` | Decisão de abordagem decidida contra as referências, com as emendas R1-R9 e o que ficou fora |
+| `design/protocolo-captura-propria.md` | Protocolo de captura do conjunto próprio (73 itens por classe, 3 vistas, negativos, difusora obrigatória) |
+| `reference/datasets-candidatos-20260913.md` | Disposição de cada candidato a corpus: aceito, rejeitado ou pendente, com a razão |
+| `reference/roboflow-download.md` | Como baixar do Roboflow sem herdar augmentation, com checagem de SHA |
+| `reference/runbook-erros-e-guardas.md` | Runbook de erros do projeto: cada erro cometido, a guarda que faltou e a regra que passou a valer |
+| `design/fluxo-execucao-atual-pnaat.md` | Âncora operacional: fluxo de dados/modelos, estado do checkout canônico e closeout atual da sessão |
+
 ## Leitura por objetivo
 
 | Necessidade | Documento |
@@ -48,6 +61,7 @@ O recorte atual é: Cenário 1, inspeção de envase. O núcleo propõe observa�
 | `pocs/MAPA.md` | De-para entre os diretórios da geração anterior e as PoCs entregues |
 | `pocs/poc02_classificacao/` | Protocolo da PoC-02 (classificação de tampa) |
 | `pocs/poc08_preproc/` | Protocolo da PoC-08 (pré-processamento e geometria) |
+| `pocs/03-sincronizacao-fisica/CALIBRACAO-DELAY.md` | Calibração do atraso trigger → captura e do casamento da velocidade da esteira (expansão, com código) |
 | `pocs/01-classificador-topo/`, `pocs/02-deformidade-lateral/`, `pocs/03-sincronizacao-fisica/`, `pocs/04-correlacao-multi-no/`, `pocs/05-integracao-dados/`, `pocs/06-resiliencia/`, `pocs/07-atuacao-confirmada/` | Fichas da geração anterior, preservadas como histórico e expansão |
 
 ## Referência e design
