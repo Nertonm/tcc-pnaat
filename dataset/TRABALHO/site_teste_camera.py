@@ -13,6 +13,7 @@ Env: FONTE (default http://127.0.0.1:8099/stream.mjpg), PESO, IMGSZ, CONF
 """
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 import threading
@@ -28,9 +29,35 @@ FONTE = os.environ.get('FONTE', 'http://127.0.0.1:8099/stream.mjpg')
 _G = Path(__file__).resolve().parents[2]
 PESO = os.environ.get('PESO') or str(_G.parent.parent /
                                    'pnaat-modelos/ENTREGA/v7a-lateral/v7a-lateral.pt')
-IMGSZ = int(os.environ.get('IMGSZ', '416'))
+IMGSZ = int(os.environ.get('IMGSZ', '480'))
 CONF = float(os.environ.get('CONF', '0.05'))
-LIMIARES = {'normal': 0.30, 'tampa_ausente': 0.15, 'defeito_tampa': 0.30}
+# limiares vêm do contrato (fonte única) — não manter tabela própria aqui
+_CONTRATO = Path(__file__).resolve().parents[2] / 'dataset/TRABALHO/preprocessamento.json'
+
+
+CLASSES_LIMIAR = ('normal', 'tampa_ausente', 'defeito_tampa', 'deformidade')
+
+
+def _limiares_do_contrato(imgsz: int) -> dict:
+    """Lê os limiares do contrato; recusa imgsz não calibrado (cai para 480, avisando)."""
+    try:
+        c = json.loads(_CONTRATO.read_text())
+        bloco = c['limiares_por_imgsz']
+        lim = bloco.get(str(imgsz)) or {}
+        if not lim.get('calibrado', False):
+            print(f'[contrato] imgsz {imgsz} NÃO calibrado; usando 480 (o calibrado)')
+            lim = bloco.get('480') or {}
+            if imgsz != 480:
+                globals()['IMGSZ'] = 480
+                _config['imgsz'] = 480
+        # só as classes: `calibrado` é bool e bool é int em Python — não pode entrar
+        return {k: float(lim[k]) for k in CLASSES_LIMIAR if isinstance(lim.get(k), (int, float))}
+    except Exception as exc:  # noqa: BLE001
+        print(f'[contrato] falha lendo limiares ({exc}); usando conservadores')
+        return {'normal': 0.30, 'tampa_ausente': 0.15, 'defeito_tampa': 0.15}.copy()
+
+
+LIMIARES = _limiares_do_contrato(IMGSZ)
 
 app = FastAPI(title='Teste ao vivo — v7a-lateral')
 _modelo: YOLO | None = None
@@ -171,6 +198,8 @@ def estado():
 def config(imgsz: int | None = None, conf: float | None = None):
     if imgsz:
         _config['imgsz'] = imgsz
+        global LIMIARES
+        LIMIARES = _limiares_do_contrato(imgsz)
     if conf is not None:
         _config['conf'] = conf
     return JSONResponse(_config)
