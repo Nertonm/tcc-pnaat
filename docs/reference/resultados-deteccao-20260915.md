@@ -203,6 +203,45 @@ de confiança). Em linha de inspeção isso é o trade-off certo: silêncio deix
 Origem: `decisao-operacional.json` sha256 `259afa47490d3263` ·
 `limiares-teste.json` sha256 `d999a1e0cf319abf`.
 
+
+## 3e. Números finais do dia (candidato v6a/v7a)
+
+**Métrica de aceitação — k-fold por item, 5 dobras, mesmo protocolo de entrega:**
+
+| métrica | média ± desvio | faixa |
+|---|---|---|
+| mAP50 | **0.6708 ± 0.1487** | 0.5123–0.9187 |
+| mAP50-95 | 0.2743 ± 0.1018 | 0.1718–0.4414 |
+| precision | 0.7205 ± 0.1667 | — |
+| recall | 0.6621 ± 0.1228 | — |
+
+O mesmo protocolo, executado duas vezes, devolveu **o mesmo valor** (seed fixa, determinístico):
+o pipeline é reprodutível e o número não é sorte de rodada. As listas de cada dobra ficam em
+`<dataset>/kfold-listas/kfv7/` e a checagem de disjunção passou (interseção 0).
+
+**A/B do aumento offline (3× no treino) — NÃO ajudou:**
+
+| modelo | F1 macro @0,05 | @0,15 | @0,30 |
+|---|---|---|---|
+| candidato (sem aumento) | 0.524 | **0.711** | 0.605 |
+| com aumento 3× | 0.496 | 0.550 | 0.686 |
+
+Veredito: **manter sem aumento**. No ponto de operação (0,15) o braço aumentado perde ~0,16 de
+F1; a hipótese de que mais cópias ajudariam não se confirmou neste conjunto. Resultado negativo
+registrado — vale tanto quanto um positivo, porque evita trabalho futuro repetido.
+
+**Gate fora de domínio (MVTec, 83 imagens de `bottle`):** AUROC de imagem =
+**0.500** (20 boas, 63 com defeito). Em nível de acaso:
+fora do nosso domínio o modelo não separa nada. Uso correto = **gate de promoção** (não pode
+subir), nunca métrica de acuidade nem uso em objeto de fora.
+
+**Topo:** val mAP50 = 0,035 — declarado **fora de escopo** até haver captura e anotação de topo
+próprias.
+
+Origem: `kfold-*.json` sha `f3593c2a3c1f0486` ·
+`v7aug/limiares-teste.json` sha `f0fdccc827828447` ·
+`ood-mvtec.json` sha `5fc3a93f09f8531d`
+
 ## 4. Aumento de dados e preprocessing
 
 - **Offline** (`aumenta_offline.py`, equivale ao "dataset version" do Roboflow): 3× no split

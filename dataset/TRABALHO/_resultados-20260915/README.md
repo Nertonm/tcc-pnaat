@@ -76,3 +76,13 @@ JSON: `decisao-operacional.json` · sha256 `259afa47490d3263`
 - v7b (4 classes) e v7aug (A/B do aumento offline): treinando/na fila
 - k-fold por item do candidato com as listas versionadas em `<dataset>/kfold-listas/`
 - canário no rig: depende de captura física
+
+## Números finais
+
+| item | valor |
+|---|---|
+| k-fold por item (aceitação) | mAP50 0.6708 ± 0.1487 (reprodutível) |
+| A/B do aumento 3× | perdeu no ponto de operação (0,550 vs 0,711) — manter sem aumento |
+| gate OOD (MVTec bottle) | AUROC 0.500 — acaso; uso só como gate |
+| topo | fora de escopo (val 0,035) |
+| modelo de entrega | v7a (= v6a) · sha b92be4f42ccfa58f · 6,1 MB |
