@@ -695,6 +695,9 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
     porque "OK 15" se lia como 15 garrafas aprovadas;
   - evidência ausente vira placeholder **local** (SVG declarando a ausência), nunca imagem externa
     de placeholder e nunca imagem quebrada silenciosa.
+  - a rota de evidência só lê **imagem dentro da raiz declarada** (`--evidencias`, padrão: a pasta do
+    banco). O caminho vem do banco, e o banco é dado: sem a fronteira, uma linha apontando para
+    `/etc/passwd` fazia a API servir o arquivo (sonda da revisão: HTTP 200 com 2435 bytes).
 - Alternativa não adotada A, por ser exatamente o defeito: número inventado sobrevive à queda da API
   e é acreditado. Com B, API fora = tela vazia + aviso com o motivo.
 - Alternativa não adotada C: uma segunda pipeline de tela repetiria a divergência que a D-30 fecha.

@@ -20,6 +20,7 @@ let mockHealth = {};
 let mockServices = [];
 let mockNotifications = [];
 let mockLotes = [];
+let mockItemDetalhe = null;
 
 const PNAAT_API = {
     base: '',                     // mesma origem: o api.py serve o site e a API juntos
@@ -214,6 +215,35 @@ const PNAAT_API = {
         return avisos;
     },
 
+    // ---------------------------------------------------------------- um item
+
+    async item(id, aoPronto) {
+        /*
+         * A Investigacao navega com o id do CARTAO (`CAP-<n>`), e `/api/item/<id>` responde por id de
+         * ITEM. Sem esta traducao o detalhe nunca carregava: o endpoint respondia 404 e a tabela de
+         * evidencias aparecia sempre vazia (achado da revisao em navegador).
+         */
+        const cap = mockCapturas.find(c => c.id === id);
+        const itemId = cap ? cap.item : id;
+
+        // Sem esta guarda vira laco: carregar -> re-renderizar -> carregar de novo.
+        if (mockItemDetalhe && mockItemDetalhe.item_id === itemId && !mockItemDetalhe.inexistente) {
+            if (typeof aoPronto === 'function') { aoPronto(); }
+            return mockItemDetalhe;
+        }
+
+        try {
+            mockItemDetalhe = await this._pega(`/api/item/${encodeURIComponent(itemId)}`);
+        } catch (erro) {
+            // 404 aqui e RESPOSTA, nao falha de rede: o item nao existe no registro.
+            mockItemDetalhe = { item_id: itemId, inexistente: true, motivo: erro.message };
+        }
+
+        if (typeof aoPronto === 'function') { aoPronto(); }
+
+        return mockItemDetalhe;
+    },
+
     // ---------------------------------------------------------------- selo de origem
 
     _selo() {
@@ -229,7 +259,8 @@ const PNAAT_API = {
         } else if (!e.carregada) {
             texto = 'carregando dados do registro...';
         } else {
-            texto = `${e.itens} itens | banco ${e.banco} | camera ${e.adaptador_ok ? 'ok' : 'sem resposta'}`;
+            texto = `${e.itens} itens | banco ${e.banco} | adaptador ${e.adaptador} `
+                + (e.adaptador_ok ? 'respondendo (porta aberta)' : 'sem resposta');
         }
 
         alvos.forEach(a => {
@@ -283,6 +314,7 @@ const PNAAT_API = {
             mockLotes = [];
             mockServices = [];
             mockNotifications = [];
+            mockItemDetalhe = null;
         }
 
         this._selo();

@@ -261,6 +261,14 @@ class App {
         this.refreshIcons();
 
         this.refreshSystemStatus();
+
+        /*
+         * A Investigacao busca UM item na API: a lista serve cabecalho e cartao, mas as evidencias
+         * (D-30) e as correcoes do operador so existem no detalhe. api.js tem guarda contra laco.
+         */
+        if (view === 'investigacao' && window.PNAAT_API) {
+            window.PNAAT_API.item(param, () => this.navigate('investigacao', param));
+        }
     }
 
 

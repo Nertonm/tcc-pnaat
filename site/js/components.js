@@ -138,7 +138,13 @@ const renderOperacao = () => {
                     title: 'Total produzido',
                     value: mockStats.totalLote,
                     icon: 'layers-3',
-                    subtitle: `
+                    subtitle:
+                        mockStats.producaoAnterior === '--'
+                        || mockStats.producaoAnterior === undefined
+                            ? `<span class="text-gray-400">
+                                   sem serie historica no registro
+                               </span>`
+                            : `
                         <span
                             class="
                                 inline-flex
@@ -153,11 +159,11 @@ const renderOperacao = () => {
                                 class="mr-1 h-3.5 w-3.5"
                             ></i>
 
-                            +12%
+                            ${mockStats.producaoAnterior}
                         </span>
 
                         <span class="ml-1">
-                            desde ontem
+                            vs. periodo anterior
                         </span>
                     `
                 })}
@@ -172,7 +178,8 @@ const renderOperacao = () => {
                             ${approvedPercentage}%
                         </span>
 
-                        do lote atual
+                        dos itens decididos (${mockStats.inconclusivos ?? '--'} inconclusivo(s)
+                        fora da conta)
                     `
                 })}
 
@@ -188,7 +195,7 @@ const renderOperacao = () => {
                                 text-brand-red
                             "
                         >
-                            3 eventos
+                            ${mockStats.inconclusivos ?? '--'} evento(s)
                         </span>
 
                         aguardam revisão
@@ -1435,12 +1442,122 @@ const renderCapturas = () => `
 
 
 const renderInvestigacao = id => {
+    /*
+     * Sem item informado, abre o defeito mais recente e DIZ que foi escolha automatica.
+     * Com id informado e inexistente, NAO mostra outro item: antes o `||` caia no primeiro defeito
+     * (ou no primeiro da lista) e os numeros de outro item apareciam como se fossem deste.
+     */
+    const pedido =
+        id ? mockCapturas.find(item => item.id === id) : null;
+
+    const automatico = !id;
+
     const cap =
-        mockCapturas.find(item => item.id === id) ||
-        mockCapturas.find(item => item.status === 'Defeito') ||
-        mockCapturas[0];
+        pedido ||
+        (automatico
+            ? (mockCapturas.find(item => item.status === 'Defeito') || mockCapturas[0] || null)
+            : null);
+
+    if (!cap) {
+        return `
+            <div class="fade-in-up mx-auto max-w-3xl">
+                <section class="surface-card p-8">
+                    <div class="flex items-center gap-3 text-brand-red">
+                        <i data-lucide="search-x" class="h-6 w-6"></i>
+
+                        <h2 class="text-lg font-bold">
+                            Item nao encontrado no registro
+                        </h2>
+                    </div>
+
+                    <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                        Nada foi encontrado para
+                        <span class="font-mono">${id || '(sem id)'}</span>.
+                        Esta vista nao mostra outro item no lugar do pedido.
+                    </p>
+
+                    <button
+                        onclick="app.navigate('capturas')"
+
+                        class="mt-5 inline-flex items-center text-sm font-semibold text-brand-red"
+                    >
+                        <i data-lucide="arrow-left" class="mr-2 h-4 w-4"></i>
+
+                        Voltar para Capturas
+                    </button>
+                </section>
+            </div>`;
+    }
+
+    /*
+     * O detalhe vem do `/api/item/<id>` (api.js guarda em mockItemDetalhe). A lista da tela de
+     * Capturas nao traz evidencia nem correcao: sem esta busca, o rastro da D-30 nao aparecia.
+     */
+    const detalhe =
+        (typeof mockItemDetalhe !== 'undefined' && mockItemDetalhe
+         && mockItemDetalhe.item_id === cap.item && !mockItemDetalhe.inexistente)
+            ? mockItemDetalhe
+            : null;
+
+    const linhasEvidencia =
+        detalhe && detalhe.evidencias && detalhe.evidencias.length
+            ? detalhe.evidencias.map(e => `
+                <tr class="border-b border-black/5 dark:border-white/5">
+                    <td class="py-1.5 pr-4 font-mono text-xs">${e.grandeza}</td>
+                    <td class="py-1.5 pr-4">${e.valor === null || e.valor === undefined ? '--' : e.valor} ${e.unidade}</td>
+                    <td class="py-1.5 pr-4">${e.origem}</td>
+                    <td class="py-1.5 pr-4">${e.papel}</td>
+                    <td class="py-1.5 font-mono text-xs">${e.metodo}</td>
+                </tr>`).join('')
+            : `<tr><td colspan="5" class="py-3 text-gray-400">
+                   nenhuma grandeza registrada para este item
+               </td></tr>`;
+
+    const correcoes =
+        detalhe && detalhe.correcoes && detalhe.correcoes.length
+            ? detalhe.correcoes.map(c => `
+                <li>${c.decisao_original} &rarr; ${c.decisao_corrigida}
+                    (por ${c.corrigido_por || '--'})</li>`).join('')
+            : '<li class="text-gray-400">nenhuma correcao de operador registrada</li>';
+
+    const blocoDetalhe = `
+        <section class="surface-card p-6">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">
+                    Evidencias da decisao (D-30)
+                </h3>
+
+                ${automatico
+                    ? `<p class="text-xs text-gray-400">
+                           sem item selecionado — abrindo o defeito mais recente (${cap.id});
+                           escolha um cartao em Capturas para abrir um item especifico
+                       </p>`
+                    : ''}
+            </div>
+
+            <table class="mt-3 w-full text-left text-sm">
+                <thead class="text-xs uppercase tracking-wider text-gray-400">
+                    <tr>
+                        <th class="pb-2 pr-4">grandeza</th>
+                        <th class="pb-2 pr-4">valor</th>
+                        <th class="pb-2 pr-4">origem</th>
+                        <th class="pb-2 pr-4">papel</th>
+                        <th class="pb-2">metodo</th>
+                    </tr>
+                </thead>
+
+                <tbody>${linhasEvidencia}</tbody>
+            </table>
+
+            <h3 class="mt-6 text-xs font-bold uppercase tracking-[.18em] text-gray-500">
+                Correcoes do operador
+            </h3>
+
+            <ul class="mt-2 list-disc pl-5 text-sm">${correcoes}</ul>
+        </section>`;
 
     return `
+        ${blocoDetalhe}
         <div
             class="
                 fade-in-up

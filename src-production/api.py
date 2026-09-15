@@ -49,6 +49,32 @@ TIPOS_ESTATICOS = {".html": "text/html; charset=utf-8", ".js": "text/javascript;
                    ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8",
                    ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg",
                    ".jpeg": "image/jpeg", ".ico": "image/x-icon"}
+#: evidencia so pode ser imagem: a rota serve bytes de arquivo apontado pelo BANCO, e o banco e dado
+TIPOS_DE_IMAGEM = (".jpg", ".jpeg", ".png")
+
+
+def _evidencia_valida(caminho: str | None, raiz: Path) -> Path | None:
+    """Devolve o arquivo quando ele e imagem E esta DENTRO da raiz de evidencias declarada.
+
+    Por que a trava existe (achado da revisao de ponta a ponta): o caminho vem de
+    `inspecao_vista.caminho_evidencia`, que e dado do banco. Sem fronteira, uma linha apontando para
+    `/etc/passwd` fazia a API servir o arquivo — a sonda devolveu HTTP 200 com 2435 bytes dele. Com
+    a raiz declarada, o que esta fora nao e lido; o que nao e imagem nao e servido; e o que nao
+    existe nao vira URL (imagem quebrada silenciosa na tela).
+    """
+    if not caminho:
+        return None
+    try:
+        alvo = Path(caminho).resolve()
+    except OSError:
+        return None
+    try:
+        alvo.relative_to(raiz)
+    except ValueError:
+        return None
+    if not alvo.is_file() or alvo.suffix.lower() not in TIPOS_DE_IMAGEM:
+        return None
+    return alvo
 
 
 class ErroDeApi(Exception):
@@ -142,21 +168,32 @@ def _serial(obj):
     raise TypeError(f"nao sei serializar {type(obj).__name__}")
 
 
-def _url_evidencia(item_id: str, vista: str, caminho: str | None) -> str | None:
-    """URL da evidencia SO quando ha caminho gravado: URL sem arquivo produz imagem quebrada."""
-    if not caminho:
-        return None
-    return f"/api/evidencia?item={item_id}&vista={vista}"
+def _dentro_de(alvo: Path, raiz: Path) -> bool:
+    try:
+        alvo.relative_to(raiz)
+        return True
+    except ValueError:
+        return False
 
 
-def _captura_para_site(c) -> dict:
+def _url_evidencia(item_id: str, vista: str, arquivo: Path | None) -> str | None:
+    """URL da evidencia SO quando ha arquivo VALIDO: URL sem arquivo produz imagem quebrada."""
+    return f"/api/evidencia?item={item_id}&vista={vista}" if arquivo else None
+
+
+def _captura_para_site(c, raiz: Path) -> dict:
     """Contrato que o `site/js/api.js` consome.
 
     `status_item` e `status_vista` sao coisas diferentes e por isso tem nomes diferentes: o item diz
     se a peca passou (o que a tela mostra como OK/Defeito/Inconclusivo), a vista diz o que aquela
     linha decidiu no seu dominio. Chamar as duas de `status` fazia a linha `corpo/ok` de um item
     `defeito` passar por defeito — exatamente o rotulo que mente.
+
+    `tem_evidencia` e `evidencia_url` saem da checagem do ARQUIVO, nao do campo do banco: a revisao
+    mostrou uma linha com caminho gravado e arquivo ausente sendo anunciada como evidencia e
+    entregando 404 no navegador.
     """
+    arquivo = _evidencia_valida(c.caminho_evidencia, raiz)
     return {"id": c.id, "item_id": c.item_id, "vista": c.vista, "dominio": c.dominio,
             "papel": c.papel, "status_item": c.status_final, "status_vista": c.status_vista,
             "codigo_defeito": c.codigo_defeito, "confianca": c.confianca,
@@ -164,8 +201,8 @@ def _captura_para_site(c) -> dict:
             "qualidade_registro": c.qualidade_registro, "motivo_inconclusivo": c.motivo_inconclusivo,
             "timestamp_trigger": c.timestamp_trigger, "timestamp_captura": c.timestamp_captura,
             "discordancia_lateral": bool(c.discordancia_lateral),
-            "evidencia_url": _url_evidencia(c.item_id, c.vista, c.caminho_evidencia),
-            "tem_evidencia": bool(c.caminho_evidencia)}
+            "evidencia_url": _url_evidencia(c.item_id, c.vista, arquivo),
+            "tem_evidencia": arquivo is not None}
 
 
 # ------------------------------------------------------------------ rotas de leitura
@@ -187,10 +224,13 @@ def _rota_health(ctx: dict) -> dict:
         {"nome": "Classificador de vista (adaptador)",
          "detalhe": camera["adaptador"],
          "estado": "conectado" if camera["porta_aberta"] else "sem resposta"},
+        {"nome": "Raiz de evidencias", "detalhe": str(ctx["evidencias"]),
+         "estado": "servindo" if ctx["evidencias"].is_dir() else "ausente"},
         {"nome": "Site", "detalhe": str(ctx["site"]), "estado": "servido nesta origem"},
     ]
     return {"api": VERSAO_API, "banco": banco, "camera": camera, "servicos": servicos,
             "heartbeat": ultimo, "hardware": _saude_local(ctx["site"]),
+            "evidencias": str(ctx["evidencias"]),
             "agora": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
 
 
@@ -232,7 +272,7 @@ def _rota_capturas(ctx: dict, consulta: dict) -> dict:
         base = total_de_capturas(painel)
     finally:
         painel._cx.close()
-    capturas = [_captura_para_site(c) for c in linhas]
+    capturas = [_captura_para_site(c, ctx["evidencias"]) for c in linhas]
     return {"capturas": capturas, "total": len(capturas), "base": base,
             "filtros": {"limite": limite, "vista": vista, "estado": estado},
             "nota": "lista vazia com base > 0 significa que o filtro nao casou, nao que nada foi "
@@ -248,7 +288,7 @@ def _rota_item(ctx: dict, item_id: str) -> dict:
     if detalhe is None:
         raise ErroDeApi(404, "item_desconhecido", f"nao ha item {item_id!r} no registro")
     dados = asdict(detalhe)
-    dados["vistas"] = [_captura_para_site(v) for v in detalhe.vistas]
+    dados["vistas"] = [_captura_para_site(v, ctx["evidencias"]) for v in detalhe.vistas]
     dados["correcoes"] = [asdict(c) for c in detalhe.correcoes]
     dados["aprovado"] = detalhe.status_final == "ok"
     return dados
@@ -296,10 +336,18 @@ def _rota_evidencia(ctx: dict, consulta: dict) -> tuple[bytes, str]:
     if not caminho:
         raise ErroDeApi(404, "sem_evidencia_registrada",
                         f"{item}/{vista} nao tem caminho de evidencia no registro")
-    arquivo = Path(caminho)
-    if not arquivo.is_file():
+    raiz: Path = ctx["evidencias"]
+    try:
+        alvo = Path(caminho).resolve()
+    except OSError:
+        alvo = None
+    if alvo is None or not _dentro_de(alvo, raiz):
+        raise ErroDeApi(403, "evidencia_fora_da_raiz",
+                        f"o registro aponta para fora da raiz de evidencias ({raiz})")
+    arquivo = _evidencia_valida(caminho, raiz)
+    if arquivo is None:
         raise ErroDeApi(404, "arquivo_de_evidencia_ausente",
-                        f"o registro aponta {caminho} e o arquivo nao esta la")
+                        f"o registro aponta {caminho} e o arquivo nao esta la como imagem")
     return arquivo.read_bytes(), TIPOS_ESTATICOS.get(arquivo.suffix.lower(), "application/octet-stream")
 
 
@@ -334,12 +382,19 @@ def _rota_gatilho(ctx: dict, corpo: dict) -> dict:
 
 # ------------------------------------------------------------------ servidor
 
-def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080) -> ThreadingHTTPServer:
-    """Servidor que serve a API e o site na MESMA origem (sem CORS, sem CDN, sem build)."""
-    db = Path(db)
+def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
+                   evidencias: Path | str | None = None) -> ThreadingHTTPServer:
+    """Servidor que serve a API e o site na MESMA origem (sem CORS, sem CDN, sem build).
+
+    `evidencias` e a fronteira de leitura de arquivo: sem ela declarada, vale o diretorio do banco.
+    Nada fora dessa raiz e servido, mesmo que o banco aponte para la.
+    """
+    db = Path(db).resolve()
     site = Path(site)
     if not site.is_dir():
         raise FileNotFoundError(f"diretorio do site nao existe: {site}")
+    raiz_evidencias = Path(evidencias).resolve() if evidencias else db.parent
+    raiz_evidencias.mkdir(parents=True, exist_ok=True)
 
     class Handler(BaseHTTPRequestHandler):
         server_version = VERSAO_API
@@ -351,7 +406,8 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080) -> Threa
         # -------------------------------------------------- apoio
 
         def _contexto(self) -> dict:
-            return {"db": db, "site": site, "porta_real": self.server.server_address[1]}
+            return {"db": db, "site": site, "porta_real": self.server.server_address[1],
+                    "evidencias": raiz_evidencias}
 
         def _responde(self, codigo: int, corpo: bytes, tipo: str) -> None:
             self.send_response(codigo)
@@ -452,9 +508,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--db", default="hub.db", help="banco do registro")
     ap.add_argument("--site", default=str(Path(__file__).resolve().parent.parent / "site"),
                     help="diretorio do site servido na mesma origem")
+    ap.add_argument("--evidencias", default="",
+                    help="raiz de onde imagens de evidencia podem ser lidas (padrao: pasta do banco)")
     ap.add_argument("--porta", type=int, default=8080)
     a = ap.parse_args(argv)
-    servidor = criar_servidor(Path(a.db), Path(a.site), a.porta)
+    servidor = criar_servidor(Path(a.db), Path(a.site), a.porta,
+                              Path(a.evidencias) if a.evidencias else None)
     print(f"{VERSAO_API}: http://0.0.0.0:{servidor.server_address[1]}/  (site em {a.site})")
     print(f"banco: {a.db} | adaptador de camera: {ADAPTADOR}")
     try:

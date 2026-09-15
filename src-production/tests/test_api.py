@@ -13,6 +13,7 @@ Regras que os testes protegem (sao as mesmas do relatorio, e por isso valem aqui
 from __future__ import annotations
 
 import json
+import sqlite3
 import threading
 import urllib.error
 import urllib.request
@@ -229,3 +230,113 @@ def test_site_e_servido_na_mesma_origem_da_api(servidor):
         assert resp.status == 200 and b"PNAAT" in resp.read()
     with urllib.request.urlopen(servidor + "/js/api.js", timeout=10) as resp:
         assert resp.status == 200 and b"adaptador" in resp.read()
+
+
+# ---------------------------------------------------------------- revisao ponta a ponta
+
+import json
+import sqlite3
+import urllib.error
+import urllib.request
+
+import pytest
+
+
+def _aponta_evidencia(banco, item, vista, caminho):
+    cx = sqlite3.connect(banco)
+    cx.execute("UPDATE inspecao_vista SET caminho_evidencia=? WHERE item_id=? AND vista=?",
+               (caminho, item, vista))
+    cx.commit()
+    cx.close()
+
+
+def _linha(servidor, item, vista):
+    with urllib.request.urlopen(servidor + "/api/capturas?limite=200", timeout=10) as resp:
+        dados = json.loads(resp.read().decode())["dados"]["capturas"]
+    return [c for c in dados if c["item_id"] == item and c["vista"] == vista][0]
+
+
+def test_evidencia_fora_da_raiz_e_recusada(servidor, banco, tmp_path):
+    """O caminho vem do banco: fora da raiz declarada nao se le nada, nem por tabela."""
+    fora = tmp_path.parent / f"fora-da-raiz-{tmp_path.name}.txt"
+    fora.write_text("conteudo-que-nao-pode-sair")
+    _aponta_evidencia(banco, "i-A", "lateral1", str(fora))
+
+    with pytest.raises(urllib.error.HTTPError) as erro:
+        urllib.request.urlopen(servidor + "/api/evidencia?item=i-A&vista=lateral1", timeout=10)
+    assert erro.value.code == 403
+    corpo = erro.value.read().decode()
+    assert json.loads(corpo)["erro"] == "evidencia_fora_da_raiz"
+    assert "conteudo-que-nao-pode-sair" not in corpo
+
+
+def test_evidencia_inexistente_nao_vira_url_nem_imagem_quebrada(servidor, banco, tmp_path):
+    """`tem_evidencia` sai do ARQUIVO, nao do campo: caminho gravado sem arquivo nao e evidencia."""
+    _aponta_evidencia(banco, "i-A", "lateral1", str(tmp_path / "sumiu.jpg"))
+
+    linha = _linha(servidor, "i-A", "lateral1")
+    assert linha["tem_evidencia"] is False and linha["evidencia_url"] is None
+
+    with pytest.raises(urllib.error.HTTPError) as erro:
+        urllib.request.urlopen(servidor + "/api/evidencia?item=i-A&vista=lateral1", timeout=10)
+    assert erro.value.code == 404
+    assert json.loads(erro.value.read().decode())["erro"] == "arquivo_de_evidencia_ausente"
+
+
+def test_arquivo_dentro_da_raiz_mas_nao_imagem_e_recusado(servidor, banco, tmp_path):
+    """A rota serve imagem. Texto dentro da raiz nao vira `image/*` por conveniencia."""
+    texto = tmp_path / "anotacao.txt"
+    texto.write_text("nao-sou-imagem")
+    _aponta_evidencia(banco, "i-A", "lateral1", str(texto))
+
+    assert _linha(servidor, "i-A", "lateral1")["tem_evidencia"] is False
+    with pytest.raises(urllib.error.HTTPError) as erro:
+        urllib.request.urlopen(servidor + "/api/evidencia?item=i-A&vista=lateral1", timeout=10)
+    assert erro.value.code == 404
+
+
+def test_base_vazia_declara_ausencia_em_vez_de_zero(tmp_path, site):
+    """Registro sem item: `aprovados` e `total` sao nulos com motivo; lista vazia tem base 0."""
+    import threading
+
+    from api import criar_servidor
+    from registro import Registro
+
+    vazio = tmp_path / "vazio.db"
+    Registro.abrir(vazio).fechar()
+
+    srv = criar_servidor(vazio, site, porta=0)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{srv.server_address[1]}"
+    try:
+        with urllib.request.urlopen(base + "/api/resumo", timeout=10) as resp:
+            resumo = json.loads(resp.read().decode())["dados"]
+        assert resumo["sem_base"] is True
+        assert resumo["aprovados"] is None and resumo["total"] is None
+        assert "nao ha medicao" in resumo["motivo"]
+        assert resumo["contagem_por_estado"] == {}
+
+        with urllib.request.urlopen(base + "/api/capturas", timeout=10) as resp:
+            capturas = json.loads(resp.read().decode())["dados"]
+        assert capturas["total"] == 0 and capturas["base"] == 0 and capturas["capturas"] == []
+    finally:
+        srv.shutdown()
+        srv.server_close()
+
+def test_helper_de_evidencia_recusa_fora_da_raiz(tmp_path):
+    """Pina a SEGUNDA camada: a mutacao da revisao mostrou que o guard da rota sozinho deixava o
+    helper sem prova — com a rota mutada o teste de rota falha, mas o helper podia quebrar calado."""
+    from api import _evidencia_valida
+
+    dentro = tmp_path / "ok.jpg"
+    dentro.write_bytes(b"\xff\xd8\xff")
+    fora = tmp_path.parent / f"fora-{tmp_path.name}.jpg"
+    fora.write_bytes(b"\xff\xd8\xff")
+    texto = tmp_path / "nota.txt"
+    texto.write_text("nao sou imagem")
+
+    assert _evidencia_valida(str(dentro), tmp_path) == dentro.resolve()
+    assert _evidencia_valida(str(fora), tmp_path) is None          # fora da raiz
+    assert _evidencia_valida(str(tmp_path / "nao-existe.jpg"), tmp_path) is None
+    assert _evidencia_valida(str(texto), tmp_path) is None         # dentro, mas nao e imagem
+    assert _evidencia_valida(None, tmp_path) is None
