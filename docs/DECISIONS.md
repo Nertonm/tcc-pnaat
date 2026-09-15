@@ -703,3 +703,41 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
 - Alternativa não adotada C: uma segunda pipeline de tela repetiria a divergência que a D-30 fecha.
 - Nota operacional: a porta 8080 do host já é do dashboard anterior (`ctgit-dashboard-site-1`). A API
   do hub sobe na **8090** para não colidir; unificar as duas telas é decisão em aberto.
+
+## D-37: O modelo da cadeia e o artefato medido (pet-infer-3), portado com fidelidade verificada
+
+- Decisao: a autoridade do modelo de visao da cadeia e o artefato congelado
+  `dataset/modelo-inferencia.npz` (+ `.json`), reproduzido por
+  `src-production/classificador_artefato.py`. `SemModelo` continua existindo como fallback
+  **declarado**: `criar_classificador` devolve sempre um motivo, e `main` imprime qual dos dois rodou.
+- Receita portada (identica no produtor `dataset/TRABALHO/compara_extratores.py` e no consumidor
+  `dataset/TRABALHO/servico_inferencia3.py`): BGR->RGB -> Resize(size) -> ToTensor ->
+  Normalize(ImageNet) -> extrator congelado (declarado em `config_extrator`) -> `z = (e - mu0) @ P`
+  -> `z = (z - mu_fonte) / sd_fonte` -> softmax da logreg -> classe do argmax; confianca abaixo do
+  limiar => `inconclusivo` (D-26).
+- Regras que o port nao afrouxa: vintage, extrator, limiar, avaliacao e aviso vem **do json** (nunca
+  de constante no codigo); npz sem as chaves da receita ou json sem vintage/extrator/limiar e erro;
+  fonte sem estatistica no artefato e erro (o proprio json avisa: "camera nova = recalibrar"); classe
+  fora do vocabulario do dominio e erro (D-28); dominio CORPO devolve `None` declarado e **nao embute
+  nada**.
+- O que o artefato declara sobre si mesmo viaja junto: a `Medida` carrega uma evidencia
+  `limitacao_declarada_pelo_artefato` **sem fonte** (provisoria, D-24) com o aviso literal —
+  "PROTOTIPO, NAO VALIDADO: avaliacao = 43 de desenvolvimento, nao teste; sem verificacao de presenca;
+  escopo = recorte de gargalo". A cadeia nao registra mais do que o artefato assina.
+- Verificacao (fail-closed de verdade, nao "parece certo"):
+  - `src-production/canario_modelo_artefato.py` monta o **mesmo** conjunto que o json declara, reusando
+    o `carrega()` do produtor, e recomputa as metricas: dominio `nosso`, split val+test, n=43 ->
+    recall macro 0,8519 (declarado 0,8518518), inconclusivo 0,0698 (declarado 0,0697674), e n/recall/fn/fp
+    identicos por classe. Zero divergencias.
+  - `--cadeia` roda um item por `executar` e le o rastro de volta do SQLite: 3 evidencias de origem
+    `classificador`, incluindo o sha256 do artefato e o aviso de prototipo.
+  - Mutacao: tirar a padronizacao por fonte derruba 2 testes; tirar a projecao PCA derruba 2; usar
+    limiar fixo no codigo em vez do metadado derruba 2. A primeira versao do teste de fidelidade era
+    **teatro** (fixture com PCA e padronizacao identidade: a mutacao passava) — o fixture passou a ser
+    nao degenerado e o proprio teste confere que as transformacoes mudam o vetor.
+- Alternativas nao adotadas: (B) treinar na hora com `ClassificadorDeTampa.treinar_no_conjunto` — o que
+  entraria na cadeia nao e o que foi medido; (C) bridge para o servico de bancada `:8099` — exigiria
+  endpoint novo que aceite imagem e acoplaria a cadeia ao servico da bancada.
+- Limite conhecido: uma vista so nao aprova item (`vistas_insuficientes_*` na conformidade), mesmo com
+  o modelo decidindo; e o artefato e prototipo declarado, entao a decisao dele entra como evidencia
+  com essa ressalva, nao como validacao.
