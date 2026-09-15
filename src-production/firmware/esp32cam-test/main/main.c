@@ -561,6 +561,10 @@ static void capture_task(void *arg) {
 void app_main(void) {
     setvbuf(stdout, NULL, _IONBF, 0);
     uart_mutex = xSemaphoreCreateMutex();
+    /* Logs de componentes (ESP_LOGI do driver da camera) escrevem direto no UART,
+     * por fora do nosso mutex: podem intercalar dentro de uma mensagem binaria e
+     * ainda somam ~0,5 kB de ruido por foto na linha. Nossos logs usam log_printf. */
+    esp_log_level_set("*", ESP_LOG_WARN);
     uart_set_baudrate(UART_NUM_0, (uint32_t)uart_baud_atual);
     esp_err_t uart_driver_err = uart_driver_install(UART_NUM_0, 2048, 0, 0, NULL, 0);
     if (uart_driver_err != ESP_OK && uart_driver_err != ESP_ERR_INVALID_STATE) {

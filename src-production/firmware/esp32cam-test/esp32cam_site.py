@@ -60,6 +60,8 @@ _SANITIZE = bytes(0x2E if not (32 <= b < 127) else b for b in range(256))
 TRANSPORT_RE = re.compile(r"TRANSPORT mode=(\w+)")
 STATUS_RE = re.compile(r"STATUS camera=(\w+) driver=(\d+) power_en=(-?\d+) "
                        r"armed=(\d+) transport=(\w+) baud=(\d+)")
+TRIGGER_RE = re.compile(r"TRIGGER_ACCEPTED")
+CAMERA_OFF_RE = re.compile(r"CAMERA_OFF[^\n]*motivo=(\w+)|CAMERA_OFF boot=1")
 
 
 def _e_residuo(linha: bytes) -> bool:
@@ -68,7 +70,7 @@ def _e_residuo(linha: bytes) -> bool:
     if not linha:
         return True
     ruins = sum(1 for b in linha if not (32 <= b < 127))
-    return ruins / len(linha) > 0.3
+    return ruins / len(linha) > 0.2
 
 lock = threading.Lock()
 latest: bytes | None = None
@@ -106,6 +108,7 @@ text_buf = bytearray()
 pending_header: re.Match[bytes] | None = None
 pending_chunks: dict[int, bytes] = {}
 announced: dict[int, tuple[int, int]] = {}
+ANUNCIOS_MAX = 256      # o dict por evento nao pode crescer sem limite
 
 
 def log(kind: str, text: str) -> None:
@@ -179,6 +182,8 @@ def handle_text(data: bytes) -> None:
         info = INFO_RE.search(text)
         if info:
             announced[int(info.group(2))] = (int(info.group(4)), int(info.group(5), 16))
+            while len(announced) > ANUNCIOS_MAX:
+                announced.pop(next(iter(announced)))   # descarta o mais antigo
         fim_bin = END_BIN_RE.search(text)
         if fim_bin:
             evento = int(fim_bin.group(1))
@@ -199,6 +204,14 @@ def handle_text(data: bytes) -> None:
             with lock:
                 camera_estado = estado_no.group(1)
                 driver_estado = int(estado_no.group(2))
+        # Eventos do firmware dao o estado na hora; o STATUS so confirma depois.
+        if TRIGGER_RE.search(text):
+            camera_estado = "ativa"
+            driver_estado = 1
+        off = CAMERA_OFF_RE.search(text)
+        if off:
+            camera_estado = "standby"
+            driver_estado = 0
         ack = BAUD_ACK_RE.search(text)
         if ack:
             baud_pendente = int(ack.group(2))

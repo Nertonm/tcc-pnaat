@@ -11,13 +11,16 @@ PY="${AI_PY:-$RAIZ/.venv/bin/python}"
 [ -x "$PY" ] || PY="$(command -v python3)"
 falhas=0
 
-echo "[gate] (1/3) suite de testes"
+echo "[gate] (1/4) suite de testes"
 ( cd "$CW" && "$PY" -m pytest -q ) || { echo "[gate] FALHA nos testes"; falhas=1; }
 
-echo "[gate] (2/3) sanitizador de higiene"
+echo "[gate] (2/4) suite do firmware ESP32-CAM"
+( cd "$RAIZ" && "$PY" -m pytest -q src-production/firmware/esp32cam-test/tests ) || { echo "[gate] FALHA nos testes do firmware"; falhas=1; }
+
+echo "[gate] (3/4) sanitizador de higiene"
 "$PY" "$CW/scripts/sanitizar_repo.py" || { echo "[gate] FALHA na sanitizacao"; falhas=1; }
 
-echo "[gate] (3/3) midia no staging"
+echo "[gate] (4/4) midia no staging"
 MIDIA_PAT='\.(jpg|jpeg|png|bmp|webp|mp4|mov|stl|step|FCStd|3mf)$'
 # Excecao: TODAS as imagens dentro de dataset/ sao versionadas de proposito.
 # Video, CAD e qualquer midia fora de dataset/ continuam bloqueados.

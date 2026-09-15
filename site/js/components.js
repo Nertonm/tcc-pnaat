@@ -1051,7 +1051,7 @@ const renderCapturas = () => `
                         whitespace-nowrap
                     "
                 >
-                
+
                     <i
                         data-lucide="x-circle"
                         class="mr-2 h-4 w-4"
