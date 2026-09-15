@@ -395,6 +395,44 @@ marcar a captura como não-conforme).
 - `crop_fraction: 1.0` e `rect: false` (letterbox) coerentes com a câmera fixa;
 - hsv_h baixo (0,008) preservando a cor da tampa como sinal, `flipud: 0` (garrafa não vira).
 
+
+## 3j. v8a — treino completo com o dado novo da equipe
+
+**O que mudou no dado** (export de 394 anotações; o projeto 22 respondeu por 158 delas):
+
+- imagens próprias: 136 -> **217** (+60%); itens: 52 -> 91
+- treino 96 -> **170**; teste 18 -> **27** (teste maior, medida melhor)
+- classes raras: `defeito_tampa` 20 -> 30 · `deformidade` 12 -> 18
+
+**A métrica de aceitação (k-fold por item, 5 dobras) — o número que vale:**
+
+| métrica | v7a (sem o dado novo) | **v8a (com o dado novo)** |
+|---|---|---|
+| mAP50 | 0,6708 ± 0,1487 | **0.7196 ± 0.0835** |
+| precisão | 0,7205 ± 0,1667 | 0.749 ± 0.0606 |
+| recall | 0,6621 ± 0,1228 | 0.6756 ± 0.0724 |
+| mAP50-95 | 0,2743 ± 0,1018 | 0.3061 ± 0.0792 |
+
+A média subiu **+0,049** e o desvio caiu de **0,149 para 0,084** (quase metade). Era exatamente
+a previsão da análise de gargalo: mais item do domínio próprio não só melhora a média, encolhe
+a incerteza. Com 91 itens em vez de 52, o número passou a ser assinável.
+
+**Limiar calibrado na validação** (protocolo correto, sem espiar o teste):
+
+`normal` 0.3 · `tampa_ausente` 0.15 · `defeito_tampa` 0.25
+
+No teste, com esses limiares: F1 macro 0.653 a 0,15 (com `tampa_ausente` em 1,000).
+
+**Decisão operacional:** 18/27 com 7 em revisão, acurácia 0.900 descontando as revisões (v7a: 0,833). `tampa_ausente` acertou 9 de 9.
+
+**Regressão declarada:** 1 peça com defeito saiu como `normal` (no v7a eram 0). Mecanismo: com
+limiar por classe, uma caixa de defeito a 0,25 e uma de normal a 0,30 na mesma peça podem
+desempatar para "normal". Correção é de **regra**, não de modelo: caixa de classe de defeito
+acima do limiar dela deve vencer "normal", independentemente da confiança relativa.
+
+**Entrega:** pacote em `pnaat-modelos/ENTREGA/v8a-lateral/` (peso sha `75fd0e3d1e79c75b…` + `modelo.json` + `SHA256SUMS`); contrato `preprocessamento.json`
+atualizado para este modelo, com os limiares de 480 marcados como calibrados; **preflight: CONFORME**.
+
 ## 4. Aumento de dados e preprocessing
 
 - **Offline** (`aumenta_offline.py`, equivale ao "dataset version" do Roboflow): 3× no split

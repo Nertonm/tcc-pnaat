@@ -52,8 +52,14 @@
   "480": {
    "normal": 0.3,
    "tampa_ausente": 0.15,
-   "defeito_tampa": 0.3,
-   "calibrado": true
+   "defeito_tampa": 0.25,
+   "calibrado": true,
+   "f1_val_por_classe": {
+    "normal": 0.545,
+    "tampa_ausente": 0.8,
+    "defeito_tampa": 0.615
+   },
+   "fonte": "calibra_limiar_val.py"
   },
   "416": {
    "normal": null,
@@ -64,9 +70,10 @@
   }
  },
  "modelo": {
-  "arquivo": "v7a-lateral.pt",
-  "sha256": "b92be4f42ccfa58feceaf3ed072bc407238ba1f5d72ad842bee8dfb7b1e77d7f",
-  "tamanho_bytes": 6226154
+  "arquivo": "v8a-lateral.pt",
+  "sha256": "75fd0e3d1e79c75b979a433ebab12530485130a06e0da60f8d65592138b2fdc1",
+  "tamanho_bytes": 6226282,
+  "candidato": "v8a-lateral"
  },
  "regra_decisao": "limiar por classe; sem caixa acima do limiar -> REVISAR; \"sem peça\" é estado separado",
  "observacao": "consome este arquivo em vez de manter cópia local; compare o campo fingerprint antes de rodar",

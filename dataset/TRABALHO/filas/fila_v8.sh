@@ -2,8 +2,8 @@
 # v8: CADEIA COMPLETA com o dado novo da equipe (384 anotações; projeto 22 com 139).
 # Serializada, cada treino atrás do guardião. Nada em /tmp que precise sobreviver.
 set -uo pipefail
-REPO=${TCC_REPO:-$HOME/tcc-pnaat/github}
-M=${PNAAT_MODELOS:-$HOME/pnaat-modelos}
+REPO="$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)"
+M="$(dirname "$(dirname "$REPO")")/pnaat-modelos"
 G="$REPO/dataset/TRABALHO/filas/guardiao_treino.sh"
 BASE=$M/ext-lateral-detector-roi/runs/ext-pretreino/weights/best.pt
 LOG=$M/fila-v8.log
@@ -13,6 +13,7 @@ morre() { echo "ABORTADO: $1" | tee -a "$LOG"; exit 1; }
 passo() { echo "=== $* $(date -Is)" | tee -a "$LOG"; }
 confere() { [ -s "$1" ] || morre "ausente/vazio: $1"; }
 echo "inicio $(date -Is) — cadeia completa v8" > "$LOG"
+trap 'rc=$?; echo "[trap] encerrou rc=$rc em $(date -Is) (linha $LINENO)" >> "$LOG"' EXIT
 
 passo "1/8 export canônico + trava de frescor"
 ./.venv/bin/python dataset/TRABALHO/exporta_anotacoes.py >> "$LOG" 2>&1
