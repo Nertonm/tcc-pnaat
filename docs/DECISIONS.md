@@ -1171,3 +1171,39 @@ espcam obedecia ao delay".
 Consequencia pratica para calibrar: os atrasos de csi e usb estao curtos (0 e 700 ms contra um percurso
 de ~3-4 s ate as vistas). O caminho e o laco ja validado: escolher a camera, aplicar um valor, disparar
 o teste de bancada, olhar a foto e o numero medido — subindo em passos de ~1 s a partir de ~1,5 s.
+
+## D-49: queda do host do rig em 2026-09-15 ~16:00 — estado, causa nao provada e o que foi endurecido
+
+**Estado depois de religar (verificado):** rig, hub e ponte ativos e habilitados; detector parado e
+desabilitado (decisao do operador); tela do site de volta; `delay-por-camera.json` intacto em
+`{csi:0, usb:700, espcam:1500}` — a configuracao **sobreviveu ao reboot**, que era a duvida do operador.
+O no de trigger voltou armado (`estado=armado`, `nivel=1`).
+
+**Causa: nao provada, e agora da para provar.** O Pi reiniciou sem registro de desligamento limpo
+(`up 0 minutes`, reboot as 16:09:46) e o journal do boot anterior NAO existia, apesar de `/var/log/journal`
+estar la — ou seja, sem post-mortem. O que a maquina diz: `vcgencmd get_throttled = 0x0` (nenhuma
+subtensao ou throttling, nem no passado), 47,7 °C e 0,86 V em repouso — **energia esteve limpa**. O
+caminho mais provavel e um travamento com o watchdog de hardware (1 min) reiniciando a placa, que explica
+o reboot sem desligamento limpo. Fica como LIKELY, nao como fato.
+
+**Endurecido nesta passada:**
+1. **Journal persistente** (`Storage=persistent`): o proximo incidente deixa prova. Sem isso nao ha
+   post-mortem possivel — foi o que faltou agora.
+2. **Kiosk com autostart** (`.config/autostart/pnaat-kiosk.desktop` + `pnaat-kiosk.sh`) e flags mais
+   leves (`--renderer-process-limit=1`, heap JS limitado, `--disable-dev-shm-usage`): a tela do site nao
+   se perde em reboot e o consumo fica contido, porque a mesma maquina roda rig e hub. O principal
+   suspeito de recurso era justamente o chromium em kiosk rodando por horas.
+3. **Ponte: pedido malformado nao derruba mais o servico.** `do_POST` tinha uma cadeia de rotas e um
+   check de permissao usando `name`; rota que terminava sem definir comando estourava `UnboundLocalError`
+   e matava o processo (medido: traceback 16:10:27, restart 16:10:33). Com `name = ""` no inicio do
+   handler, o mesmo pedido agora responde `400 comando nao permitido: ''` com a ponte de pe — verificado.
+4. **Ordem de boot do gatilho.** O no de trigger e alimentado pelo USB do Pi, entao sobe DEPOIS da
+   ponte; a ponte abre a porta durante o boot do no e perde o anuncio `EV ARMED`, ficando em
+   "desconhecido" com nivel nulo — o gatilho nao dispara. Reproduzido duas vezes, sempre resolvido
+   reiniciando a ponte. Criada unidade oneshot `pnaat-gatilho-posboot.service` (habilitada) que, 45 s
+   apos o boot, reinicia a ponte uma vez se o estado nao estiver `armado`. Correcao de raiz para o dono:
+   a ponte deveria reabrir/rearmar ao ver os `EV PING` do no sem ter visto o `EV ARMED`.
+
+**E um ganho que se confirmou:** no reboot os dispositivos trocaram de numero (`1a86` foi para ttyUSB1 e
+o `CP2102` para ttyUSB0). Como a ponte usa os caminhos `by-id`, ESP-CAM e no de trigger continuaram nos
+papeis certos — a correcao de antes evitou que a troca de enumeracao virasse troca de funcao.
