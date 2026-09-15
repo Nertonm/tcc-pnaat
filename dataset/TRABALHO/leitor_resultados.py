@@ -22,9 +22,10 @@ def mostra(p: Path) -> None:
                     if c in m:
                         return m[c]
                 return 0.0
-            print(f"  {dom}: {imgs} imgs  P={_g('precision(B)', 'precision'):.3f} "
-                  f"R={_g('recall(B)', 'recall'):.3f} mAP50={_g('mAP50(B)', 'mAP50'):.3f} "
-                  f"mAP50-95={_g('mAP50-95(B)', 'mAP50-95'):.3f}")
+            print(f"  {dom}: {imgs} imgs  P={_g('metrics/precision(B)', 'precision(B)', 'precision'):.3f} "
+                  f"R={_g('metrics/recall(B)', 'recall(B)', 'recall'):.3f} "
+                  f"mAP50={_g('metrics/mAP50(B)', 'mAP50(B)', 'mAP50'):.3f} "
+                  f"mAP50-95={_g('metrics/mAP50-95(B)', 'mAP50-95(B)', 'mAP50-95'):.3f}")
             for c, cv in (v.get('por_classe') or {}).items():
                 if isinstance(cv, dict):
                     print(f"     {c:16s} mAP50={cv.get('mAP50', 0):.3f} mAP50-95={cv.get('mAP50-95', 0):.3f}")

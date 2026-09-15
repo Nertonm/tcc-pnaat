@@ -20,12 +20,11 @@ import os
 import statistics
 import subprocess
 import sys
-import tempfile
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-MODELOS = os.environ.get('PNAAT_MODELOS') or str(Path.home() / 'pnaat-modelos')
+MODELOS = os.environ.get('PNAAT_MODELOS') or str(__import__('pathlib').Path(__file__).resolve().parents[4] / 'pnaat-modelos')
 G = Path(__file__).resolve().parents[2]
 PY = G / '.venv/bin/python'
 TREINA = G / 'dataset/TRABALHO/treina_v1.py'
@@ -73,7 +72,8 @@ def main() -> int:
         idx = int(hashlib.sha256(item.encode()).hexdigest()[:8], 16) % a.k
         dobras[idx].append(item)
 
-    run_dir = Path(tempfile.mkdtemp(prefix=f'kfold-{a.tag}-'))
+    run_dir = base / 'kfold-listas' / f'{a.tag}'
+    run_dir.mkdir(parents=True, exist_ok=True)
     print(f'diretório das listas: {run_dir}')
     resultado = {'dataset': str(base), 'k': a.k, 'imgsz': a.imgsz, 'epochs': a.epochs,
                  'modelo_inicial': a.modelo, 'listas': str(run_dir),
