@@ -181,27 +181,109 @@
                 <!-- Ações -->
                 <div class="flex items-center gap-2 sm:gap-3">
 
-                    <div
+                    <div id="pi-status-container"
                         class="hidden items-center rounded-xl bg-light-bg px-3 py-2 dark:bg-dark-bg lg:flex">
-                        <span class="status-dot status-success mr-2.5"></span>
+                        <span id="pi-status-dot" class="status-dot status-success mr-2.5"></span>
 
                         <div class="leading-tight">
-                            <div class="text-[11px] font-semibold">
+                            <div id="pi-status-text" class="text-[11px] font-semibold">
                                 Raspberry Pi online
                             </div>
 
-                            <div class="text-[10px] text-gray-400">
-                                Latência 12 ms
+                            <div id="pi-latency-text" class="text-[10px] text-gray-400">
+                                Latência 12ms
                             </div>
                         </div>
                     </div>
 
-                    <button class="topbar-icon-button" title="Notificações">
-                        <i data-lucide="bell" class="h-[18px] w-[18px]"></i>
+                    <div id="notifications-wrapper" class="relative">
 
-                        <span
-                            class="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand-red ring-2 ring-light-surface dark:ring-dark-surface"></span>
-                    </button>
+                        <button id="notifications-button" class="topbar-icon-button" title="Notificações"
+                            aria-label="Abrir notificações" aria-expanded="false" type="button">
+                            <i data-lucide="bell" class="h-[18px] w-[18px]"></i>
+
+                            <span id="notification-badge" class="
+                                    absolute
+                                    right-2
+                                    top-2
+
+                                    h-2
+                                    w-2
+
+                                    rounded-full
+                                    bg-brand-red
+
+                                    ring-2
+                                    ring-light-surface
+                                    dark:ring-dark-surface
+                                "></span>
+                        </button>
+
+                        <div id="notification-panel" class="
+                                absolute
+                                right-0
+                                top-12
+
+                                z-50
+
+                                hidden
+
+                                w-[340px]
+                                max-w-[calc(100vw-2rem)]
+
+                                overflow-hidden
+
+                                rounded-2xl
+
+                                border
+                                border-light-border
+                                dark:border-dark-border
+
+                                bg-white
+                                dark:bg-dark-raised
+
+                                shadow-2xl
+                            ">
+
+                            <div class="
+                                    flex
+                                    items-center
+                                    justify-between
+
+                                    border-b
+                                    border-light-border
+                                    dark:border-dark-border
+
+                                    px-4
+                                    py-3
+                                ">
+                                <div>
+                                    <div class="text-sm font-bold">
+                                        Notificações
+                                    </div>
+
+                                    <div class="mt-0.5 text-[11px] text-gray-400">
+                                        Eventos recentes do sistema
+                                    </div>
+                                </div>
+
+                                <button id="mark-notifications-read" type="button" class="
+                                        text-[11px]
+                                        font-semibold
+                                        text-brand-red
+
+                                        hover:underline
+                                    ">
+                                    Marcar como lidas
+                                </button>
+                            </div>
+
+                            <div id="notification-list" class="max-h-[360px] overflow-y-auto p-2">
+                            </div>
+
+                        </div>
+
+                    </div>
 
                     <div
                         class="flex h-10 items-center rounded-xl border border-light-border bg-light-bg px-3 dark:border-dark-border dark:bg-dark-bg sm:px-4">

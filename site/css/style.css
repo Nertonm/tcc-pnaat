@@ -944,3 +944,97 @@ select:focus-visible {
         transition-duration: .01ms !important;
     }
 }
+
+/* ========================================================= */
+/* Notificações */
+/* ========================================================= */
+
+.notification-item {
+    width: 100%;
+
+    display: flex;
+    align-items: flex-start;
+
+    gap: 12px;
+
+    padding: 12px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background: transparent;
+
+    color: inherit;
+
+    cursor: pointer;
+
+    transition:
+        background-color 160ms ease,
+        transform 160ms cubic-bezier(.2, .8, .2, 1);
+}
+
+
+.notification-item:hover {
+    background: #F4F6F8;
+
+    transform: translateX(2px);
+}
+
+
+.dark .notification-item:hover {
+    background: #20262D;
+}
+
+
+.notification-read {
+    opacity: .62;
+}
+
+
+.notification-read:hover {
+    opacity: 1;
+}
+
+
+.notification-dot {
+    width: 8px;
+    height: 8px;
+
+    margin-top: 5px;
+
+    flex-shrink: 0;
+
+    border-radius: 999px;
+}
+
+
+.notification-dot-danger {
+    background: #D61A22;
+}
+
+
+.notification-dot-success {
+    background: #66764A;
+}
+
+
+.notification-dot-neutral {
+    background: #9CA3AF;
+}
+
+
+.notification-empty {
+    min-height: 130px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #9CA3AF;
+
+    font-size: 12px;
+
+    text-align: center;
+}

@@ -943,8 +943,6 @@ const renderCapturas = () => `
                 <select
                     id="capture-view"
 
-                    onchange="app.filterCaptures()"
-
                     class="
                         app-input
 
@@ -970,8 +968,6 @@ const renderCapturas = () => `
 
                 <select
                     id="capture-status"
-
-                    onchange="app.filterCaptures()"
 
                     class="
                         app-input
@@ -1026,7 +1022,7 @@ const renderCapturas = () => `
                 </span>
 
                 <button
-                    onclick="app.filterCaptures()"
+                    onclick="app.applyCaptureFilters()"
 
                     class="
                         primary-button
@@ -1047,6 +1043,22 @@ const renderCapturas = () => `
                     Aplicar filtros
                 </button>
 
+                <button
+                    onclick="app.clearCaptureFilters()"
+
+                    class="
+                        secondary-button
+                        whitespace-nowrap
+                    "
+                >
+                
+                    <i
+                        data-lucide="x-circle"
+                        class="mr-2 h-4 w-4"
+                    ></i>
+
+                    Limpar filtros
+                </button>
             </div>
 
         </section>

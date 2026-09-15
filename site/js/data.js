@@ -131,3 +131,62 @@ const mockServices = [
         state: 'warning'
     }
 ];
+
+const mockNotifications = [
+    {
+        id: 'NOT-001',
+
+        title: 'Defeito detectado',
+
+        message:
+            'CAP-1044 • ITM-903 foi classificada como defeito com 89% de confiança.',
+
+        time: 'Agora',
+
+        type: 'danger',
+
+        read: false,
+
+        view: 'investigacao',
+
+        param: 'CAP-1044'
+    },
+
+    {
+        id: 'NOT-002',
+
+        title: 'Raspberry Pi online',
+
+        message:
+            'Heartbeat recebido normalmente e serviços locais disponíveis.',
+
+        time: 'Há 1 min',
+
+        type: 'success',
+
+        read: false,
+
+        view: 'saude',
+
+        param: null
+    },
+
+    {
+        id: 'NOT-003',
+
+        title: 'Lote em andamento',
+
+        message:
+            '#L2024-89 possui 450 itens processados até o momento.',
+
+        time: 'Há 5 min',
+
+        type: 'neutral',
+
+        read: true,
+
+        view: 'lote',
+
+        param: null
+    }
+];
