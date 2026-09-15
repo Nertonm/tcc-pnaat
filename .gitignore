@@ -132,7 +132,32 @@ cad-workspace/lote-impressao-20260911/astra2-secoes.json
 # desenho de secoes do lote acima do limite do gate
 cad-workspace/lote-impressao-20260911/astra2-secoes.svg
 
+# dataset/: o dado PROPRIO (dataset/nosso/) e versionado, por decisao do grupo.
+# Terceiros (CC BY 4.0), derivados, anotacoes e saidas de experimento vivem na arvore e
+# NUNCA sao versionados: sao grandes e nao sao nossos. Regra aqui, depois das excecoes
+# de *.jpg acima, para vencer a excecao !dataset/**/*.jpg.
+dataset/externo/**
+!dataset/externo/INDEX.md
+!dataset/externo/MAPA-CLASSES.md
+dataset/derivado/**
+!dataset/derivado/README.md
+dataset/anotacao/**
+!dataset/anotacao/README.md
+dataset/benchmark/**
+!dataset/benchmark/README.md
+dataset/_copias/**
+!dataset/_copias/README.md
+!dataset/_copias/duplicatas/
+dataset/_experimentos/**
+!dataset/_experimentos/README.md
+
+# Excecao: o duplicado byte-identico continua RASTREADO (nada sai do repo); o resto de _copias/ fica fora
+!dataset/_copias/duplicatas/tampa_ausente_frame009-duplicata-de-frame008.jpg
+
 # Firmware ESP32-CAM: dependencia de terceiros e artefatos gerados do ESP-IDF
 src-production/firmware/**/components/
 src-production/firmware/**/sdkconfig
 src-production/firmware/**/*.bak-*
+
+# mapa camera->vista da instalacao (nomes de camera sao dado do rig, nao vao para o repo)
+src-production/mapeamento-rig.json

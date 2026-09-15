@@ -850,3 +850,40 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
     indisponivel sem aria-live, sem noscript.
   - Carga do site: 5 GETs e cerca de 17 KB a cada 15 s com no-store (sem 304), inclusive nas vistas que
     nao usam capturas.
+
+## D-40: A serie do rig vira item do registro (mapa camera->vista declarado + ingestao unica)
+
+- Decisao: o conjunto de captura do rig (`serie` = 3 fotos + manifesto) passa a ser ingerido como ITEM
+  do registro, pela ferramenta `src-production/ingerir_serie.py`, que usa a cadeia que ja existe
+  (`orquestracao.executar`). Nao ha segundo caminho de decisao.
+- O que faltava e agora existe:
+  1. **mapa camera -> vista DECLARADO** (`src-production/mapeamento_rig.py`): o rig nomeia cameras
+     (os papeis `csi`, `usb`, `espcam`) e o registro fala por vista (`topo`, `lateral1`,
+     `lateral2`), e nada ligava os dois. O mapa e declaracao da instalacao (constante `MAPA_PADRAO` ou
+     `--mapa camera=vista,...`), com validacao: vista repetida e erro, camera fora do mapa e erro, e a
+     ORDEM do manifesto nao define vista (a associacao vem do mapa).
+  2. **item com evidencia rastreavel**: as fotos sao COPIADAS para a raiz de evidencia do hub
+     (`<raiz>/series/<carimbo>/<camera>.jpg`) com `sha256` de cada uma, e o registro guarda
+     `caminho_evidencia` + `sha256_evidencia` por vista. A prova passa a viajar com o registro (a serie
+     do rig pode ser apagada sem perder evidencia) e a rota de evidencia continua servindo so o que
+     esta dentro da raiz declarada.
+  3. **identidade gerada no caminho**: o `item_id` sai de `SequenciaDeItens.reservar(lote)` DENTRO da
+     transacao que grava o item (nunca digitado), e o evento de gatilho e vinculado ao item quando o id
+     do evento e informado.
+- Fail-closed mantido: serie sem vista / camera fora do mapa / serie sem manifesto sao recusadas com
+  motivo; sem janela declarada NADA e utilizavel e o item sai inconclusivo; alinhamento SO e declarado
+  como OK quando o operador informa `--alinhamento declarado` (o padrao e `nao_verificado`).
+- Onde roda: onde o modelo vive. O classificador da cadeia e o artefato medido (D-37), que exige torch;
+  o runtime do hub e stdlib. Entao a ingestao roda na estacao que tem o artefato, e o hub le o resultado.
+- Canario (serie montada com recortes reais + artefato medido): item `CANARIO-000001`, `status_final`
+  `defeito` (tampa 0,993 na lateral1 e 1,000 na lateral2), `status_corpo` inconclusivo (nao existe
+  modelo do corpo — declarado), `qualidade_registro` completo, evidencias com `probabilidade`,
+  `limiar` e a **limitacao que o artefato declara sobre si** ("PROTOTIPO, NAO VALIDADO..."), arquivos
+  copiados com hash conferido contra o original.
+- Testes: `src-production/tests/test_ingestao.py` (12) — serie completa, ordem do manifesto invertida,
+  serie parcial declarando a vista faltante, sem janela (nada utilizavel), alinhamento nao verificado,
+  camera fora do mapa, vista repetida, vista desconhecida, duas cameras para a mesma vista, serie sem
+  manifesto, vinculo do gatilho e sequencia do lote (dois itens ingeridos nao repetem id).
+- Pendente e declarado: a leitura da serie direto do rig (URL) ainda nao existe — a ferramenta le um
+  diretorio local; e a ingestao nao decide o CORPO (nao ha modelo do corpo) nem mede a janela (o
+  `t_ms`/`dur_ms` do firmware continuam sendo descartados pela ponte).
