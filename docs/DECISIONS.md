@@ -1305,3 +1305,40 @@ energia esta limpa (`throttled=0x0`, bit 16 tambem limpo) e temperatura e baixa 
 Agora existe material. Caminhos de reducao de risco, se o padrao continuar: parar a stack de monitoracao
 em docker nesta maquina (nao e necessaria para a esteira) e/ou trocar a raiz para SSD/NVMe (o Pi 5
 suporta), deixando o cartao so para boot.
+
+## D-53: revisao do tempo da ESP-CAM — ordem das pernas era o gargalo, nao a configuracao
+
+Pedido: "revise o esp, o delay dele ta muito alto". Revisao com o desdobramento medido, nao por
+impressao. O tempo da ESP-CAM nao e um atraso: e uma soma de quatro parcelas.
+
+| parcela | valor medido | da para reduzir? |
+|---|---|---|
+| enlace serial | ~0,75 s | teto fisico do baud confiavel: 31 KB a 460800 (45 KB/s) |
+| preparo da camera (warmup + captura + JPEG) | ~1,2 s | sim, com luz (encurta a exposicao do sensor) |
+| ponte (fila, decodificacao) | ~0,25 s | pouco |
+| **pipeline puro** | **~2,2 s** | parcial |
+| **fila das outras pernas** | **ate +3,0 s** | **sim — era o gargalo real** |
+
+O `espcam` estava configurado em 0 ms e ainda assim saia em ~5,9 s. Causa: as tres pernas capturam em
+SEQUENCIA numa ordem fixa (csi -> usb -> espcam) e cada uma espera ate o proprio alvo. Uma camera de
+alvo pequeno ficava atras de cameras de alvo grande, e o alvo dela ja tinha passado quando chegava a vez.
+
+**Correcao:** as pernas passam a ser capturadas na ordem dos alvos (alvo menor sai primeiro). Mesma
+configuracao, antes e depois:
+
+| camera | antes (pedido) | depois (pedido) | config |
+|---|---|---|---|
+| espcam | 3530 ms | **2 ms** | 0 ms |
+| usb | 3530 ms | 2255 ms | 1200 ms |
+| csi | 3000 ms | 3000 ms | 3000 ms |
+| total gatilho->fim | 5986 ms | **3022 ms** | |
+
+Consequencia pratica: a regra que eu havia passado antes ("os valores tem de respeitar a ordem
+`csi <= usb <= espcam`") **deixa de valer** — a ordenacao por alvo remove essa amarra. O que continua
+valendo e que a soma das pernas anteriores limita a perna seguinte: com a espcam levando ~2,2 s, a usb
+de alvo 1200 ms saiu 1055 ms tarde. Para eliminar isso de vez, o proximo passo e captura em PARALELO
+(uma thread por camera, cada uma esperando o proprio alvo): as tres pernas usam recursos independentes
+(CSI lida sob lock, webcam por ffmpeg, ESP-CAM por HTTP na ponte), entao nao ha disputa.
+
+Outra alavanca ja identificada antes: mais luz. Encurta a exposicao do sensor, o que reduz o warmup
+deste pipeline E o borrao de movimento — o mesmo ganho nas duas frentes.
