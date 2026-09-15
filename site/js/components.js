@@ -2697,7 +2697,7 @@ const renderDebug = () => {
                     !d.ponte ? '<p class="text-sm text-gray-400">lendo o estado do gatilho...</p>'
                     : d.ponte.erro ? falha(d.ponte, 'ponte do gatilho') : `
                         ${linha('serial aberta', ponte.serial_open)}
-                        ${linha('erro da serial', ponte.serial_last_error)}
+                        ${linha('erro da serial', ponte.serial_last_error ? ponte.serial_last_error : 'nenhum')}
                         ${linha('bytes / linhas', `${ponte.serial_bytes || 0} / ${ponte.serial_lines || 0}`)}
                         ${linha('frames ok / ruins', `${ponte.frames_ok || 0} / ${ponte.frames_bad || 0}`)}
                         ${linha('frames texto / bin', `${ponte.frames_text || 0} / ${ponte.frames_bin || 0}`)}
@@ -2716,7 +2716,7 @@ const renderDebug = () => {
                     !d.estado ? '<p class="text-sm text-gray-400">lendo o servico da camera...</p>'
                     : d.estado.erro ? falha(d.estado, 'servico da camera') : `
                         ${linha('camera', rig.camera)}
-                        ${linha('erro da camera', rig.erro_camera)}
+                        ${linha('erro da camera', rig.erro_camera ? rig.erro_camera : 'nenhum')}
                         ${linha('tem fundo', rig.tem_fundo)}
                         ${linha('tem referencia', rig.tem_referencia)}
                         ${linha('referencia valida', rig.referencia_ok)}

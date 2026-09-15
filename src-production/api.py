@@ -411,7 +411,7 @@ def _chamar_servico(base: str, rota: str, *, metodo: str = "GET", timeout: float
         raise ErroDeApi(502, f"{nome}_recusou", f"{url} respondeu {exc.code}: {detalhe}") from exc
     except (urllib.error.URLError, OSError) as exc:
         raise ErroDeApi(503, f"{nome}_sem_resposta",
-                        f"{url} nao respondeu: {type(exc).__name__}: {str(exc)[:120]}") from exc
+                        f"{url} nao respondeu (servico fora do ar): {type(exc).__name__}: {str(exc)[:80]}") from exc
 
     try:
         return json.loads(bruto.decode("utf-8"))
@@ -546,8 +546,10 @@ def _rota_modelo(ctx: dict) -> dict:
     try:
         with urllib.request.urlopen(DETECTOR + "/health", timeout=6) as resposta:
             saude = json.loads(resposta.read().decode())
-    except Exception as exc:                      # detector fora e estado, nao excecao do painel
-        erro_detector = f"{type(exc).__name__}: {exc}"
+    except Exception as exc:                      # detector fora e estado, nao excecao do painel:
+        # mensagem em linguagem clara, com o detalhe tecnico entre parenteses (o painel e para operador)
+        causa = "conexao recusada" if "refused" in str(exc).lower() else type(exc).__name__
+        erro_detector = f"nao respondeu ({causa})"
 
     return {"contrato": contrato, "entrega": str(caminho), "erro_contrato": erro_contrato,
             "saude": saude, "erro_detector": erro_detector,

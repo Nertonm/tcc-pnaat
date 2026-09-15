@@ -1032,3 +1032,41 @@ com 500 ms), que e exatamente a informacao que faltava para calibrar.
   efetivo pode ser negativo em ate um intervalo de quadro — medido -74 ms); na ESP-CAM o valor
   configurado e o instante do PEDIDO, com o quadro chegando ~2 s depois pelo pipeline dela, entao o
   valor tem de ser adiantado para o quadro cair no alvo.
+
+## D-45: revisao de ponta a ponta do fluxo (gatilho -> registro -> site)
+
+Caminhada completa com gatilho real, elo por elo, sem presumir que o que funcionou antes continua:
+
+| elo | o que foi verificado | resultado |
+|---|---|---|
+| hardware | seriais por `by-id`, webcam, camera CSI | presentes; CSI reiniciada com o padrao de exposicao |
+| ponte | `booted`, transporte, baud, frames | `booted=true transport=bin baud=460800`, 0 frames ruins |
+| gatilho | estado e leitura do sensor | armado, nivel lido com <2 s de idade |
+| captura | gatilho n=301 -> serie de 3 | serie completa, `parcial=None`, 3 fotos + manifesto |
+| agendamento | atraso por camera no manifesto | pedido 3 / 700 / 1500 ms contra alvos 0 / 700 / 1500 (erro 3 / 0 / 0 ms) |
+| registro | ingestao da serie | item VAO-000002, com as 3 evidencias e sha256 |
+| site | 7 abas, console, paineis | 0 erro de console; delay configurado x medido; modelo e contrato declarados |
+
+Defeitos de apresentacao encontrados e corrigidos (todos da mesma familia: rotulo que mente):
+1. `erro da serial` e `erro da camera` apareciam com valor vazio, o que se le como falha. Campo de erro
+   vazio significa NENHUM erro: agora a tela diz `nenhum`.
+2. A excecao crua do Python ia para a tela (`urlopen error [Errno 111] Connection refused`) porque o
+   proprio painel do modelo guardava `type(exc).__name__: exc`. Agora: `nao respondeu (conexao recusada)`,
+   com o detalhe tecnico reduzido — o painel e para operador, nao para log.
+3. Falso alarme meu, registrado para nao repetir: atribui "sem resposta" a raiz de evidencias quando o
+   texto pertencia ao item vizinho (adaptador do modelo, porta 8099, que esta fora mesmo). O site estava
+   certo; minha extracao de texto colou os dois itens. Conferir o item a que o estado pertence antes de
+   acusar o painel.
+
+Limites que continuam de pe (nenhum escondido):
+- a ingestao serie -> item ainda e manual: o gatilho produz a serie, mas o item exige rodar a ferramenta;
+- a decisao exige o artefato (torch) e o runtime do hub nao o tem: a ingestao na maquina do rig entra
+  como `inconclusivo` declarado (`SemModelo`), nao como aprovacao;
+- o detector esta parado e desabilitado por decisao do operador (para validar o atraso sem a carga dele),
+  e o painel do modelo declara isso em vez de mostrar "carregado";
+- o corpus do Label Studio e do visual ATUAL de captura: decidir iluminacao antes de anotar, senao as
+  anotacoes descrevem uma aparencia que a bancada nao vai mais produzir;
+- o espacamento de gatilho ensaiado foi >= 4 s, acima dos ~3,4-3,8 s da captura: gatilho mais rapido que
+  isso nao foi testado;
+- as correcoes no rig e na ponte nao estao no repositorio (esses arquivos nao tem copia versionada):
+  precisam de porte pelo dono, com as unidades anteriores guardadas ao lado de cada arquivo.
