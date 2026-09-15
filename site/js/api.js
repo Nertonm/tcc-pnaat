@@ -20,6 +20,7 @@ let mockHealth = {};
 let mockServices = [];
 let mockNotifications = [];
 let mockLotes = [];
+let mockQualidade = {};
 let mockItemDetalhe = null;
 
 const PNAAT_API = {
@@ -147,8 +148,20 @@ const PNAAT_API = {
         const camera = saude.camera || {};
         const memoria = hw.memoria || {};
 
+        /*
+         * Estado geral = o que a resposta prova (a API respondeu) + o heartbeat do no. Antes era o
+         * adaptador do modelo: com o modelo fora do ar a tela mostrava tudo "ok" e o estado geral
+         * "Offline" — o site se declarando fora do ar enquanto servia o proprio painel.
+         */
+        const heartbeat = saude.heartbeat || null;
+        const noOnline = heartbeat ? String(heartbeat.status).toLowerCase() === 'online' : null;
+
         return {
-            status: camera.porta_aberta ? 'Online' : 'Offline',
+            status: noOnline === null ? 'sem leitura' : (noOnline ? 'Online' : 'Offline'),
+            statusFonte: 'heartbeat do no + resposta da API',
+            adaptador: camera.adaptador || '--',
+            adaptadorEstado: camera.porta_aberta ? 'respondendo' : 'sem resposta',
+            adaptadorMotivo: camera.motivo || null,
             cpu: hw.cpu_carga_1min === null || hw.cpu_carga_1min === undefined
                 ? '--' : hw.cpu_carga_1min.toFixed(2),
             memoria: memoria.usada_mb ? `${(memoria.usada_mb / 1024).toFixed(1)} GB` : '--',
@@ -168,6 +181,41 @@ const PNAAT_API = {
         };
     },
 
+    _qualidade(dados) {
+        /*
+         * `/api/qualidade` ja respondia e o payload era descartado: a vista Qualidade dizia
+         * "integracao pendente". Aqui o payload vira dado de tela, sem inventar campo ausente.
+         */
+        const pct = valor => (valor === null || valor === undefined)
+            ? '--' : `${Math.round(valor * 1000) / 10}%`;
+
+        return {
+            latencia: (dados.latencia_por_vista || []).map(l => ({
+                vista: this._rotuloVista(l.vista), medidas: l.medidas,
+                media: this._ms(l.media_ms), maxima: this._ms(l.maxima_ms)
+            })),
+            saturacao: (dados.saturacao_por_vista || []).map(s => ({
+                vista: this._rotuloVista(s.vista), medidas: s.medidas,
+                media: s.media_pct === null || s.media_pct === undefined ? '--' : `${s.media_pct}%`,
+                maxima: s.maxima_pct === null || s.maxima_pct === undefined ? '--' : `${s.maxima_pct}%`
+            })),
+            gatilho: (dados.gatilho_por_fonte || []).map(g => ({
+                fonte: g.fonte, eventos: g.eventos, aceitos: g.aceitos, falsos: g.falsos,
+                duplicados: g.duplicados, invalidos: g.invalidos, taxa_falso: pct(g.taxa_falso)
+            })),
+            perda: dados.perda_de_deteccao || { instrumentada: false, motivo: null },
+            discordancia: dados.discordancia_lateral || null,
+            inconclusivos: dados.inconclusivos_por_lote || [],
+            correcoes: dados.correcoes_para_auditoria || [],
+            separacoes: dados.separacoes_nao_confirmadas || [],
+            nos: (dados.saude_dos_nos || []).map(n => ({
+                ponto_id: n.ponto_id, status: n.status, fila_pendente: n.fila_pendente,
+                timestamp: this._hora(n.timestamp)
+            })),
+            correlacao: dados.correlacao_ambiental || null
+        };
+    },
+
     _notificacoes() {
         const avisos = [];
 
@@ -177,7 +225,7 @@ const PNAAT_API = {
             .forEach((c, i) => avisos.push({
                 id: `NOT-DEF-${i}`,
                 title: 'Defeito no registro',
-                message: `${c.item} - vista ${c.vista}, codigo ${c.codigo} (item ${c.lote})`,
+                message: `${c.item} - vista ${c.vista}, codigo ${c.codigo} (lote ${c.lote})`,
                 time: c.timestamp,
                 type: 'danger',
                 read: false,
@@ -293,6 +341,7 @@ const PNAAT_API = {
             mockStats = this._resumo(resumo);
             mockHealth = this._saude(saude);
             mockLotes = lotes.lotes;
+            mockQualidade = this._qualidade(qualidade);
             mockServices = (saude.servicos || []).map(s => ({
                 name: s.nome,
                 detail: s.detalhe,
@@ -312,6 +361,7 @@ const PNAAT_API = {
             mockStats = {};
             mockHealth = {};
             mockLotes = [];
+            mockQualidade = {};
             mockServices = [];
             mockNotifications = [];
             mockItemDetalhe = null;

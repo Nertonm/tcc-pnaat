@@ -741,3 +741,55 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
 - Limite conhecido: uma vista so nao aprova item (`vistas_insuficientes_*` na conformidade), mesmo com
   o modelo decidindo; e o artefato e prototipo declarado, entao a decisao dele entra como evidencia
   com essa ressalva, nao como validacao.
+
+## D-38: O site roda no Pi 5 (porta 8091) e a auditoria proposicao-por-proposicao
+
+- Deploy: `pnaat-hub-site.service` no host do Pi 5 (Debian 13 ARM64), porta **8091**, `User=nerton`,
+  `Restart=on-failure`, habilitado no boot. Codigo: os 19 `.py` do `src-production` (sem os
+  subdiretorios) numa pasta `codigo/` do deploy, o site em `site/` e o registro `hub.db` com
+  `evidencias/`, todos sob a MESMA raiz de deploy. Link (rede interna): `http://(host interno):8091/`.
+- Por que a raiz de deploy e a mesma do host de origem: `evidencia.fonte` guarda **caminho absoluto** no
+  banco. Instalar em outro prefixo deixaria a raiz de evidencias sem os arquivos (403 na rota de
+  evidencia) sem reescrever dado do registro — e reescrever dado do registro para caber no deploy e o
+  caminho errado.
+- A porta 8090 do mesmo host e do servico da camera (`pnaat-vision`) e a 8080 e do docker: **nao usar**.
+- O registro no host do site e um **snapshot** (copia de 2026-09-15; sha256 `a626de378a0c...`); a API do
+  host de origem continua sendo a que escreve. O site nao inventa dado: le o snapshot.
+- Auditoria de ponta a ponta do site (12 achados, todos corrigidos e reverificados no navegador):
+  1. `Lote #L2024-89` e `14 Out 2024` fixos no template (vista Lote e cartao da Operacao) — **lote que
+     nao existe no registro**. Passa a usar lote/datas reais; o header do `index.html` idem.
+  2. Os totais GLOBAIS apareciam sob o cabecalho de um lote unico — agora sao os numeros DAQUELE lote,
+     com tabela de todos e soma de conferencia contra o resumo.
+  3. Chips contavam `status_item` (repetido por linha) sob rotulo "Linhas": "Linhas OK 15" com 17
+     linhas de vista ok. Agora contam `status_vista` (17/4/6 = 27) e a contagem de ITENS (3/2/1)
+     aparece declarada.
+  4. Feed rotulado "Ultimas capturas" fazia `.slice().reverse()`: mostrava as **mais antigas** primeiro,
+     todas as 27. Agora sao as 5 mais recentes, na ordem da API.
+  5. "ESTADO GERAL Offline" vinha do adaptador do modelo (`camera.porta_aberta`): com o modelo fora do
+     ar a tela dizia tudo "ok" e o sistema "Offline". Agora o estado geral vem do heartbeat; o
+     adaptador e um servico da lista, com URL e motivo.
+  6. Vista Qualidade era placeholder ("Integracao pendente") e o payload de `/api/qualidade` era
+     **buscado e descartado** (nao existia global). Agora renderiza os indicadores reais, com "nao
+     instrumentada" + motivo onde nao ha dado.
+  7. Botoes **mortos**: "Exportar CSV" e "Abrir Grafana" sem handler nenhum. O CSV exporta de verdade
+     (3544 bytes, conferido por interceptacao do Blob); o Grafana vira nota declarada (nao se inventa
+     endereco).
+  8. Badge do cartao mostrava so o estado do ITEM: agora diz "item" e mostra "vista inconclusivo"
+     quando divergem.
+  9. Sino do painel: `renderNotifications()` so rodava no construtor (lista vazia) e ao marcar como
+     lido — com 10 notificacoes reais a tela dizia "Nenhuma notificacao". Remonta na carga e a cada
+     navegacao. E a notificacao escrevia "(item <lote>)": rotulo trocado no proprio texto.
+  10. Investigacao pedia `/api/item/null` quando aberta sem param (o detalhe vinha de outro item) e o
+      callback assincrono re-renderizava a Investigacao **por cima da vista atual** (Saude/Qualidade/
+      Lote apareciam como Investigacao). Regra unica `cartaoDaInvestigacao` + guarda de vista.
+  11. Selo "Sistema operacional" era verde fixo e a temperatura dizia "faixa de operacao normal" sem
+      faixa declarada — ambos passam a depender do que o registro declara.
+  12. Selo do header com lote fixo -> `#lote-atual` preenchido com o lote da captura mais recente.
+- Verificacao: seis vistas conferidas uma a uma (cada uma mostra o proprio conteudo), troca rapida de
+  vista respeitando a vista atual, CSV conferido, zero erro de console, e sha256 do JS servido por HTTP
+  identico ao do repo nas tres copias (repo -> deploy -> HTTP).
+- Limites conhecidos e declarados: o adaptador do modelo aponta para `127.0.0.1:8099` **do host do
+  deploy** — no host do site aparece "sem resposta" com o motivo (o modelo roda no host de origem, que
+  e quem tem a camera); e o `index.html` carrega Tailwind e Lucide de **CDN externo**, o que contradiz a
+  afirmacao do docstring do `api.py` ("nao depende de CDN") — ou se corrige a afirmacao, ou se embutem
+  os arquivos.

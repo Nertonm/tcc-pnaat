@@ -48,7 +48,35 @@ class App {
          * A recarga periodica so roda com a aba visivel (api.js).
          */
         if (window.PNAAT_API) {
-            window.PNAAT_API.iniciar(() => this.navigate(this.currentView));
+            window.PNAAT_API.iniciar(() => {
+                /*
+                 * A lista de notificacoes e RECOLETADA aqui: o adaptador reatribui `mockNotifications`
+                 * quando os dados chegam, e a copia feita no construtor continuava apontando para o
+                 * array vazio — o sino dizia "Nenhuma notificacao" com defeito e inconclusivo no
+                 * registro (achado da auditoria de ponta a ponta).
+                 */
+                this.notifications =
+                    typeof mockNotifications !== 'undefined'
+                        ? mockNotifications
+                        : [];
+
+                /*
+                 * O painel do sino precisa REMONTAR aqui: `renderNotifications()` so era chamado no
+                 * construtor (lista ainda vazia) e ao marcar como lido, entao com 10 notificacoes
+                 * reais a tela seguia dizendo "Nenhuma notificacao".
+                 */
+                this.renderNotifications();
+
+                const seloDoLote =
+                    document.getElementById('lote-atual');
+
+                if (seloDoLote) {
+                    seloDoLote.textContent =
+                        (mockCapturas[0] && mockCapturas[0].lote) || 'sem lote';
+                }
+
+                this.navigate(this.currentView);
+            });
         }
     }
 
@@ -262,12 +290,34 @@ class App {
 
         this.refreshSystemStatus();
 
+        // o painel do sino mostra o estado da carga atual, nao o da carga em que abriu
+        this.renderNotifications();
+
         /*
          * A Investigacao busca UM item na API: a lista serve cabecalho e cartao, mas as evidencias
-         * (D-30) e as correcoes do operador so existem no detalhe. api.js tem guarda contra laco.
+         * (D-30) e as correcoes do operador so existem no detalhe.
+         *
+         * Dois cuidados que a auditoria exigiu:
+         *   - o id vem da MESMA regra que a vista usa (`cartaoDaInvestigacao`), senao sem param o
+         *     pedido ia nulo e o detalhe vinha de outro item;
+         *   - o callback confere a vista atual: a resposta pode chegar depois de o usuario trocar de
+         *     tela, e sem isso a Investigacao era desenhada por cima da vista nova.
          */
         if (view === 'investigacao' && window.PNAAT_API) {
-            window.PNAAT_API.item(param, () => this.navigate('investigacao', param));
+            this.paramInvestigacao = param;
+
+            const alvo =
+                typeof cartaoDaInvestigacao === 'function'
+                    ? cartaoDaInvestigacao(param).cap
+                    : null;
+
+            window.PNAAT_API.item(alvo ? alvo.id : param, () => {
+                if (this.currentView !== 'investigacao') {
+                    return;
+                }
+
+                this.navigate('investigacao', this.paramInvestigacao);
+            });
         }
     }
 
@@ -719,6 +769,40 @@ class App {
         );
     }
 
+
+    exportarCSV() {
+        /*
+         * Exporta as linhas de vista que a tela mostra — as MESMAS linhas do filtro atual, com os
+         * mesmos campos do adaptador. Antes o botao "Exportar CSV" nao tinha handler: era afirmacao
+         * funcional sem funcao.
+         */
+        if (!mockCapturas.length) {
+            return;
+        }
+
+        const colunas = ['id', 'item', 'vista', 'dominio', 'papel', 'lote', 'timestamp',
+                         'status_vista', 'status_item', 'codigo', 'confianca', 'latencia',
+                         'qualidade', 'tem_evidencia'];
+
+        const celula = valor => `"${String(valor === null || valor === undefined ? '' : valor)
+            .replace(/"/g, '""')}"`;
+
+        const linhas = mockCapturas.map(cap =>
+            colunas.map(coluna => celula(cap[coluna])).join(','));
+
+        const csv = [colunas.join(','), ...linhas].join('\n');
+        const arquivo = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(arquivo);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = `pnaat-linhas-${new Date().toISOString().slice(0, 10)}.csv`;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    }
 
     renderNotifications() {
         const list =

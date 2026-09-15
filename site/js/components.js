@@ -1,4 +1,4 @@
-const statusBadge = status => {
+const statusBadge = (status, rotulo) => {
     const config = {
         OK: {
             className: 'status-badge-ok',
@@ -26,7 +26,7 @@ const statusBadge = status => {
                 class="mr-1.5 h-3.5 w-3.5"
             ></i>
 
-            ${status}
+            ${rotulo ? `${rotulo} ` : ''}${status}
         </span>
     `;
 };
@@ -306,8 +306,7 @@ const renderOperacao = () => {
                     <div class="p-2 sm:p-3">
 
                         ${mockCapturas
-                            .slice()
-                            .reverse()
+                            .slice(0, 5)
                             .map(cap => `
                                 <div
                                     onclick="app.navigate('investigacao', '${cap.id}')"
@@ -775,7 +774,7 @@ const renderOperacao = () => {
                                             font-bold
                                         "
                                     >
-                                        #L2024-89
+                                        ${(mockCapturas[0] && mockCapturas[0].lote) || '(sem lote)'}
                                     </div>
                                 </div>
 
@@ -1025,7 +1024,9 @@ const renderCapturas = () => `
                         sm:inline
                     "
                 >
-                    ${mockCapturas.length} linhas de vista exibidas
+                    ${mockCapturas.length} linhas de vista de ${mockStats.totalLote ?? '--'} itens
+                    (${mockStats.aprovados ?? '--'} itens OK, ${mockStats.reprovados ?? '--'} com defeito,
+                    ${mockStats.inconclusivos ?? '--'} inconclusivo(s))
                 </span>
 
                 <button
@@ -1115,7 +1116,7 @@ const renderCapturas = () => `
                     text-brand-green
                 "
             >
-                Linhas OK ${mockCapturas.filter(item => item.status === 'OK').length}
+                Linhas OK ${mockCapturas.filter(linha => linha.status_vista === 'ok').length}
             </div>
 
             <div
@@ -1132,7 +1133,7 @@ const renderCapturas = () => `
                     text-brand-red
                 "
             >
-                Linhas com defeito ${mockCapturas.filter(item => item.status === 'Defeito').length}
+                Linhas com defeito ${mockCapturas.filter(linha => linha.status_vista === 'defeito').length}
             </div>
 
             <div
@@ -1149,7 +1150,7 @@ const renderCapturas = () => `
                     text-orange-500
                 "
             >
-                Linhas pendentes ${mockCapturas.filter(item => item.status === 'Pendente').length}
+                Linhas inconclusivas ${mockCapturas.filter(linha => linha.status_vista === 'inconclusivo').length}
             </div>
 
         </section>
@@ -1213,7 +1214,14 @@ const renderCapturas = () => `
                                 top-3
                             "
                         >
-                            ${statusBadge(cap.status)}
+                            ${statusBadge(cap.status, 'item')}
+
+                            ${cap.status_vista && cap.status_vista !== 'ok'
+                                ? `<span class="status-badge status-badge-pending ml-1">
+                                       <i data-lucide="clock-3" class="mr-1.5 h-3.5 w-3.5"></i>
+                                       vista ${cap.status_vista}
+                                   </span>`
+                                : ''}
                         </div>
 
 
@@ -1441,11 +1449,15 @@ const renderCapturas = () => `
 `;
 
 
-const renderInvestigacao = id => {
+const cartaoDaInvestigacao = id => {
     /*
-     * Sem item informado, abre o defeito mais recente e DIZ que foi escolha automatica.
-     * Com id informado e inexistente, NAO mostra outro item: antes o `||` caia no primeiro defeito
-     * (ou no primeiro da lista) e os numeros de outro item apareciam como se fossem deste.
+     * Regra UNICA de "qual item a Investigacao abre" — usada pela vista e pelo `app.js`, para que o
+     * detalhe buscado em `/api/item/<id>` seja do MESMO item que a tela mostra. Quando o app.js
+     * mandava `null`, o detalhe vinha de outro item (ou de nada).
+     *
+     * Sem item informado, abre o defeito mais recente e DIZ que foi escolha automatica. Com id
+     * informado e inexistente, NAO mostra outro item: antes o `||` caia no primeiro defeito (ou no
+     * primeiro da lista) e os numeros de outro item apareciam como se fossem deste.
      */
     const pedido =
         id ? mockCapturas.find(item => item.id === id) : null;
@@ -1457,6 +1469,13 @@ const renderInvestigacao = id => {
         (automatico
             ? (mockCapturas.find(item => item.status === 'Defeito') || mockCapturas[0] || null)
             : null);
+
+    return { cap, automatico };
+};
+
+
+const renderInvestigacao = id => {
+    const { cap, automatico } = cartaoDaInvestigacao(id);
 
     if (!cap) {
         return `
@@ -2539,285 +2558,137 @@ const renderInvestigacao = id => {
 };
 
 
-const renderQualidade = () => `
-    <div class="fade-in-up">
+const renderQualidade = () => {
+    /*
+     * Os indicadores vem de `/api/qualidade`. Antes esta vista era um placeholder ("Integracao
+     * pendente") e o payload que o adaptador buscava era descartado: dizer "pendente" com o dado
+     * chegando seria afirmacao falsa sobre o proprio sistema.
+     */
+    const q = mockQualidade || {};
 
-        <section
-            class="
-                surface-card
+    const vazio = texto => `<p class="text-sm text-gray-400">${texto}</p>`;
 
-                mx-auto
+    const cartao = (titulo, corpo, nota) => `
+        <section class="surface-card p-6">
+            <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">${titulo}</h3>
 
-                max-w-3xl
+            <div class="mt-3">${corpo}</div>
 
-                p-8
-                sm:p-10
-            "
-        >
+            ${nota ? `<p class="mt-3 text-xs text-gray-400">${nota}</p>` : ''}
+        </section>`;
 
-            <div
-                class="
-                    flex
+    const tabela = (cabecalhos, linhas) => `
+        <table class="w-full text-left text-sm">
+            <thead class="text-xs uppercase tracking-wider text-gray-400">
+                <tr>${cabecalhos.map(c => `<th class="pb-2 pr-4">${c}</th>`).join('')}</tr>
+            </thead>
 
-                    h-14
-                    w-14
+            <tbody>${linhas.join('')}</tbody>
+        </table>`;
 
-                    items-center
-                    justify-center
+    const linha = celulas => `
+        <tr class="border-b border-black/5 dark:border-white/5">
+            ${celulas.map((c, indice) => `<td class="py-1.5 ${indice ? '' : 'pr-4 font-mono text-xs'}">${c}</td>`).join('')}
+        </tr>`;
 
-                    rounded-2xl
-
-                    bg-brand-red/10
-
-                    text-brand-red
-                "
-            >
-                <i
-                    data-lucide="chart-no-axes-combined"
-
-                    class="
-                        h-6
-                        w-6
-                    "
-                ></i>
-            </div>
-
-
-            <div class="mt-6">
-
-                <span
-                    class="
-                        text-[10px]
-                        font-semibold
-                        uppercase
-                        tracking-[.16em]
-
-                        text-brand-red
-                    "
-                >
-                    SITE-10
-                </span>
-
-                <h2
-                    class="
-                        mt-2
-
-                        text-2xl
-                        font-bold
-                        tracking-tight
-                    "
-                >
-                    Integração de qualidade
+    return `
+        <div class="fade-in-up space-y-6">
+            <section class="surface-card p-6">
+                <h2 class="text-2xl font-bold tracking-tight">
+                    Indicadores de qualidade
                 </h2>
 
-                <p
-                    class="
-                        mt-3
-
-                        max-w-xl
-
-                        text-sm
-                        leading-6
-                        text-gray-500
-                        dark:text-gray-400
-                    "
-                >
-                    As séries estatísticas agregadas permanecem reservadas
-                    ao Grafana. Este painel será responsável pelo acesso
-                    aos indicadores e pela ligação com as evidências
-                    mantidas no PNAAT.
+                <p class="mt-2 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    Lidos de <span class="font-mono">/api/qualidade</span> sobre o registro atual.
+                    O que nao esta instrumentado aparece como nao instrumentado, com o motivo declarado —
+                    ausencia de dado nao vira zero.
                 </p>
+            </section>
 
+
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                ${cartao('Latencia por vista',
+                    (q.latencia || []).length
+                        ? tabela(['vista', 'medidas', 'media', 'maxima'],
+                                 q.latencia.map(l => linha([l.vista, l.medidas, l.media, l.maxima])))
+                        : vazio('nenhuma medida com latencia registrada'))}
+
+                ${cartao('Saturacao do recorte',
+                    (q.saturacao || []).length
+                        ? tabela(['vista', 'medidas', 'media', 'maxima'],
+                                 q.saturacao.map(s => linha([s.vista, s.medidas, s.media, s.maxima])))
+                        : vazio('nenhuma medida com saturacao registrada'))}
+
+                ${cartao('Gatilho por fonte',
+                    (q.gatilho || []).length
+                        ? tabela(['fonte', 'eventos', 'aceitos', 'falsos', 'duplicados', 'invalidos', 'taxa falso'],
+                                 q.gatilho.map(g => linha([g.fonte, g.eventos, g.aceitos, g.falsos,
+                                                           g.duplicados, g.invalidos, g.taxa_falso])))
+                        : vazio('nenhum evento de gatilho registrado'),
+                    'Duplicado e falso sao contados separados: duplicado e o mesmo item de novo, falso e a '
+                    + 'leitura que nao virou item.')}
+
+                ${cartao('Discordancia entre as duas laterais',
+                    q.discordancia
+                        ? `<p class="text-sm">
+                               ${q.discordancia.itens_com_duas_laterais} itens com as duas laterais;
+                               ${q.discordancia.discordantes} discordantes
+                               (${q.discordancia.taxa === null || q.discordancia.taxa === undefined
+                                    ? '--' : `${Math.round(q.discordancia.taxa * 100)}%`})
+                           </p>`
+                        : vazio('nenhum item com as duas laterais'))}
+
+                ${cartao('Inconclusivos por lote',
+                    (q.inconclusivos || []).length
+                        ? tabela(['lote', 'motivo', 'ocorrencias'],
+                                 q.inconclusivos.map(x => linha([x.lote_id, x.motivo, x.ocorrencias])))
+                        : vazio('nenhum inconclusivo registrado por lote'))}
+
+                ${cartao('Perda de deteccao',
+                    q.perda && q.perda.instrumentada
+                        ? `<p class="text-sm">instrumentada</p>`
+                        : vazio('nao instrumentada'),
+                    (q.perda && q.perda.motivo) || null)}
+
+                ${cartao('Correcoes para auditoria',
+                    (q.correcoes || []).length
+                        ? tabela(['item', 'decisao original', 'decisao corrigida', 'por', 'quando'],
+                                 q.correcoes.map(c => linha([c.item_id, c.decisao_original,
+                                                             c.decisao_corrigida, c.corrigido_por,
+                                                             c.timestamp])))
+                        : vazio('nenhuma correcao de operador registrada'),
+                    (q.separacoes || []).length
+                        ? `${q.separacoes.length} separacao(oes) nao confirmada(s)`
+                        : null)}
+
+                ${cartao('Saude dos nos de gatilho',
+                    (q.nos || []).length
+                        ? tabela(['ponto', 'status', 'fila', 'quando'],
+                                 q.nos.map(n => linha([n.ponto_id, n.status, n.fila_pendente, n.timestamp])))
+                        : vazio('nenhum no de gatilho registrado'))}
+
+                ${cartao('Correlacao ambiental',
+                    q.correlacao
+                        ? `<p class="text-sm">
+                               ${q.correlacao.variavel} em janela de ${q.correlacao.janela_s}s:
+                               r = ${q.correlacao.r === null || q.correlacao.r === undefined
+                                    ? '--' : Number(q.correlacao.r).toFixed(3)}
+                               sobre ${q.correlacao.pares} pares
+                           </p>`
+                        : vazio('sem par ambiental registrado'),
+                    'Correlacao nao e causa: o numero entra aqui como indicador, nao como conclusao.')}
             </div>
 
 
-            <div
-                class="
-                    mt-8
-
-                    grid
-
-                    grid-cols-1
-                    gap-4
-
-                    sm:grid-cols-3
-                "
-            >
-
-                <div
-                    class="
-                        rounded-2xl
-
-                        bg-light-bg
-                        dark:bg-dark-bg
-
-                        p-5
-                    "
-                >
-                    <i
-                        data-lucide="pie-chart"
-
-                        class="
-                            h-5
-                            w-5
-
-                            text-gray-400
-                        "
-                    ></i>
-
-                    <div
-                        class="
-                            mt-4
-
-                            text-sm
-                            font-bold
-                        "
-                    >
-                        Defeitos
-                    </div>
-
-                    <div
-                        class="
-                            mt-1
-
-                            text-xs
-                            text-gray-400
-                        "
-                    >
-                        Códigos e severidade
-                    </div>
-                </div>
-
-
-                <div
-                    class="
-                        rounded-2xl
-
-                        bg-light-bg
-                        dark:bg-dark-bg
-
-                        p-5
-                    "
-                >
-                    <i
-                        data-lucide="scan-line"
-
-                        class="
-                            h-5
-                            w-5
-
-                            text-gray-400
-                        "
-                    ></i>
-
-                    <div
-                        class="
-                            mt-4
-
-                            text-sm
-                            font-bold
-                        "
-                    >
-                        Registros
-                    </div>
-
-                    <div
-                        class="
-                            mt-1
-
-                            text-xs
-                            text-gray-400
-                        "
-                    >
-                        Parcial ou ausente
-                    </div>
-                </div>
-
-
-                <div
-                    class="
-                        rounded-2xl
-
-                        bg-light-bg
-                        dark:bg-dark-bg
-
-                        p-5
-                    "
-                >
-                    <i
-                        data-lucide="user-check"
-
-                        class="
-                            h-5
-                            w-5
-
-                            text-gray-400
-                        "
-                    ></i>
-
-                    <div
-                        class="
-                            mt-4
-
-                            text-sm
-                            font-bold
-                        "
-                    >
-                        Correções
-                    </div>
-
-                    <div
-                        class="
-                            mt-1
-
-                            text-xs
-                            text-gray-400
-                        "
-                    >
-                        Histórico humano
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div
-                class="
-                    mt-8
-
-                    flex
-                    flex-col
-
-                    gap-3
-
-                    sm:flex-row
-                "
-            >
-
-                <button class="primary-button">
-                    <i
-                        data-lucide="external-link"
-
-                        class="
-                            mr-2
-                            h-4
-                            w-4
-                        "
-                    ></i>
-
-                    Abrir Grafana
-                </button>
-
-                <button class="secondary-button">
-                    Integração pendente
-                </button>
-
-            </div>
-
-        </section>
-
-    </div>
-`;
+            <section class="surface-card p-6">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Series temporais agregadas: esta instalacao <span class="font-semibold">nao declara</span>
+                    um Grafana, entao o painel nao mostra link para lugar nenhum. Quando o endereco existir,
+                    ele entra aqui — botao morto nao entra.
+                </p>
+            </section>
+        </div>`;
+};
 
 
 const renderSaude = () => `
@@ -2848,7 +2719,9 @@ const renderSaude = () => `
                 title: 'Temperatura SOC',
                 value: mockHealth.temperatura,
                 icon: 'thermometer',
-                subtitle: 'Faixa de operação normal'
+                subtitle: mockHealth.temperatura === '--'
+                    ? 'sem leitura do sensor (nao ha faixa declarada para julgar)'
+                    : 'sensor lido nesta coleta (faixa de alerta nao declarada)'
             })}
 
             ${renderMetricCard({
@@ -2920,9 +2793,11 @@ const renderSaude = () => `
                         text-brand-green
                     "
                 >
-                    <span class="status-dot status-success mr-2"></span>
+                    <span class="status-dot ${(mockHealth.sem_leitura || []).length === 0
+                        ? 'status-success' : 'status-warning'} mr-2"></span>
 
-                    Sistema operacional
+                    Sistema operacional${(mockHealth.sem_leitura || []).length
+                        ? ` (sem leitura: ${mockHealth.sem_leitura.join(', ')})` : ''}
                 </span>
 
             </div>
@@ -3054,505 +2929,147 @@ const renderSaude = () => `
 `;
 
 
-const renderLote = () => `
-    <div
-        class="
-            fade-in-up
+const renderLote = () => {
+    /*
+     * Cabecalho e numeros vem dos LOTES do registro. Antes: "#L2024-89" e "14 Out 2024" fixos no
+     * template, com os totais GLOBAIS exibidos sob o cabecalho de um lote unico — nem o lote existia.
+     */
+    const lotes = (mockLotes || []).slice().sort((a, b) =>
+        String(a.lote_id).localeCompare(String(b.lote_id)));
 
-            mx-auto
+    const atual = lotes.length ? lotes[lotes.length - 1] : null;
+    const pct = valor => valor === null || valor === undefined
+        ? '--' : `${Math.round(valor * 100)}%`;
 
-            max-w-6xl
+    const metricas = [
+        ['Produzidos', atual ? atual.itens : '--'],
+        ['Aprovados', atual ? atual.ok : '--'],
+        ['Defeitos', atual ? atual.defeitos : '--'],
+        ['Taxa', atual ? pct(atual.taxa_defeito) : '--']
+    ];
 
-            space-y-6
-        "
-    >
+    const linha = lote => `
+        <tr class="border-b border-black/5 dark:border-white/5 ${lote === atual ? 'font-semibold' : ''}">
+            <td class="py-1.5 pr-4 font-mono text-xs">${lote.lote_id}</td>
+            <td class="py-1.5 pr-4">${lote.data_inicio}</td>
+            <td class="py-1.5 pr-4">${lote.itens}</td>
+            <td class="py-1.5 pr-4">${lote.ok}</td>
+            <td class="py-1.5 pr-4">${lote.defeitos}</td>
+            <td class="py-1.5 pr-4">${lote.inconclusivos}</td>
+            <td class="py-1.5">${pct(lote.taxa_defeito)}</td>
+        </tr>`;
 
-        <section
-            class="
-                surface-card
+    return `
+        <div class="fade-in-up space-y-6">
+            <section class="surface-card p-6">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[.18em] text-gray-500">
+                            Lote mais recente no registro
+                        </p>
 
-                relative
-                overflow-hidden
-
-                p-6
-                sm:p-8
-            "
-        >
-
-            <div
-                class="
-                    pointer-events-none
-
-                    absolute
-
-                    -right-20
-                    -top-20
-
-                    h-64
-                    w-64
-
-                    rounded-full
-
-                    bg-brand-red/5
-
-                    blur-3xl
-                "
-            ></div>
-
-
-            <div
-                class="
-                    relative
-
-                    flex
-                    flex-col
-
-                    gap-6
-
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                "
-            >
-
-                <div>
-
-                    <div
-                        class="
-                            flex
-                            flex-wrap
-                            items-center
-
-                            gap-3
-                        "
-                    >
-
-                        <h2
-                            class="
-                                text-2xl
-                                font-bold
-                                tracking-tight
-
-                                sm:text-3xl
-                            "
-                        >
-                            Lote #L2024-89
+                        <h2 class="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+                            ${atual ? atual.lote_id : '(nenhum lote no registro)'}
                         </h2>
 
-                        <span
-                            class="
-                                rounded-full
+                        <p class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <i data-lucide="calendar-days" class="mr-2 h-4 w-4"></i>
 
-                                bg-brand-green/10
-
-                                px-3
-                                py-1.5
-
-                                text-xs
-                                font-bold
-                                text-brand-green
-                            "
-                        >
-                            Em andamento
-                        </span>
-
+                            ${atual ? atual.data_inicio : '--'} • ate agora
+                        </p>
                     </div>
 
 
-                    <p
-                        class="
-                            mt-2
+                    <button class="primary-button"
+                            ${mockCapturas.length ? 'onclick="app.exportarCSV()"' : 'disabled'}>
+                        <i data-lucide="download" class="mr-2 h-4 w-4"></i>
 
-                            flex
-                            items-center
-
-                            text-sm
-                            text-gray-500
-                            dark:text-gray-400
-                        "
-                    >
-                        <i
-                            data-lucide="calendar-days"
-
-                            class="
-                                mr-2
-                                h-4
-                                w-4
-                            "
-                        ></i>
-
-                        14 Out 2024 • 08:00 até agora
-                    </p>
-
+                        Exportar CSV
+                    </button>
                 </div>
 
 
-                <button class="primary-button">
-                    <i
-                        data-lucide="download"
+                <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    ${metricas.map(([titulo, valor]) => `
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-[.18em] text-gray-500">
+                                ${titulo}
+                            </p>
 
-                        class="
-                            mr-2
-                            h-4
-                            w-4
-                        "
-                    ></i>
-
-                    Exportar CSV
-                </button>
-
-            </div>
-
-
-            <div
-                class="
-                    relative
-
-                    mt-8
-
-                    grid
-
-                    grid-cols-2
-                    gap-4
-
-                    lg:grid-cols-4
-                "
-            >
-
-                <div
-                    class="
-                        rounded-2xl
-
-                        bg-light-bg
-                        dark:bg-dark-bg
-
-                        p-5
-                    "
-                >
-                    <div
-                        class="
-                            text-[10px]
-                            font-semibold
-                            uppercase
-                            tracking-wider
-
-                            text-gray-400
-                        "
-                    >
-                        Produzidos
-                    </div>
-
-                    <div
-                        class="
-                            mt-2
-
-                            text-2xl
-                            font-bold
-                        "
-                    >
-                        ${mockStats.totalLote}
-                    </div>
+                            <p class="mt-1 text-2xl font-bold">${valor}</p>
+                        </div>`).join('')}
                 </div>
 
 
-                <div
-                    class="
-                        rounded-2xl
-
-                        bg-light-bg
-                        dark:bg-dark-bg
-
-                        p-5
-                    "
-                >
-                    <div
-                        class="
-                            text-[10px]
-                            font-semibold
-                            uppercase
-                            tracking-wider
-
-                            text-gray-400
-                        "
-                    >
-                        Aprovados
-                    </div>
-
-                    <div
-                        class="
-                            mt-2
-
-                            text-2xl
-                            font-bold
-                            text-brand-green
-                        "
-                    >
-                        ${mockStats.aprovados}
-                    </div>
-                </div>
+                <p class="mt-4 text-xs text-gray-400">
+                    Numeros do lote ${atual ? atual.lote_id : '--'} — nao os totais de todos os lotes.
+                    O resumo do registro inteiro fica na vista Operacao.
+                </p>
+            </section>
 
 
-                <div
-                    class="
-                        rounded-2xl
-
-                        bg-light-bg
-                        dark:bg-dark-bg
-
-                        p-5
-                    "
-                >
-                    <div
-                        class="
-                            text-[10px]
-                            font-semibold
-                            uppercase
-                            tracking-wider
-
-                            text-gray-400
-                        "
-                    >
-                        Defeitos
-                    </div>
-
-                    <div
-                        class="
-                            mt-2
-
-                            text-2xl
-                            font-bold
-                            text-brand-red
-                        "
-                    >
-                        ${mockStats.reprovados}
-                    </div>
-                </div>
-
-
-                <div
-                    class="
-                        rounded-2xl
-
-                        bg-light-bg
-                        dark:bg-dark-bg
-
-                        p-5
-                    "
-                >
-                    <div
-                        class="
-                            text-[10px]
-                            font-semibold
-                            uppercase
-                            tracking-wider
-
-                            text-gray-400
-                        "
-                    >
-                        Taxa
-                    </div>
-
-                    <div
-                        class="
-                            mt-2
-
-                            text-2xl
-                            font-bold
-                        "
-                    >
-                        ${mockStats.taxaDefeito}
-                    </div>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <section class="surface-card overflow-hidden">
-
-            <div
-                class="
-                    border-b
-                    border-light-border
-                    dark:border-dark-border
-
-                    px-5
-                    py-5
-
-                    sm:px-6
-                "
-            >
-                <h3
-                    class="
-                        text-base
-                        font-bold
-                    "
-                >
-                    Módulos do relatório
+            <section class="surface-card p-6">
+                <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">
+                    Todos os lotes no registro
                 </h3>
 
-                <p
-                    class="
-                        mt-1
+                <div class="mt-3">
+                    ${lotes.length
+                        ? `<table class="w-full text-left text-sm">
+                               <thead class="text-xs uppercase tracking-wider text-gray-400">
+                                   <tr>
+                                       <th class="pb-2 pr-4">lote</th>
+                                       <th class="pb-2 pr-4">inicio</th>
+                                       <th class="pb-2 pr-4">itens</th>
+                                       <th class="pb-2 pr-4">ok</th>
+                                       <th class="pb-2 pr-4">defeitos</th>
+                                       <th class="pb-2 pr-4">inconclusivos</th>
+                                       <th class="pb-2">taxa</th>
+                                   </tr>
+                               </thead>
 
-                        text-xs
-                        text-gray-400
-                    "
-                >
-                    Situação dos itens previstos no SITE-09
+                               <tbody>${lotes.map(linha).join('')}</tbody>
+                           </table>`
+                        : '<p class="text-sm text-gray-400">nenhum lote registrado</p>'}
+                </div>
+
+
+                <p class="mt-4 text-xs text-gray-400">
+                    Soma dos lotes: ${lotes.reduce((soma, l) => soma + (l.itens || 0), 0)} itens —
+                    o resumo do registro declara ${mockStats.totalLote ?? '--'}.
                 </p>
-            </div>
+            </section>
 
 
-            <div class="overflow-x-auto">
+            <section class="surface-card p-6">
+                <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">
+                    Modulos do relatorio
+                </h3>
 
-                <table class="app-table">
+                <div class="mt-3 space-y-2 text-sm">
+                    <p>
+                        <span class="font-semibold">Resumo estatistico</span> — disponivel
+                        (<span class="font-mono text-xs">/api/lotes</span> e
+                        <span class="font-mono text-xs">/api/resumo</span>)
+                    </p>
 
-                    <thead>
-                        <tr>
-                            <th>
-                                Recurso
-                            </th>
+                    <p>
+                        <span class="font-semibold">Excecoes</span> — disponivel
+                        (<span class="font-mono text-xs">/api/capturas</span>, linhas com defeito ou
+                        inconclusivas)
+                    </p>
 
-                            <th>
-                                Descrição
-                            </th>
-
-                            <th class="text-right">
-                                Estado
-                            </th>
-                        </tr>
-                    </thead>
-
-
-                    <tbody>
-
-                        <tr>
-                            <td class="font-semibold">
-                                Resumo estatístico
-                            </td>
-
-                            <td class="text-gray-500 dark:text-gray-400">
-                                Consolidação básica do lote atual
-                            </td>
-
-                            <td>
-                                <div class="flex justify-end">
-                                    <span class="status-badge status-badge-ok">
-                                        Disponível
-                                    </span>
-                                </div>
-                            </td>
-                        </tr>
+                    <p>
+                        <span class="font-semibold">Assinatura digital</span> — pendente: nao existe
+                        assinatura no registro, entao o relatorio nao se declara assinado
+                    </p>
+                </div>
 
 
-                        <tr>
-                            <td class="font-semibold">
-                                Exceções
-                            </td>
-
-                            <td class="text-gray-500 dark:text-gray-400">
-                                Capturas defeituosas e pendentes
-                            </td>
-
-                            <td>
-                                <div class="flex justify-end">
-                                    <span class="status-badge status-badge-ok">
-                                        Disponível
-                                    </span>
-                                </div>
-                            </td>
-                        </tr>
-
-
-                        <tr>
-                            <td class="font-semibold">
-                                Assinatura digital
-                            </td>
-
-                            <td class="text-gray-500 dark:text-gray-400">
-                                Integridade e autenticação do relatório
-                            </td>
-
-                            <td>
-                                <div class="flex justify-end">
-                                    <span
-                                        class="
-                                            status-badge
-
-                                            bg-gray-100
-                                            text-gray-500
-
-                                            dark:bg-gray-800
-                                            dark:text-gray-300
-                                        "
-                                    >
-                                        Pendente
-                                    </span>
-                                </div>
-                            </td>
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-
-        <div
-            class="
-                flex
-
-                items-start
-
-                rounded-2xl
-
-                border
-                border-blue-100
-                dark:border-blue-900/30
-
-                bg-blue-50
-                dark:bg-blue-900/10
-
-                p-4
-            "
-        >
-
-            <i
-                data-lucide="info"
-
-                class="
-                    mr-3
-                    mt-0.5
-
-                    h-5
-                    w-5
-
-                    flex-shrink-0
-
-                    text-blue-500
-                "
-            ></i>
-
-            <p
-                class="
-                    text-sm
-                    leading-relaxed
-
-                    text-blue-700
-                    dark:text-blue-400
-                "
-            >
-                Este painel representa apenas os dados consolidados
-                localmente. Séries temporais corporativas permanecem
-                destinadas ao Grafana.
-            </p>
-
-        </div>
-
-    </div>
-`;
+                <p class="mt-4 text-xs text-gray-400">
+                    Este painel mostra os dados consolidados deste registro. Series temporais
+                    corporativas nao estao declaradas nesta instalacao.
+                </p>
+            </section>
+        </div>`;
+};
