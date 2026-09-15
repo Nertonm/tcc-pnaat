@@ -42,7 +42,7 @@ Origem: v6a/avaliacao-teste-proprio.json · sha256 `149ec3e6d948140e`
 
 Origem: `evidencia-v6-3-rig-test.json` · sha256 `6470dd50c211dc0d`
 
-## k-fold por item (referência: base limpa SEM ajuste fino)
+## k-fold por item (protocolo de entrega: base limpa + ajuste fino em cada dobra)
 
 - dobras: 5
 - mAP50 média ± desvio: **0.6708 ± 0.1487** [0.5123–0.9187]
