@@ -869,7 +869,8 @@ class App {
         await Promise.all([
             ler('/api/rig/estado', 'estado'),
             ler('/api/rig/gatilho', 'ponte'),
-            ler('/api/rig/series', 'series'),
+            ler('/api/series?limite=20', 'series'),
+            ler('/api/itens-ingeridos?limite=12', 'ingeridos'),
             ler('/api/gatilhos?limite=25', 'gatilhos')
         ]);
     }

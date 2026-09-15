@@ -2729,34 +2729,90 @@ const renderDebug = () => {
             </div>
 
 
-            ${painel('Series capturadas pelo rig',
-                !d.series ? '<p class="text-sm text-gray-400">lendo as series do rig...</p>'
+            ${painel('Fotos capturadas (series do rig)',
+                !d.series ? '<p class="text-sm text-gray-400">lendo as series...</p>'
                 : d.series.erro ? falha(d.series, 'lista de series') :
                 (series.length ? `
-                    <div class="space-y-4">
-                        ${series.slice(0, 6).map(s => `
+                    <p class="mb-3 text-xs text-gray-400">
+                        ${d.series.completas || 0} completa(s) e ${d.series.parciais || 0} incompleta(s) em
+                        <span class="font-mono">${d.series.pasta || '&mdash;'}</span>.
+                        A captura que falhou no meio CONTINUA aqui: a foto que existe aparece, a que falta
+                        e nomeada.
+                    </p>
+
+                    <div class="space-y-5">
+                        ${series.slice(0, 8).map(s => `
                             <div>
-                                <p class="text-xs text-gray-400">
-                                    <span class="font-mono">${s.serie}</span>
-                                    ${s.capturado_em ? ' • ' + s.capturado_em : ''}
-                                    ${s.trigger_n ? ' • trigger ' + s.trigger_n : ''}
+                                <div class="flex flex-wrap items-baseline gap-2">
+                                    <span class="font-mono text-xs">${s.serie}</span>
+
+                                    <span class="rounded-full px-2 py-0.5 text-[10px] font-bold ${s.completa
+                                        ? 'bg-brand-green/15 text-brand-green'
+                                        : 'bg-orange-500/15 text-orange-500'}">
+                                        ${s.completa ? 'completa' : 'incompleta'}
+                                    </span>
+
+                                    ${(s.faltantes || []).length
+                                        ? `<span class="text-[10px] text-orange-500">falta: ${escDoDebug(s.faltantes.join(', '))}</span>`
+                                        : ''}
+
+                                    ${s.motivo ? `<span class="text-[10px] text-gray-400">${escDoDebug(s.motivo)}</span>` : ''}
+                                </div>
+
+                                ${(s.fotos || []).length ? `
+                                    <div class="mt-2 grid grid-cols-3 gap-2">
+                                        ${s.fotos.map(f => `
+                                            <figure>
+                                                <a href="${f.url}" target="_blank" rel="noopener">
+                                                    <img src="${f.url}"
+                                                         alt="foto ${f.camera || f.arquivo} da serie ${s.serie}"
+                                                         loading="lazy" decoding="async"
+                                                         class="h-24 w-full rounded-lg object-cover">
+                                                </a>
+                                                <figcaption class="mt-1 text-[10px] text-gray-400">
+                                                    ${f.camera || f.arquivo} • ${Math.round((f.bytes || 0) / 1024)} kB
+                                                    <br>${escDoDebug(f.quando || '')}
+                                                </figcaption>
+                                            </figure>`).join('')}
+                                    </div>`
+                                    : '<p class="mt-2 text-xs text-brand-red">nenhuma foto nesta pasta (captura interrompida antes de qualquer foto)</p>'}
+                            </div>`).join('')}
+                    </div>` : `<p class="text-sm text-gray-400">nenhuma pasta de serie nesta instalacao</p>`),
+                'As fotos sao servidas pelo hub (mesma origem) e a lista vem da pasta, nao do filtro do rig — por isso a captura incompleta nao desaparece.')}
+
+
+            ${painel('Fotos dos itens ja ingeridos (evidencia no registro)',
+                !d.ingeridos ? '<p class="text-sm text-gray-400">lendo os itens ingeridos...</p>'
+                : d.ingeridos.erro ? falha(d.ingeridos, 'itens ingeridos') :
+                ((d.ingeridos.itens || []).length ? `
+                    <div class="space-y-4">
+                        ${d.ingeridos.itens.map(item => `
+                            <div>
+                                <p class="text-xs">
+                                    <span class="font-mono">${escDoDebug(item.item_id)}</span>
+                                    • ${escDoDebug(item.status_final)} •
+                                    ${escDoDebug(item.qualidade_registro)}
+                                    • ${escDoDebug((item.timestamp_trigger || '').slice(0, 19))}
                                 </p>
 
                                 <div class="mt-2 grid grid-cols-3 gap-2">
-                                    ${(s.fotos || []).map(f => `
+                                    ${(item.fotos || []).map(f => `
                                         <figure>
-                                            <img src="${f.url.replace('/series-3-cameras/', '/api/rig-serie/')}"
-                                                 alt="captura ${f.camera || f.nome}"
-                                                 loading="lazy" decoding="async"
-                                                 class="h-24 w-full rounded-lg object-cover">
+                                            <a href="${f.url}" target="_blank" rel="noopener">
+                                                <img src="${f.url}"
+                                                     alt="evidencia da vista ${f.vista} do item ${item.item_id}"
+                                                     loading="lazy" decoding="async"
+                                                     class="h-24 w-full rounded-lg object-cover">
+                                            </a>
                                             <figcaption class="mt-1 text-[10px] text-gray-400">
-                                                ${f.camera || f.nome}
+                                                ${f.vista} (${f.dominio}) — ${escDoDebug(f.arquivo)}
                                             </figcaption>
                                         </figure>`).join('')}
                                 </div>
                             </div>`).join('')}
-                    </div>` : `<p class="text-sm text-gray-400">nenhuma serie capturada pelo rig</p>`),
-                'A imagem e servida pelo proprio hub (mesma origem), validando serie e nome do arquivo.')}
+                    </div>`
+                    : '<p class="text-sm text-gray-400">nenhum item com foto de serie ingerida ainda</p>'),
+                'A evidencia e a copia que ficou na raiz do hub na ingestao: e ela que a Investigacao e o relatorio mostram.')}
 
 
             ${painel('Historico de gatilhos no registro',

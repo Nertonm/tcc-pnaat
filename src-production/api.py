@@ -38,8 +38,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from consultas_site import (caminho_da_evidencia, capturas_recentes, gatilhos_recentes, item_detalhe,
-                            lotes_resumo, total_de_capturas)
+from consultas_site import (caminho_da_evidencia, capturas_recentes, gatilhos_recentes,
+                            itens_de_serie, item_detalhe, lotes_resumo, total_de_capturas)
 from painel import Painel
 from registro import EventoInvalido, Registro
 
@@ -60,6 +60,10 @@ DELAY_MAXIMO_MS = 30000
 #: nome de arquivo aceito na rota de serie: o rig produz um JPEG por camera + o manifest.
 #: Padrao (nao lista fixa) porque o nome da camera e dado do RIG: lista fixa amarrava o hub a
 #: instalacao e ainda repetia nome de host dentro do repositorio.
+#: pasta das series do rig (mesma maquina do hub). Configuravel: o caminho e dado da instalacao.
+SERIES_DIR = Path(os.environ.get("PNAAT_SERIES_DIR")
+                  or (Path.home() / "pnaat-dataset" / "series-3-cameras"))
+
 ARQUIVO_DE_SERIE = re.compile(r"(?:manifest\.json|[A-Za-z0-9][A-Za-z0-9._-]{0,63}\.jpg)")
 
 #: teto do corpo de escrita (o gatilho manda um JSON pequeno)
@@ -513,6 +517,90 @@ def _ITEM_ID_VALIDO(item_id: str) -> bool:
     return bool(re.fullmatch(r"[A-Za-z0-9._-]{1,64}", str(item_id or "")))
 
 
+def _series_locais(limite: int = 40) -> list[dict]:
+    """Lista as series que EXISTEM na pasta, com o que cada uma tem — parciais incluidas.
+
+    O rig so publica serie completa; quem falhou no meio vira pasta orfa e desaparece da tela. Aqui a
+    leitura e do sistema de arquivos: a foto que foi tirada continua visivel, com a vista que falta
+    declarada.
+    """
+    if not SERIES_DIR.is_dir():
+        raise ErroDeApi(503, "pasta_de_series_ausente",
+                        f"a pasta de series do rig nao existe nesta instalacao: {SERIES_DIR}")
+
+    series: list[dict] = []
+    for destino in sorted((d for d in SERIES_DIR.iterdir() if d.is_dir()), reverse=True)[:limite]:
+        fotos, faltando = [], []
+        manifest = destino / "manifest.json"
+        declarado = {}
+        if manifest.is_file():
+            try:
+                dados = json.loads(manifest.read_text(encoding="utf-8"))
+                declarado = {f.get("nome"): f.get("camera") for f in (dados.get("fontes") or [])
+                             if isinstance(f, dict)}
+            except (OSError, json.JSONDecodeError):
+                declarado = {}
+
+        for arquivo in sorted(destino.iterdir()):
+            if not arquivo.is_file() or not ARQUIVO_DE_SERIE.fullmatch(arquivo.name):
+                continue
+            if arquivo.suffix == ".json":
+                continue
+            fotos.append({"arquivo": arquivo.name, "camera": declarado.get(arquivo.name),
+                          "bytes": arquivo.stat().st_size,
+                          "quando": datetime.fromtimestamp(arquivo.stat().st_mtime, UTC)
+                                          .isoformat(timespec="seconds"),
+                          "url": f"/api/series/{destino.name}/{arquivo.name}"})
+
+        with_manifest = manifest.is_file()
+        for nome in sorted(declarado):
+            if nome and not (destino / nome).is_file():
+                faltando.append(declarado[nome] or nome)
+        if not fotos:
+            faltando = faltando or ["nenhuma foto"] 
+
+        series.append({
+            "serie": destino.name,
+            "completa": bool(with_manifest and len(fotos) == 3),
+            "tem_manifesto": with_manifest,
+            "fotos": fotos,
+            "faltantes": faltando,
+            "motivo": (None if with_manifest and faltando == [] else
+                       ("sem manifesto: captura interrompida" if not with_manifest
+                        else f"fotos declaradas e ausentes: {faltando}")),
+        })
+    return series
+
+
+def _rota_series_locais(consulta: dict) -> dict:
+    bruto = (consulta.get("limite") or ["40"])[0]
+    try:
+        limite = int(bruto)
+    except (TypeError, ValueError) as exc:
+        raise ErroDeApi(400, "filtro_invalido", f"limite tem de ser inteiro, recebido {bruto!r}") from exc
+    limite = max(1, min(limite, LIMITE_MAXIMO))
+    series = _series_locais(limite)
+    return {"series": series, "total": len(series), "pasta": str(SERIES_DIR),
+            "completas": sum(1 for s in series if s["completa"]),
+            "parciais": sum(1 for s in series if not s["completa"])}
+
+
+def _rota_serie_local(resto: str) -> tuple[bytes, str]:
+    """Serve a foto de uma serie local, com a mesma fronteira das outras rotas de arquivo."""
+    partes = [p for p in resto.split("/") if p]
+    if len(partes) != 2:
+        raise ErroDeApi(400, "caminho_invalido", "use /api/series/<serie>/<arquivo>")
+    serie, arquivo = partes
+    if not re.fullmatch(r"[0-9A-Za-z._-]{1,64}", serie) or not ARQUIVO_DE_SERIE.fullmatch(arquivo):
+        raise ErroDeApi(400, "serie_ou_arquivo_invalido", f"{serie!r}/{arquivo!r}")
+    raiz = SERIES_DIR.resolve()
+    alvo = (raiz / serie / arquivo).resolve()
+    if raiz not in alvo.parents or not alvo.is_file():
+        raise ErroDeApi(404, "foto_ausente", f"{alvo} nao esta la como arquivo")
+    tipo = TIPOS_ESTATICOS.get(alvo.suffix.lower(), "image/jpeg")
+    return alvo.read_bytes(), tipo
+
+
 def _rota_gatilhos(ctx: dict, consulta: dict) -> dict:
     """Historico de eventos de gatilho: e o comportamento do trigger que o site nao mostrava."""
     bruto = (consulta.get("limite") or ["50"])[0]
@@ -555,6 +643,23 @@ def _rota_rig_serie(resto: str) -> tuple[bytes, str]:
     except (urllib.error.URLError, OSError) as exc:
         raise ErroDeApi(503, "rig_sem_resposta", f"{url} nao respondeu: {str(exc)[:120]}") from exc
     return dados, tipo
+
+
+def _rota_itens_ingeridos(ctx: dict, consulta: dict) -> dict:
+    """Itens cuja evidencia veio de uma serie do rig (caminho com `/series/`), com as fotos serviveis."""
+    bruto = (consulta.get("limite") or ["20"])[0]
+    try:
+        limite = int(bruto)
+    except (TypeError, ValueError) as exc:
+        raise ErroDeApi(400, "filtro_invalido", f"limite tem de ser inteiro, recebido {bruto!r}") from exc
+    limite = max(1, min(limite, LIMITE_MAXIMO))
+
+    painel = Painel.abrir(ctx["db"])
+    try:
+        itens = itens_de_serie(painel, limite=limite)
+    finally:
+        painel._cx.close()
+    return {"itens": itens, "total": len(itens)}
 
 
 def _rota_rig_leitura(alvo: str) -> dict:
@@ -820,6 +925,13 @@ def criar_servidor(db: Path | str, site: Path | str, porta: int = 8080,
                         self._json(200, _rota_rig_leitura(rota[len("/api/rig/"):]))
                     elif rota == "/api/gatilhos":
                         self._json(200, _rota_gatilhos(ctx, consulta))
+                    elif rota == "/api/series":
+                        self._json(200, _rota_series_locais(consulta))
+                    elif rota.startswith("/api/series/"):
+                        dados, tipo = _rota_serie_local(rota[len("/api/series/"):])
+                        self._responde(200, dados, tipo)
+                    elif rota == "/api/itens-ingeridos":
+                        self._json(200, _rota_itens_ingeridos(ctx, consulta))
                     elif rota.startswith("/api/rig-serie/"):
                         dados, tipo = _rota_rig_serie(rota[len("/api/rig-serie/"):])
                         self._responde(200, dados, tipo)

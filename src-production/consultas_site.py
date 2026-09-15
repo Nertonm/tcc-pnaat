@@ -11,6 +11,7 @@ reinventa campo. `caminho_evidencia` sai como o caminho gravado no banco — que
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from painel import Painel
 
@@ -132,6 +133,40 @@ def capturas_recentes(painel: Painel, limite: int = 100, vista: str | None = Non
 def total_de_capturas(painel: Painel) -> int:
     """Base do recorte: sem ela, lista vazia e indistinguivel de filtro que zerou tudo."""
     return int(painel.conexao.execute("SELECT COUNT(*) FROM inspecao_vista").fetchone()[0])
+
+
+def itens_de_serie(painel: Painel, limite: int = 20) -> tuple[dict, ...]:
+    """Itens cuja evidencia veio de uma serie do rig, com a foto de cada vista.
+
+    O criterio e o caminho gravado (`/series/<carimbo>/...`): e dado do registro, nao heuristica de
+    nome. Item sem foto de serie nao entra.
+    """
+    linhas = painel.conexao.execute(
+        "SELECT i.item_id, i.timestamp_trigger, i.status_final, i.qualidade_registro,"
+        " v.vista, v.dominio, v.status_vista, v.caminho_evidencia"
+        " FROM item i JOIN inspecao_vista v ON v.item_id = i.item_id"
+        " WHERE v.caminho_evidencia LIKE '%/series/%'"
+        " ORDER BY i.timestamp_trigger DESC, i.item_id DESC LIMIT ?", (limite * 6,)).fetchall()
+
+    itens: dict[str, dict] = {}
+    for linha in linhas:
+        item = itens.setdefault(linha["item_id"], {
+            "item_id": linha["item_id"], "timestamp_trigger": linha["timestamp_trigger"],
+            "status_final": linha["status_final"], "qualidade_registro": linha["qualidade_registro"],
+            "fotos": [],
+        })
+        vistas_ja = {f["vista"] for f in item["fotos"]}
+        if linha["caminho_evidencia"] and linha["vista"] not in vistas_ja:
+            # a tabela tem uma linha por (vista, dominio): a FOTO e por vista, entao nao se repete
+            item["fotos"].append({
+                "vista": linha["vista"], "dominio": linha["dominio"],
+                "status_vista": linha["status_vista"],
+                "arquivo": Path(linha["caminho_evidencia"]).name,
+                "url": f"/api/evidencia?item={linha['item_id']}&vista={linha['vista']}",
+            })
+        if len(itens) >= limite:
+            break
+    return tuple(itens.values())
 
 
 def gatilhos_recentes(painel: Painel, limite: int = 50) -> tuple[dict, ...]:
