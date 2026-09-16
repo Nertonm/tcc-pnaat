@@ -14,6 +14,75 @@
  *   * o selo diz de ONDE vem o dado, com o caminho do banco — demo e linha real nao se confundem.
  */
 
+/*
+ * Token de operacao (rotas de POST). Vem do fragmento da URL (`#token=...`) uma vez e fica em
+ * sessionStorage: fragmento nao vai para o servidor nem para log de acesso, e o header substitui
+ * a query string (token em URL e registrado por qualquer proxy).
+ */
+const PNAAT_TOKEN = (() => {
+    try {
+        const m = String(window.location.hash || '').match(/(?:^#|&)token=([^&]+)/);
+        if (m) {
+            window.sessionStorage.setItem('pnaat_token', decodeURIComponent(m[1]));
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+        return window.sessionStorage.getItem('pnaat_token') || '';
+    } catch (erro) {
+        return '';
+    }
+})();
+
+const PNAAT_HEADERS = extra => {
+    const cabecalhos = Object.assign({}, extra || {});
+    if (PNAAT_TOKEN) {
+        cabecalhos.Authorization = 'Bearer ' + PNAAT_TOKEN;
+    }
+    return cabecalhos;
+};
+
+if (typeof window !== 'undefined') {
+    window.PNAAT_HEADERS = PNAAT_HEADERS;
+}
+
+const PNAAT_ESCAPE = valor => String(valor === null || valor === undefined ? '' : valor)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+if (typeof window !== 'undefined') {
+    window.PNAAT_ESCAPE = PNAAT_ESCAPE;
+}
+
+const PNAAT_SAFE_URL = valor => {
+    const raw = String(valor === null || valor === undefined ? '' : valor).trim();
+    if (raw.startsWith('data:image/')) {
+        return raw;
+    }
+    try {
+        const parsed = new URL(raw, window.location.origin);
+        return parsed.origin === window.location.origin && parsed.pathname.startsWith('/') ? raw : '';
+    } catch {
+        return '';
+    }
+};
+
+if (typeof window !== 'undefined') {
+    window.PNAAT_SAFE_URL = PNAAT_SAFE_URL;
+}
+
+const PNAAT_OPERATION_OK = corpo => {
+    if (!corpo || corpo.ok !== true) {
+        return false;
+    }
+    const dados = corpo.dados || {};
+    return dados.parcial !== true
+        && !(dados.rig && dados.rig.ok === false)
+        && dados.confirmado !== false;
+};
+
+if (typeof window !== 'undefined') {
+    window.PNAAT_OPERATION_OK = PNAAT_OPERATION_OK;
+}
+
 let mockCapturas = [];
 let mockStats = {};
 let mockHealth = {};
@@ -171,10 +240,13 @@ const PNAAT_API = {
          * "Offline" — o site se declarando fora do ar enquanto servia o proprio painel.
          */
         const heartbeat = saude.heartbeat || null;
-        const noOnline = heartbeat ? String(heartbeat.status).toLowerCase() === 'online' : null;
+        const statusNo = heartbeat ? String(heartbeat.status || '').toLowerCase() : null;
+        const estadoNo = ['online', 'degradado', 'offline'].includes(statusNo) ? statusNo : null;
+        const rotulosNo = { online: 'Online', degradado: 'Degradado', offline: 'Offline' };
 
         return {
-            status: noOnline === null ? 'sem leitura' : (noOnline ? 'Online' : 'Offline'),
+            status: estadoNo ? rotulosNo[estadoNo] : 'sem leitura',
+            statusNo: estadoNo,
             statusFonte: 'heartbeat do no + resposta da API',
             adaptador: camera.adaptador || '--',
             adaptadorEstado: camera.porta_aberta ? 'respondendo' : 'sem resposta',
@@ -379,6 +451,8 @@ const PNAAT_API = {
             // sem `?.` um campo ausente derrubava a carga inteira e a tela ficava com undefined
             this.estado.banco = saude.banco?.caminho || '--';
             this.estado.itens = saude.banco?.itens ?? 0;
+            this.estado.totalCapturas = capturas.base ?? capturas.total ?? null;
+            this.estado.capturasCarregadas = capturas.total ?? 0;
             this.estado.adaptador = saude.camera?.adaptador || '--';
             this.estado.adaptador_ok = Boolean(saude.camera?.porta_aberta);
             this.estado.carregada = true;

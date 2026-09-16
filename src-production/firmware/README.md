@@ -60,7 +60,7 @@ Medido no fio, mesma placa e mesmas condições (frame de ~13 kB):
 |---|---|---|---|
 | texto base64 @ 921600 | 27.233 | 2,15x | 292 ms |
 | binário @ 921600 | 14.921 | 1,13x | 191 ms |
-| binário @ 1,5 Mbps | — | — | 145 ms |
+| binário @ 1,5 Mbps |; |; | 145 ms |
 
 Além do bloco binário, o firmware imprime `FRAME_INFO ... len= crc32=` em ASCII: o host recalcula
 o CRC-32 do frame montado com `zlib` e compara. Duas implementações independentes concordando
@@ -90,7 +90,7 @@ Entre fotos o firmware: desinicializa o driver, assere `PWDN` (standby do sensor
 (`ledc_stop` + pino em entrada com pull-down) e desliga a chave de carga quando ela existe.
 
 Verificado funcionalmente: com `PWDN` alto o sensor **não responde** na detecção, e `STATUS`
-reporta `camera=standby driver=0`. Atenção: isso é standby, não corte de 3V3 — o módulo segue
+reporta `camera=standby driver=0`. Atenção: isso é standby, não corte de 3V3; o módulo segue
 alimentado. Corte real exige chave de carga no rail da câmera; o firmware já tem o caminho
 pronto em `CAM_POWER_GPIO` (-1 = ausente nesta placa).
 
@@ -195,7 +195,7 @@ Pendentes:
 - [ ] níveis elétricos do sensor de presença real e trigger físico medido (hoje só comando de ensaio);
 - [ ] debounce (50 ms) e cooldown (250 ms) medidos com o E18-D80NK;
 - [ ] origem não autorizada: o firmware aceita o comando de ensaio sempre; falta gate de modo;
-- [ ] corrente e temperatura em idle, wake e captura (não medidos — exige instrumentação);
+- [ ] corrente e temperatura em idle, wake e captura (não medidos; exige instrumentação);
 - [ ] o Pi registrar evento sem captura e captura sem decisão (integração com o pipeline);
 - [ ] idempotência de item duplicado no registro canônico;
 - [ ] canário em deployment persistente (hoje roda em sessão `tmux`, não como serviço).

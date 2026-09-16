@@ -38,15 +38,23 @@ command_queue: Queue[bytes] = Queue(maxsize=1)
 history: deque[tuple[float, bytes]] = deque(maxlen=4)
 
 
-def publish_frame(header: re.Match[bytes], chunks: dict[int, bytes], end: re.Match[bytes]) -> None:
+def publish_frame(
+    header: re.Match[bytes], chunks: dict[int, bytes], end: re.Match[bytes]
+) -> None:
     global latest, latest_meta, frames_ok, frames_bad
     try:
         expected_len = int(header.group(4))
         expected_crc = int(header.group(5), 16)
-        frame = base64.b64decode(b"".join(chunks[i] for i in sorted(chunks)), validate=True)
+        frame = base64.b64decode(
+            b"".join(chunks[i] for i in sorted(chunks)), validate=True
+        )
         actual_crc = binascii.crc32(frame) & 0xFFFFFFFF
-        if (len(frame) != expected_len or frame[:2] != b"\xff\xd8"
-                or frame[-2:] != b"\xff\xd9" or actual_crc != expected_crc):
+        if (
+            len(frame) != expected_len
+            or frame[:2] != b"\xff\xd8"
+            or frame[-2:] != b"\xff\xd9"
+            or actual_crc != expected_crc
+        ):
             raise ValueError("frame gate failed")
         meta = {
             "source": header.group(1).decode("ascii"),
@@ -153,18 +161,20 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if self.path == "/":
-            body = ("<!doctype html><meta name=viewport content='width=device-width'>"
-                    "<title>ESP32-CAM USB</title><h1>ESP32-CAM USB</h1>"
-                    "<button onclick=shot()>Capturar</button>"
-                    "<a href='/health'>Health</a><p id=s>Pronto</p>"
-                    "<img id=i style='max-width:100%;height:auto'>"
-                    "<script>async function health(){let r=await fetch('/health');return (await r.text()).match(/frames_ok=(\\d+)/)[1]}"
-                    "async function shot(){s.textContent='capturando...';let before=await health();"
-                    "let r=await fetch('/capture',{method:'POST'});if(!r.ok){s.textContent=await r.text();return}"
-                    "for(let n=0;n<40;n++){await new Promise(x=>setTimeout(x,100));"
-                    "if((await health())>before){s.textContent='captura concluída';"
-                    "i.src='/capture?t='+Date.now();return}}s.textContent='timeout'}"
-                    "i.src='/capture';</script>").encode()
+            body = (
+                "<!doctype html><meta name=viewport content='width=device-width'>"
+                "<title>ESP32-CAM USB</title><h1>ESP32-CAM USB</h1>"
+                "<button onclick=shot()>Capturar</button>"
+                "<a href='/health'>Health</a><p id=s>Pronto</p>"
+                "<img id=i style='max-width:100%;height:auto'>"
+                "<script>async function health(){let r=await fetch('/health');return (await r.text()).match(/frames_ok=(\\d+)/)[1]}"
+                "async function shot(){s.textContent='capturando...';let before=await health();"
+                "let r=await fetch('/capture',{method:'POST'});if(!r.ok){s.textContent=await r.text();return}"
+                "for(let n=0;n<40;n++){await new Promise(x=>setTimeout(x,100));"
+                "if((await health())>before){s.textContent='captura concluída';"
+                "i.src='/capture?t='+Date.now();return}}s.textContent='timeout'}"
+                "i.src='/capture';</script>"
+            ).encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
@@ -191,8 +201,10 @@ class Handler(BaseHTTPRequestHandler):
                 received_bytes = serial_bytes
                 received_lines = serial_lines
                 last_error = serial_last_error
-            body = (f"frames_ok={ok}\nframes_bad={bad}\nserial_bytes={received_bytes}\n"
-                    f"serial_lines={received_lines}\nserial_last_error={last_error}\nmeta={meta}\n").encode()
+            body = (
+                f"frames_ok={ok}\nframes_bad={bad}\nserial_bytes={received_bytes}\n"
+                f"serial_lines={received_lines}\nserial_last_error={last_error}\nmeta={meta}\n"
+            ).encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
@@ -205,5 +217,8 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     threading.Thread(target=serial_reader, daemon=True).start()
     server = ThreadingHTTPServer((HTTP_HOST, HTTP_PORT), Handler)
-    print(f"USB_STREAM_READY http://{HTTP_HOST}:{HTTP_PORT}/ serial={SERIAL_PORT}", flush=True)
+    print(
+        f"USB_STREAM_READY http://{HTTP_HOST}:{HTTP_PORT}/ serial={SERIAL_PORT}",
+        flush=True,
+    )
     server.serve_forever()

@@ -2,12 +2,13 @@
 
 Caso real (2026-09-15 18:45): bytes se perderam na transicao de taxa e a linha chegou como
 `BAUD_ACK ok=1 de=921600 para=46TASKS_READY`. O regex `para=(\\d+)` casou "46" e o host
-trocou o UART para 46 baud — enlace morto (frames_ok=0, camera=desconhecido) sem nenhum
+trocou o UART para 46 baud; enlace morto (frames_ok=0, camera=desconhecido) sem nenhum
 erro visivel no painel. O contrato do firmware e uma taxa de 4 a 7 digitos.
 
 O alvo aqui e o PARSER, nao o enlace: `serial` entra como stub para o modulo carregar em
 qualquer runner (a suite roda onde pyserial nao esta instalado).
 """
+
 from __future__ import annotations
 
 import importlib.machinery
@@ -16,7 +17,12 @@ import sys
 import types
 from pathlib import Path
 
-PONTE = Path(__file__).resolve().parents[1] / "firmware" / "esp32cam-test" / "esp32cam_site.py"
+PONTE = (
+    Path(__file__).resolve().parents[1]
+    / "firmware"
+    / "esp32cam-test"
+    / "esp32cam_site.py"
+)
 
 
 def _stub_serial() -> None:
@@ -24,7 +30,7 @@ def _stub_serial() -> None:
         return
     falso = types.ModuleType("serial")
 
-    class Serial:                      # noqa: D401 - stub do contrato minimo
+    class Serial:
         def __init__(self, *a, **k) -> None:
             pass
 
@@ -34,12 +40,20 @@ def _stub_serial() -> None:
 
 
 def _carrega():
+    sentinel = object()
+    anterior = sys.modules.get("serial", sentinel)
     _stub_serial()
-    loader = importlib.machinery.SourceFileLoader("ponte_baud", str(PONTE))
-    spec = importlib.util.spec_from_loader(loader.name, loader)
-    modulo = importlib.util.module_from_spec(spec)
-    loader.exec_module(modulo)
-    return modulo
+    try:
+        loader = importlib.machinery.SourceFileLoader("ponte_baud", str(PONTE))
+        spec = importlib.util.spec_from_loader(loader.name, loader)
+        modulo = importlib.util.module_from_spec(spec)
+        loader.exec_module(modulo)
+        return modulo
+    finally:
+        if anterior is sentinel:
+            sys.modules.pop("serial", None)
+        else:
+            sys.modules["serial"] = anterior
 
 
 def test_ack_normal_casa_e_extrai_a_taxa():

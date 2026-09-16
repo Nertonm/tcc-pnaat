@@ -1,10 +1,10 @@
 """Canario do artefato: recomputa os numeros que o json DECLARA, com o conjunto do produtor.
 
-Nao e teste unitario — e canario de bancada, e existe por um motivo especifico: o classificador
+Nao e teste unitario; e canario de bancada, e existe por um motivo especifico: o classificador
 desta cadeia (`classificador_artefato.py`) e um PORT da receita medida. Port que divergiu da receita
 ainda "funciona" (devolve classe e confianca) e mesmo assim mente. Este canario fecha isso: ele usa
 o mesmo `carrega()` do produtor (`dataset/TRABALHO/compara_extratores.py`) para montar exatamente o
-conjunto declarado — dominio `nosso`, split val+test — e recomputa, com o classificador da cadeia, as
+conjunto declarado; dominio `nosso`, split val+test; e recomputa, com o classificador da cadeia, as
 mesmas metricas do json:
 
     recall por classe (argmax, sem abstencao)   +   taxa de inconclusivo no limiar declarado
@@ -15,6 +15,7 @@ afirmacao.
 Uso (na bancada, com o venv do repo):
     .venv/bin/python src-production/canario_modelo_artefato.py [--json /tmp/canario.json]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -31,8 +32,11 @@ sys.path.insert(0, str(RAIZ / "src-production"))
 #: cada lado montasse a sua lista, a comparacao nao provaria nada sobre o port.
 sys.path.insert(0, str(RAIZ / "dataset" / "TRABALHO"))
 
-from classificador_artefato import ARTEFATO_PADRAO, ClassificadorDoArtefato  # noqa: E402
-from dominio import Dominio, Vista  # noqa: E402
+from classificador_artefato import (
+    ARTEFATO_PADRAO,
+    ClassificadorDoArtefato,
+)
+from dominio import Dominio, Vista
 
 FONTE = "nosso"
 VISTA = Vista.LATERAL1
@@ -43,24 +47,37 @@ def conjunto_declarado() -> list[dict]:
     """Itens do dominio `nosso` em val+test, pela mesma funcao do produtor do artefato."""
     from compara_extratores import carrega
 
-    return [item for item in carrega()
-            if item["dominio"] == FONTE and item["split"] in {"val", "test"}]
+    return [
+        item
+        for item in carrega()
+        if item["dominio"] == FONTE and item["split"] in {"val", "test"}
+    ]
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Canario: o port reproduz os numeros declarados?")
+    ap = argparse.ArgumentParser(
+        description="Canario: o port reproduz os numeros declarados?"
+    )
     ap.add_argument("--artefato", default=str(ARTEFATO_PADRAO))
-    ap.add_argument("--json", default="/tmp/canario-artefato.json", help="onde gravar o recibo")
-    ap.add_argument("--cadeia", action="store_true",
-                    help="roda tambem o item pela cadeia (executar) e le o rastro de volta do registro")
+    ap.add_argument(
+        "--json", default="/tmp/canario-artefato.json", help="onde gravar o recibo"
+    )
+    ap.add_argument(
+        "--cadeia",
+        action="store_true",
+        help="roda tambem o item pela cadeia (executar) e le o rastro de volta do registro",
+    )
     a = ap.parse_args(argv)
 
     cls = ClassificadorDoArtefato.abrir(a.artefato, fonte=FONTE)
     itens = conjunto_declarado()
     declarado = cls.procedencia.avaliacao
     print("procedencia:", cls.procedencia.linha(), flush=True)
-    print(f"conjunto: dominio={FONTE} split=val+test n={len(itens)} "
-          f"(declarado no json: n={declarado.get('n')})", flush=True)
+    print(
+        f"conjunto: dominio={FONTE} split=val+test n={len(itens)} "
+        f"(declarado no json: n={declarado.get('n')})",
+        flush=True,
+    )
 
     verdadeiros, argmax, medidas = [], [], []
     for i, item in enumerate(itens, 1):
@@ -87,27 +104,51 @@ def main(argv: list[str] | None = None) -> int:
         fp = int(((argmax == classe) & ~mascara).sum())
         medido[classe] = {"n": int(mascara.sum()), "recall": recall, "fn": fn, "fp": fp}
         if esperado.get("n") != int(mascara.sum()):
-            divergencias.append(f"{classe}: n medido {int(mascara.sum())} != declarado {esperado.get('n')}")
-        if esperado.get("recall") is not None and recall is not None and abs(recall - esperado["recall"]) > 1e-9:
-            divergencias.append(f"{classe}: recall medido {recall:.6f} != declarado {esperado['recall']:.6f}")
+            divergencias.append(
+                f"{classe}: n medido {int(mascara.sum())} != declarado {esperado.get('n')}"
+            )
+        if (
+            esperado.get("recall") is not None
+            and recall is not None
+            and abs(recall - esperado["recall"]) > 1e-9
+        ):
+            divergencias.append(
+                f"{classe}: recall medido {recall:.6f} != declarado {esperado['recall']:.6f}"
+            )
         for chave, valor in (("fn", fn), ("fp", fp)):
             if esperado.get(chave) is not None and valor != esperado[chave]:
-                divergencias.append(f"{classe}: {chave} medido {valor} != declarado {esperado[chave]}")
+                divergencias.append(
+                    f"{classe}: {chave} medido {valor} != declarado {esperado[chave]}"
+                )
 
     taxa_inconclusivo = float(inconclusivos.mean())
     medido["inconclusivo"] = taxa_inconclusivo
-    if declarado.get("inconclusivo") is not None and abs(taxa_inconclusivo - declarado["inconclusivo"]) > 1e-6:
-        divergencias.append(f"inconclusivo medido {taxa_inconclusivo:.6f} != declarado "
-                            f"{declarado['inconclusivo']:.6f}")
-    recalls = [medido[c]["recall"] for c in (declarado.get("por_classe") or {}) if medido[c]["recall"] is not None]
+    if (
+        declarado.get("inconclusivo") is not None
+        and abs(taxa_inconclusivo - declarado["inconclusivo"]) > 1e-6
+    ):
+        divergencias.append(
+            f"inconclusivo medido {taxa_inconclusivo:.6f} != declarado "
+            f"{declarado['inconclusivo']:.6f}"
+        )
+    recalls = [
+        medido[c]["recall"]
+        for c in (declarado.get("por_classe") or {})
+        if medido[c]["recall"] is not None
+    ]
     recall_macro = float(np.mean(recalls)) if recalls else None
     acuracia_por_item = float((argmax == verdadeiros).mean())
     medido["recall_macro"] = recall_macro
     medido["acuracia_por_item"] = acuracia_por_item
-    if declarado.get("recall_medio") is not None and recall_macro is not None \
-            and abs(recall_macro - declarado["recall_medio"]) > 1e-9:
-        divergencias.append(f"recall_macro medido {recall_macro:.6f} != declarado "
-                            f"{declarado['recall_medio']:.6f}")
+    if (
+        declarado.get("recall_medio") is not None
+        and recall_macro is not None
+        and abs(recall_macro - declarado["recall_medio"]) > 1e-9
+    ):
+        divergencias.append(
+            f"recall_macro medido {recall_macro:.6f} != declarado "
+            f"{declarado['recall_medio']:.6f}"
+        )
 
     recibo = {
         "artefato": Path(a.artefato).name,
@@ -118,16 +159,27 @@ def main(argv: list[str] | None = None) -> int:
         "fonte": FONTE,
         "aviso_do_artefato": cls.procedencia.aviso,
         "medido": medido,
-        "declarado": {"n": declarado.get("n"), "por_classe": declarado.get("por_classe"),
-                      "inconclusivo": declarado.get("inconclusivo"),
-                      "recall_macro": declarado.get("recall_medio")},
+        "declarado": {
+            "n": declarado.get("n"),
+            "por_classe": declarado.get("por_classe"),
+            "inconclusivo": declarado.get("inconclusivo"),
+            "recall_macro": declarado.get("recall_medio"),
+        },
         "divergencias": divergencias,
     }
-    Path(a.json).write_text(json.dumps(recibo, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"recall_macro (media das classes, como o produtor mede) medido={recall_macro:.4f} "
-          f"declarado={declarado.get('recall_medio')}")
-    print(f"acuracia_por_item medido={acuracia_por_item:.4f} (metrica diferente: nao e a declarada)")
-    print(f"inconclusivo medido={taxa_inconclusivo:.4f} declarado={declarado.get('inconclusivo')}")
+    Path(a.json).write_text(
+        json.dumps(recibo, ensure_ascii=False, indent=1), encoding="utf-8"
+    )
+    print(
+        f"recall_macro (media das classes, como o produtor mede) medido={recall_macro:.4f} "
+        f"declarado={declarado.get('recall_medio')}"
+    )
+    print(
+        f"acuracia_por_item medido={acuracia_por_item:.4f} (metrica diferente: nao e a declarada)"
+    )
+    print(
+        f"inconclusivo medido={taxa_inconclusivo:.4f} declarado={declarado.get('inconclusivo')}"
+    )
     if a.cadeia:
         codigo_da_cadeia = _pela_cadeia(cls)
         if codigo_da_cadeia != 0:
@@ -141,7 +193,6 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     print(f"OK: o port reproduz o artefato. recibo: {a.json}")
     return 0
-
 
 
 def _pela_cadeia(cls) -> int:
@@ -166,19 +217,38 @@ def _pela_cadeia(cls) -> int:
         copia = Path(pasta) / "lateral1.jpg"
         cv2.imwrite(str(copia), imagem)
         item = ItemCapturado(
-            item_id="CANARIO-1", trigger_em=datetime.now(UTC),
-            vistas=(VistaCapturada(vista=Vista.LATERAL1, imagem=copia, capturado_em=datetime.now(UTC),
-                                   alinhamento=Alinhamento.OK, no_janela=True,
-                                   motivo_da_janela="janela declarada pelo canario"),))
+            item_id="CANARIO-1",
+            trigger_em=datetime.now(UTC),
+            vistas=(
+                VistaCapturada(
+                    vista=Vista.LATERAL1,
+                    imagem=copia,
+                    capturado_em=datetime.now(UTC),
+                    alinhamento=Alinhamento.OK,
+                    no_janela=True,
+                    motivo_da_janela="janela declarada pelo canario",
+                ),
+            ),
+        )
         banco = Path(pasta) / "canario.db"
         registro = Registro.abrir(str(banco))
         try:
-            resultado = executar(item, cls, registro, IdentidadeDoRig("bancada", "canario"),
-                                 roi=(0.0, 0.0, 1.0, 1.0))
-            print(f"cadeia: item {resultado.item_id} -> {resultado.status} "
-                  f"({resultado.gravacao}); motivos={list(resultado.conformidade.motivos)}")
-            linhas = list(sqlite3.connect(str(banco)).execute(
-                "select grandeza, round(valor,4), origem, papel, metodo from evidencia"))
+            resultado = executar(
+                item,
+                cls,
+                registro,
+                IdentidadeDoRig("bancada", "canario"),
+                roi=(0.0, 0.0, 1.0, 1.0),
+            )
+            print(
+                f"cadeia: item {resultado.item_id} -> {resultado.status} "
+                f"({resultado.gravacao}); motivos={list(resultado.conformidade.motivos)}"
+            )
+            linhas = list(
+                sqlite3.connect(str(banco)).execute(
+                    "select grandeza, round(valor,4), origem, papel, metodo from evidencia"
+                )
+            )
         finally:
             registro.fechar()
 

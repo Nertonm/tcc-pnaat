@@ -7,15 +7,24 @@ set -uo pipefail
 
 RAIZ="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 CW="$RAIZ/code-workspace"
+# O venv vive no worktree principal. Num worktree secundario nao existe .venv proprio,
+# entao caimos para o venv do repositorio comum antes de aceitar o python do sistema:
+# sem isso a suite pede cv2 e o gate reprova por ambiente, nao por codigo.
+COMUM="$(git rev-parse --git-common-dir 2>/dev/null || true)"
+PRINCIPAL=""
+[ -n "$COMUM" ] && PRINCIPAL="$(cd "$(dirname "$COMUM")" 2>/dev/null && pwd)"
 PY="${AI_PY:-$RAIZ/.venv/bin/python}"
+if [ ! -x "$PY" ] && [ -n "$PRINCIPAL" ] && [ -x "$PRINCIPAL/.venv/bin/python" ]; then
+  PY="$PRINCIPAL/.venv/bin/python"
+fi
 [ -x "$PY" ] || PY="$(command -v python3)"
 falhas=0
 
 echo "[gate] (1/4) suite de testes"
-( cd "$CW" && "$PY" -m pytest -q ) || { echo "[gate] FALHA nos testes"; falhas=1; }
+( cd "$CW" && "$PY" -m pytest -p no:pytest-qt -q ) || { echo "[gate] FALHA nos testes"; falhas=1; }
 
 echo "[gate] (2/4) suite do firmware ESP32-CAM"
-( cd "$RAIZ" && "$PY" -m pytest -q src-production/firmware/esp32cam-test/tests ) || { echo "[gate] FALHA nos testes do firmware"; falhas=1; }
+( cd "$RAIZ" && "$PY" -m pytest -p no:pytest-qt -q src-production/firmware/esp32cam-test/tests ) || { echo "[gate] FALHA nos testes do firmware"; falhas=1; }
 
 echo "[gate] (3/4) sanitizador de higiene"
 "$PY" "$CW/scripts/sanitizar_repo.py" || { echo "[gate] FALHA na sanitizacao"; falhas=1; }

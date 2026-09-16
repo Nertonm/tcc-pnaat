@@ -4,7 +4,7 @@ O rig do PNAAT grava uma foto por CAMERA (os papeis sao `csi`, `usb` e `espcam`;
 camera e dado da instalacao e fica no `mapeamento-rig.json`), e o registro do hub
 fala por VISTA (`topo`, `lateral1`, `lateral2`). Nada nos dois lados liga os dois nomes: o `roi.json`
 lista cameras, o `dominio.py` lista vistas, e nenhum arquivo diz qual camera e qual vista. Sem esta
-declaracao, qualquer associacao serie->item e adivinhacao de quem le — e como o topo NUNCA decide
+declaracao, qualquer associacao serie->item e adivinhacao de quem le; e como o topo NUNCA decide
 (D-23/D-30), trocar a ordem muda a decisao do item.
 
 Regras que este modulo faz valer:
@@ -14,12 +14,13 @@ Regras que este modulo faz valer:
   * camera desconhecida no manifesto e ERRO declarado, nunca ignorada em silencio;
   * serie incompleta e declarada como incompleta (a vista que falta e nomeada).
 """
+
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
 
 from dominio import Vista
 
@@ -56,24 +57,33 @@ def validar_mapa(mapa: Mapping[str, Vista]) -> dict[str, Vista]:
             except ValueError as exc:
                 raise ErroDeMapeamento(
                     f"vista desconhecida para a camera {nome!r}: {vista!r} "
-                    f"(validas: {[v.value for v in Vista]})") from exc
+                    f"(validas: {[v.value for v in Vista]})"
+                ) from exc
         limpo[nome] = vista
 
     vistas = list(limpo.values())
     if len(set(vistas)) != len(vistas):
         repetidas = sorted({v.value for v in vistas if vistas.count(v) > 1})
-        raise ErroDeMapeamento(f"vista repetida no mapa ({repetidas}): cada vista tem UMA camera")
+        raise ErroDeMapeamento(
+            f"vista repetida no mapa ({repetidas}): cada vista tem UMA camera"
+        )
     if not limpo:
-        raise ErroDeMapeamento("mapa vazio: sem ele nao ha associacao honesta entre camera e vista")
+        raise ErroDeMapeamento(
+            "mapa vazio: sem ele nao ha associacao honesta entre camera e vista"
+        )
     return limpo
 
 
-def ler_mapa(texto: str | None, *, arquivo: str | Path | None = None,
-             mapa: Mapping[str, Vista] | None = None) -> dict[str, Vista]:
+def ler_mapa(
+    texto: str | None,
+    *,
+    arquivo: str | Path | None = None,
+    mapa: Mapping[str, Vista] | None = None,
+) -> dict[str, Vista]:
     """Resolve o mapa na ordem: dict > texto `camera=vista,...` > arquivo da instalacao > ERRO.
 
     O repositorio NAO tem mapa default de proposito: os nomes das cameras sao dado do rig (e o repo
-    nao carrega nome de host). Sem declaracao, a ingestao PARA — em vez de adivinhar qual foto e a
+    nao carrega nome de host). Sem declaracao, a ingestao PARA; em vez de adivinhar qual foto e a
     lateral.
     """
     if mapa is not None:
@@ -86,14 +96,17 @@ def ler_mapa(texto: str | None, *, arquivo: str | Path | None = None,
             if not par:
                 continue
             if "=" not in par:
-                raise ErroDeMapeamento(f"par sem '=' no mapa: {par!r} (use camera=vista)")
+                raise ErroDeMapeamento(
+                    f"par sem '=' no mapa: {par!r} (use camera=vista)"
+                )
             camera, _, nome_da_vista = par.partition("=")
             try:
                 resolvido[camera.strip()] = Vista(nome_da_vista.strip())
             except ValueError as exc:
                 raise ErroDeMapeamento(
                     f"vista desconhecida no mapa: {nome_da_vista.strip()!r} "
-                    f"(validas: {[v.value for v in Vista]})") from exc
+                    f"(validas: {[v.value for v in Vista]})"
+                ) from exc
         return validar_mapa(resolvido)
 
     caminho = Path(arquivo) if arquivo else ARQUIVO_DO_MAPA
@@ -108,11 +121,30 @@ def ler_mapa(texto: str | None, *, arquivo: str | Path | None = None,
 
     raise ErroDeMapeamento(
         f"mapa camera->vista nao declarado: informe --mapa camera=vista,... ou crie {caminho} "
-        "(o repositorio nao carrega os nomes das cameras da instalacao)")
+        "(o repositorio nao carrega os nomes das cameras da instalacao)"
+    )
 
 
-def fotos_do_manifesto(manifesto: Mapping[str, object],
-                       mapa: Mapping[str, Vista]) -> tuple[FotoDaSerie, ...]:
+def _validar_nome_de_foto(nome: str) -> None:
+    """Aceita somente um nome de arquivo simples, sem escapar da serie/evidencia."""
+    caminho = Path(nome)
+    if (
+        not nome
+        or "\x00" in nome
+        or nome in {".", ".."}
+        or caminho.is_absolute()
+        or caminho.name != nome
+        or "/" in nome
+        or "\\" in nome
+    ):
+        raise ErroDeMapeamento(
+            f"nome de foto inseguro no manifesto: {nome!r}; informe somente um basename"
+        )
+
+
+def fotos_do_manifesto(
+    manifesto: Mapping[str, object], mapa: Mapping[str, Vista]
+) -> tuple[FotoDaSerie, ...]:
     """Associa as fotos do manifesto a vistas, na ordem das vistas do rig.
 
     Erros declarados (nunca silencio): camera fora do mapa, foto repetida para a mesma vista,
@@ -131,25 +163,41 @@ def fotos_do_manifesto(manifesto: Mapping[str, object],
         arquivo = str(fonte.get("nome") or "").strip()
         if not camera or not arquivo:
             raise ErroDeMapeamento(f"fonte sem camera/nome: {fonte!r}")
+        _validar_nome_de_foto(arquivo)
         if camera not in mapa:
             raise ErroDeMapeamento(
                 f"camera {camera!r} nao esta no mapa declarado "
-                f"({sorted(mapa)}): declarar o mapa antes de ingerir")
+                f"({sorted(mapa)}): declarar o mapa antes de ingerir"
+            )
         vista = mapa[camera]
         if vista in vistas_vistas:
             raise ErroDeMapeamento(
-                f"duas cameras mapeadas para a vista {vista.value!r}: a vista decide uma vez")
+                f"duas cameras mapeadas para a vista {vista.value!r}: a vista decide uma vez"
+            )
         vistas_vistas.add(vista)
         tamanho = fonte.get("bytes")
-        fotos.append(FotoDaSerie(camera=camera, vista=vista, arquivo=arquivo,
-                                 bytes=int(tamanho) if isinstance(tamanho, int) else None))
+        fotos.append(
+            FotoDaSerie(
+                camera=camera,
+                vista=vista,
+                arquivo=arquivo,
+                bytes=int(tamanho) if isinstance(tamanho, int) else None,
+            )
+        )
 
-    # ordem canonica das vistas (topo primeiro, como o rig captura) — a associacao e a mesma
-    ordem = {vista: indice for indice, vista in enumerate((Vista.TOPO, Vista.LATERAL1, Vista.LATERAL2))}
+    # ordem canonica das vistas (topo primeiro, como o rig captura); a associacao e a mesma
+    ordem = {
+        vista: indice
+        for indice, vista in enumerate((Vista.TOPO, Vista.LATERAL1, Vista.LATERAL2))
+    }
     return tuple(sorted(fotos, key=lambda f: ordem.get(f.vista, 99)))
 
 
 def faltantes(fotos: tuple[FotoDaSerie, ...]) -> tuple[str, ...]:
     """Vistas do rig que a serie nao trouxe (declaradas, para o item nao virar 'completo')."""
     presentes = {f.vista for f in fotos}
-    return tuple(v.value for v in (Vista.TOPO, Vista.LATERAL1, Vista.LATERAL2) if v not in presentes)
+    return tuple(
+        v.value
+        for v in (Vista.TOPO, Vista.LATERAL1, Vista.LATERAL2)
+        if v not in presentes
+    )

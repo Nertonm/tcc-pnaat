@@ -12,11 +12,35 @@ dependencies = ["numpy", "opencv-python"]
 [project.optional-dependencies]
 # inferencia na borda: extrator congelado + classificador raso (D-30)
 inferencia = ["torch", "torchvision", "ultralytics", "scikit-learn"]
-dev = ["pytest"]
+dev = ["pytest", "pytest-timeout"]
 
 [tool.setuptools]
-# modulos soltos na raiz da arvore (layout escolhido: sem subpacote src/)
-py-modules = ["api", "apresentacao", "captura", "classificador", "conformidade", "consultas_site", "decisao", "dominio", "fonte_gatilho", "identidade", "orquestracao", "painel", "registro"]
+# Modulos soltos na raiz da arvore (layout escolhido: sem subpacote src/).
+# A lista e conferida por tests/test_packaging.py contra os .py reais: modulo de runtime fora daqui
+# nao entra em wheel/sdist e so quebra na instalacao limpa.
+py-modules = [
+  "api",
+  "apresentacao",
+  "avaliacao_ood",
+  "canario_modelo_artefato",
+  "captura",
+  "classificador",
+  "classificador_artefato",
+  "conformidade",
+  "consultas_site",
+  "decisao",
+  "dominio",
+  "fonte_gatilho",
+  "identidade",
+  "ingerir_serie",
+  "mapeamento_rig",
+  "orquestracao",
+  "painel",
+  "preprocessamento",
+  "registro",
+  "scorers",
+  "semear_demo",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
