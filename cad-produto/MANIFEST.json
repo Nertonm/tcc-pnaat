@@ -1,0 +1,501 @@
+{
+  "produto": "Portico de inspecao PNAAT, montagem de referencia",
+  "revisao_atual": "r03",
+  "entrada_principal": "00-produto/composicao-esteira/composicao.stl",
+  "status": "ILUSTRATIVO, NAO LIBERADO PARA FABRICACAO",
+  "atribuicoes": "ATRIBUICOES.md traz autor, fonte e licenca de cada referencia",
+  "indice": "SHA256SUMS cobre apenas os arquivos que estao dentro deste diretorio",
+  "links_simbolicos": [
+    {
+      "caminho": "03-referencias/vendor",
+      "aponta_para_fora_do_diretorio": true,
+      "destino_existe": true,
+      "arquivos_atras_do_link": 1338,
+      "aviso": "conteudo nao acompanha copia, clone ou publicacao"
+    }
+  ],
+  "estrutura": {
+    "00-produto": [
+      {
+        "arquivo": "case-no-trilho-closeup.png",
+        "bytes": 57502,
+        "sha256": "65f061a77c831ab0c94b28a4c33ac73c5b29a945bd3e9f1306706833eaf154e0",
+        "estado": "MONTAGEM",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      },
+      {
+        "arquivo": "completo-frente.png",
+        "bytes": 23992,
+        "sha256": "91204b03778fb80f2dc6e3a54defa054e0c3854958601c0828e3c14be71a653e",
+        "estado": "MONTAGEM",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      },
+      {
+        "arquivo": "completo-iso.png",
+        "bytes": 47300,
+        "sha256": "e7f1e8cce3607426f79ebb7369222f4186763bb3e07d8edaa1c1923843376d70",
+        "estado": "MONTAGEM",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      },
+      {
+        "arquivo": "conjunto-completo.stl",
+        "bytes": 4010684,
+        "sha256": "3931a8841b2dcfcc724ba14f62d139e57d15c9c1a55f6abeb2dfc5a48fed071d",
+        "estado": "MONTAGEM",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      },
+      {
+        "arquivo": "conjunto-portico.stl",
+        "bytes": 3631784,
+        "sha256": "6718063131668f35d9a65a40c8167a4a184297b6a1efccc65a5657a09a64e1ce",
+        "estado": "MONTAGEM",
+        "origem": "visualizador local, fora do diretorio entregue"
+      }
+    ],
+    "00-produto/composicao-esteira": [
+      {
+        "arquivo": "README.md",
+        "bytes": 2737,
+        "sha256": "f0082ae7f55b66b7720f90e3ac88531ef148ceef28068f8060baa5aef330ca9e",
+        "estado": "MONTAGEM",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      },
+      {
+        "arquivo": "build.py",
+        "bytes": 9588,
+        "sha256": "de58181edf86ccb8acf1c9d2b15498b48d1ff4d15a1be25d889f7efe3d17d687",
+        "estado": "MONTAGEM",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "composicao-detalhe.png",
+        "bytes": 57502,
+        "sha256": "65f061a77c831ab0c94b28a4c33ac73c5b29a945bd3e9f1306706833eaf154e0",
+        "estado": "MONTAGEM",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      },
+      {
+        "arquivo": "composicao-frente.png",
+        "bytes": 23992,
+        "sha256": "91204b03778fb80f2dc6e3a54defa054e0c3854958601c0828e3c14be71a653e",
+        "estado": "MONTAGEM",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "composicao-iso.png",
+        "bytes": 47300,
+        "sha256": "e7f1e8cce3607426f79ebb7369222f4186763bb3e07d8edaa1c1923843376d70",
+        "estado": "MONTAGEM",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "composicao.stl",
+        "bytes": 4010684,
+        "sha256": "3931a8841b2dcfcc724ba14f62d139e57d15c9c1a55f6abeb2dfc5a48fed071d",
+        "estado": "MONTAGEM",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "contract.json",
+        "bytes": 393,
+        "sha256": "47132c29230b4c292443e06842c9024f16d6ab3a6ca05d8775dc219f143c5075",
+        "estado": "MONTAGEM",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "verification-build.json",
+        "bytes": 1548,
+        "sha256": "c5d264cc1f221fffd868bdd9eba40eaf8c94674cfc3c419ca46be37e0cfba3ae",
+        "estado": "MONTAGEM",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "verification-readback.json",
+        "bytes": 803,
+        "sha256": "5b82194920808b72d0f1512bc073e35a57473ab9f7cda3c4ca96c05813f0e0b9",
+        "estado": "MONTAGEM",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "verify.py",
+        "bytes": 2739,
+        "sha256": "f87372c0aa2d039be9c561c147827e617cafc16e30a6eb1bbbac11ab25dcd6ba",
+        "estado": "MONTAGEM",
+        "origem": "local artifact; see historical manifest and sources.json"
+      }
+    ],
+    "01-estrutura": [
+      {
+        "arquivo": "A_BRACKET.stl",
+        "bytes": 39484,
+        "sha256": "3284ac7fd9364c7e3bf8532dc8602af1fe19a7cc37a6c8fee690603d29c8148e",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "A_CLAMP.stl",
+        "bytes": 159984,
+        "sha256": "e68c4e0abc08ed71787605f5fbb10cf7fb1098afc945d640f8ca8e2f9c483171",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "A_PECA.stl",
+        "bytes": 153484,
+        "sha256": "87f130a2871a1295955afa011736d70e95946e0fbbf7b69305e131b818d6fe8a",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "B_BRACKET.stl",
+        "bytes": 39484,
+        "sha256": "890c821a9437d054a7733b4ffc89fd8848be01985bab1370cb5c794a1de2d35b",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "B_CLAMP.stl",
+        "bytes": 159984,
+        "sha256": "85175ba3947b4d0442479e2c241daf00a7976efb13ccbd6a19db7ae2af7292c7",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "B_PECA.stl",
+        "bytes": 153484,
+        "sha256": "4d98fc51b67a08a5b942977abc9f8d811b13268606a4e130d100ecd497f3049e",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ChavetaA.stl",
+        "bytes": 25484,
+        "sha256": "5bfc9502ff99256e7a28fb0aad3a2112b4661cf5b7e7cbd11e8498306db6053e",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ChavetaB.stl",
+        "bytes": 25484,
+        "sha256": "3cf2da176f7b09c83c8056482eedf4be9452403c5e87b23730ef75338317833e",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ClampFunctionalSource.stl",
+        "bytes": 159984,
+        "sha256": "f2e4d2deec87ef1ff07f8c836ea4a3b0c8beee2f51fc40d8dc5330a0b6c09ea3",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ClampFunctionalSourceB.stl",
+        "bytes": 159984,
+        "sha256": "19f1c60e4093ad0c0aca267d68a4e82c03d29b93a02b503ac033f0c0bd0fb0b1",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "JuncaoA.stl",
+        "bytes": 167284,
+        "sha256": "45f3b4af41e822b7122958436449c32ea8338bbab3d4d233716b61542d8be7a6",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "JuncaoB.stl",
+        "bytes": 167284,
+        "sha256": "3cd282834252d592372775641847831707631d86feb9e481b07991ac44dcb234",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "MontanteA.stl",
+        "bytes": 509084,
+        "sha256": "b0b842874d0c2a72f9309b9342b7978c8a18a8203e180f118e611b0b68d66e7f",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "MontanteB.stl",
+        "bytes": 509084,
+        "sha256": "58303c3541c26d987cf575ab5c14182830839a446ec325536c51bf971d4b6c54",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ParafusoTravaH_A.stl",
+        "bytes": 25084,
+        "sha256": "d4bf284c0c9fd84622fd7a61daf2a7d45e4606f29b3987bd64ea2301d4c57a0f",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ParafusoTravaH_B.stl",
+        "bytes": 25084,
+        "sha256": "59ffdeecee5a839ce8b4e1379f380dc2846ff0f44160650d562f0fe2a8ffd256",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ParafusoTravaV_A.stl",
+        "bytes": 25084,
+        "sha256": "6ad042fa82c350587a1db8fc91958269976205cb6ecda7de3286ccc8e21d0297",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ParafusoTravaV_B.stl",
+        "bytes": 25084,
+        "sha256": "354a3019ca9306e11c498885af5e601e613efd2ba5db1817c65dfe3323c2618e",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "PecaDuplaPlataformasOFICIAL.stl",
+        "bytes": 219884,
+        "sha256": "7b72a37807b677ef12dc2eb982d536b671d9a91675195333da629e797e06be83",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "PecaDuplaPlataformasOFICIALB.stl",
+        "bytes": 219884,
+        "sha256": "85948ab2dd92cdf9ac7601538b18e1e263e25a8d6e3f77d4233faac765f514c2",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "Travessa.stl",
+        "bytes": 663884,
+        "sha256": "e59e90aedfbcc81e7b511b920d462bef90d2a017c9a4106596bb321f871e7efc",
+        "estado": "PECA_DO_PROJETO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      }
+    ],
+    "02-impressao/base-trilho": [
+      {
+        "arquivo": "DOCUMENTACAO-20260914.md",
+        "bytes": 9260,
+        "sha256": "f8e77a7c54152202b14123aa55f67ab4b5985c1494153faa7137d3fb2bd5b9ea",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "README.md",
+        "bytes": 2709,
+        "sha256": "c40b96c3ce4c327f4d4cfc3e5d220fe3ae62b938aa4897a383a81ac9c905c6bf",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      },
+      {
+        "arquivo": "base-bracket.step",
+        "bytes": 39238,
+        "sha256": "b96c5c3697f1997d497e030c2499110bca9df66abcbb179f955eba6483de2d53",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "base-bracket.stl",
+        "bytes": 256284,
+        "sha256": "128a26c7fce5bba5e8cf824ff537408911f2e0ba43ffb929a4fa44cbf3493314",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "base-somente.step",
+        "bytes": 41414,
+        "sha256": "87b7ea10a390d70d704c6ebb852fb1d5207ef0e25a30d4d20c5ffd33617d671a",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "base-somente.stl",
+        "bytes": 256284,
+        "sha256": "7bfe696dda5fa61bc3026223965ac28efa53775d35e94b65b06e304f091679cc",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      }
+    ],
+    "02-impressao/camera-lateral": [
+      {
+        "arquivo": "ClampFront_Arm.step",
+        "bytes": 43591,
+        "sha256": "a4efe35204a95009811362e9c8a34e32b20b70dd2d9c1b20e86e754db2ff8f5c",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ClampFront_Arm.stl",
+        "bytes": 81884,
+        "sha256": "c675fbb55bc54e1d77cbc779c7c03db49cefe1b67408da226a69a22baa4bc66a",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ClampRear.step",
+        "bytes": 22965,
+        "sha256": "da75ec9eed9be3d6602444c708cab2e6efebb3e821784779ea5a6d633573268f",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "ClampRear.stl",
+        "bytes": 53484,
+        "sha256": "15b8eb7d630ef7efeba709472175f0b8256095ba1286b8d2cfa1f0a8bf551811",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "Cover_SOURCE_REFERENCE.step",
+        "bytes": 88491,
+        "sha256": "516208b777df001317e8e0cdcd13bd434039cb6efde923a0c3ae03414c0b3259",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "Cover_SOURCE_REFERENCE.stl",
+        "bytes": 9284,
+        "sha256": "6f583aee171f22d98e9c3753325e29755816bc778536063bd9bc5bf324e077bb",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "DistanceSlider_M5Tab.step",
+        "bytes": 27016,
+        "sha256": "46ae875324ebe54763ef50ab70c8d1a40a5d5cdd5c0d4a5911b090af7202fe9f",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "DistanceSlider_M5Tab.stl",
+        "bytes": 41084,
+        "sha256": "9a609e2e58255fc1ca8a37e13a53ec4ee30dbd29a9279116d123b8c08cac7183",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "Housing_SOURCE_REFERENCE.step",
+        "bytes": 1531788,
+        "sha256": "296a70ffc999ec8b2d35258287e01c26b3bb547ef2497bfc88710a681e31abaa",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "Housing_SOURCE_REFERENCE.stl",
+        "bytes": 146884,
+        "sha256": "ee2de108099efc72eb814da0cb4e2c1170fe121e1972c905f75443f882db8318",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "Swivel_SOURCE_DERIVATIVE.step",
+        "bytes": 1312568,
+        "sha256": "84fa72574d7c6670de7b79c3d7d5f8acf47d55efccdcd6558a9ffb1e377f9992",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      },
+      {
+        "arquivo": "Swivel_SOURCE_DERIVATIVE.stl",
+        "bytes": 178084,
+        "sha256": "9be660e836418e3256d3575ec5d463afd51232e1dccb1f537495560fb09a6898",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "area de iteracoes, fora do diretorio entregue"
+      }
+    ],
+    "02-impressao/case-esp32cam": [
+      {
+        "arquivo": "esp32cam-case-din.step",
+        "bytes": 34072,
+        "sha256": "5b46efdb4daccfa08a9e99a8dca6b696f001e1c60ac39443ffccc4f3a6aebed9",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      }
+    ],
+    "02-impressao/case-pi-din": [
+      {
+        "arquivo": "ATRIBUICAO.md",
+        "bytes": 1282,
+        "sha256": "6b4b38efc83c50243f927883b15331c4e54c3e9dd9af615af557be030928b941",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "autor-license.txt",
+        "bytes": 118,
+        "sha256": "93703ee4820ac70e714259b7d72565ed4068fa185d8a4a0cabaac4c4d5512395",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "autor-readme.txt",
+        "bytes": 161,
+        "sha256": "653f13528d4c1cbac5448c7eb7f9d7a0754d8d37bc9d0c19c67ef5c55ceb6338",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "pecas.json",
+        "bytes": 474,
+        "sha256": "f1d7b7c2ebb069c2782040b5978a79cb723a22b1ef818605725ea7bf9c581f1e",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "pi5-din-bottom-side.stl",
+        "bytes": 338684,
+        "sha256": "47901f2b0809c40e8dc6bc849c054cd7e42d57fa4a7dadab65cb5778e420c9ad",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "pi5-din-topside.stl",
+        "bytes": 191084,
+        "sha256": "84824fc62dc9298694161a10f09d549f94d6d158e01f6eb6e130a144179e080e",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      },
+      {
+        "arquivo": "printables-660057-desenho-do-autor.pdf",
+        "bytes": 242884,
+        "sha256": "5a978c09b71626e319610684c33dcdf91f9c41ccee55b26d5958e80c13c243dc",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      }
+    ],
+    "02-impressao": [
+      {
+        "arquivo": "cases-candidatas.png",
+        "bytes": 42952,
+        "sha256": "d77252b4aca0303ac07a35c19cafbcc468fe5872a9911252e690f625832efcba",
+        "estado": "PECA_PARA_IMPRESSAO",
+        "origem": "local artifact; see historical manifest and sources.json"
+      }
+    ],
+    "03-referencias/freecad": [
+      {
+        "arquivo": "README.md",
+        "bytes": 2167,
+        "sha256": "53ac7e7ad02c1730df0691cf4b8a1043df869ce05f955b15d9ebf749064912f4",
+        "estado": "DOCUMENTACAO_DE_REFERENCIA",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      }
+    ],
+    ".": [
+      {
+        "arquivo": "ATRIBUICOES.md",
+        "bytes": 4910,
+        "sha256": "ac5fc420c5970a06765c1825324a6a6656e0d54814631526d7baf7f68a829c19",
+        "estado": "DOCUMENTACAO",
+        "origem": "ver ATRIBUICOES.md e a documentacao da pasta"
+      },
+      {
+        "arquivo": "README.md",
+        "bytes": 6664,
+        "sha256": "8f4c72375b5de370c4cf268a7028b3381bbf2822b7fd86e1ce7a8436e814cce6",
+        "estado": "DOCUMENTACAO",
+        "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
+      }
+    ]
+  }
+}
