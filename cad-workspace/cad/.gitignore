@@ -1,8 +1,0 @@
-# generated CAD and print artifacts
-*.step
-*.stp
-*.stl
-*.3mf
-*.blend1
-__pycache__/
-.venv/
