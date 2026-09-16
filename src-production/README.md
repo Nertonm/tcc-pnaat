@@ -110,6 +110,11 @@ DELIBERADO e vale a pena declarar em texto, porque o numero de capa depende dele
 | `tampa_mal_rosqueada` | `defeito_tampa` | tampa presente e mal posicionada |
 | `deformidade` | `normal` | a deformidade e do CORPO: a tampa daquela garrafa esta boa. Rotular deformidade no dominio da tampa seria o confundimento classe x dominio que a D-28 proibe |
 
+O conjunto proprio de treino fica fora do git, em `dataset/nosso/tampa` (declarado e nao procurado:
+conjunto ausente e ERRO, nao "treina com o que tem"). O bloco de captura do rig (`dataset/nosso/rig`,
+81 frames normais) foi separado em 2026-09-13 e NUNCA entra no treino -- sem essa separacao, frame de
+rig entraria no conjunto proprio com rotulo normal e inflaria a classe majoritaria.
+
 Consequencia: o numero do classificador da tampa conta as imagens de `deformidade` como `normal`.
 Quem le o numero precisa saber disso; o codigo ja declara o mapeamento em `classificador.py`.
 
@@ -233,8 +238,18 @@ O numero nao se sustenta por afirmacao: os quatro passos abaixo o recomputam. Pe
 artefato do classificador sao DADOS e vivem fora do git (o indice em `models/INDEX.csv` guarda o
 sha256 de cada peso treinado):
 
+O artefato do classificador vive fora do git (dado). Medido na bancada em 2026-09-16:
+
+| arquivo | sha256 (inicio) | tamanho |
+|---|---|---|
+| `dataset/modelo-inferencia.npz` | `61c7fce611e16d00…` | 406862 bytes |
+| `dataset/modelo-inferencia.json` | `159dcdef34470742…` | 1453 bytes |
+
+Qualquer um pode recomputar com `sha256sum` e comparar; o indice de pesos (`models/INDEX.csv`) guarda
+o mesmo tipo de prova para os pesos treinados.
+
 ```bash
-# 1. o artefato do classificador (dado, fora do git): sha256 e caminho declarados
+# 1. o artefato do classificador (dado, fora do git)
 sha256sum dataset/modelo-inferencia.npz dataset/modelo-inferencia.json
 # 2. o canario recomputa recall por classe e taxa de inconclusivo do json declarado
 .venv/bin/python src-production/canario_modelo_artefato.py --json /tmp/canario.json
