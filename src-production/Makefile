@@ -14,7 +14,7 @@ export RAIZ_REPO
 .PHONY: treino-dataset treino-run treino-avalia treino-kfold checa-modelos
 .PHONY: contrato pacote smoke-detector test-firmware verificar
 .PHONY: auditar-dataset treino-corpo-dataset treino-corpo-run treino-run-seguro
-.PHONY: indice-modelos
+.PHONY: indice-modelos lint
 
 test:
 	$(PY) -m pytest -q
@@ -162,3 +162,7 @@ verificar: test test-firmware
 # PNAAT_MODELOS aponta o diretorio dos runs (default em treino/caminhos.py).
 indice-modelos:
 	$(PY) $(TREINO)/recolhe_modelos.py
+
+# Regras de correcao e estilo (config em pyproject.toml). Requer ruff no ambiente.
+lint:
+	$(PY) -m ruff check .
