@@ -1,0 +1,24 @@
+[
+  {
+    "arquivo": "pi5-din-topside.stl",
+    "bytes": 191084,
+    "sha256": "84824fc62dc9298694161a10f09d549f94d6d158e01f6eb6e130a144179e080e",
+    "triangulos": 3820,
+    "bbox_mm": [
+      73.78,
+      96.25,
+      12.5
+    ]
+  },
+  {
+    "arquivo": "pi5-din-bottom-side.stl",
+    "bytes": 338684,
+    "sha256": "47901f2b0809c40e8dc6bc849c054cd7e42d57fa4a7dadab65cb5778e420c9ad",
+    "triangulos": 6772,
+    "bbox_mm": [
+      75.4,
+      100.48,
+      10.3
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "vertical": "Z",
+  "cameras": [
+    "USB lateral generic",
+    "ESP lateral source reference",
+    "RPi-Cam top pointing down"
+  ],
+  "pi_mount": "NATIVE lateral DIN clip, no tray and no external Pi collar",
+  "source_assembly": "composicao-esteira-usb-esp-ilustrativa-r02/composicao.FCStd, revisao anterior, nao incluida neste diretorio",
+  "status": "ILLUSTRATIVE_NOT_FOR_FABRICATION"
+}

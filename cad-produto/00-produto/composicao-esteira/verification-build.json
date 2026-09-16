@@ -1,0 +1,55 @@
+{
+  "status": "CANDIDATE_GEOMETRY",
+  "pi_native_transform": {
+    "rotation_Z_deg": 90,
+    "translation_mm": [
+      -248.899,
+      -89.5256,
+      1145.0
+    ]
+  },
+  "native_clip_width_mm": 35.5,
+  "native_clip_local_Y_limits": [
+    -66.848747,
+    -31.34853
+  ],
+  "pi_native_fit": {
+    "Pi5_DIN_Bottom": {
+      "primary_interference_mm3": 0.03205897104557584,
+      "excluded_micro_shell_volume_bound_mm3": 0.004256339627318084,
+      "distance_mm": 0.0
+    },
+    "Pi5_DIN_Top": {
+      "primary_interference_mm3": 0.009162739091935209,
+      "excluded_micro_shell_volume_bound_mm3": 0,
+      "distance_mm": 0.0
+    }
+  },
+  "native_clip_controls": {
+    "inward_1mm_mm3": 98.38638747119742,
+    "outward_1mm_hook_interference_mm3": 10.25675751973057,
+    "far_mm3": 0
+  },
+  "top_camera_direction": [
+    0.0,
+    0.0,
+    -1.0
+  ],
+  "top_camera_target_dot": 1.0,
+  "top_camera_lens_endpoint": [
+    0.0,
+    -77.0,
+    1275.2836
+  ],
+  "interferences_over_0_1_mm3": [],
+  "support_distance_top_mm": 0.0,
+  "topcollar_interference_mm3": 0,
+  "limitations": [
+    "Illustrative composition, not fabrication release",
+    "Native Pi clip aligned to actual profile; mesh residuals and retention controls reported",
+    "User confirms physical compatibility; no structural/snap-force certification",
+    "RPi-camera housing uses Printables301598 reference; board/lens illustrative, not validated CM3 Wide fit",
+    "USB and ESP limits remain as documented in r02",
+    "No FPC routing/length validation or cable strain relief design"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "status": "PASS_READBACK_SCOPED_GEOMETRY",
+  "objects": 51,
+  "solids_step": 57,
+  "triangles_stl": 80212,
+  "bounds_mm": [
+    -300.00000000000375,
+    -650.0,
+    0.0,
+    300.00000000000637,
+    650.0,
+    1302.9019775390705
+  ],
+  "no_pi_tray_or_external_collar": true,
+  "native_pi_residual_interference_mm3": {
+    "Pi5_DIN_Bottom": 0.03205897104559178,
+    "Pi5_DIN_Top": 0.009162739092772858
+  },
+  "control_inward_mm3": 98.38638747119819,
+  "control_outward_hook_mm3": 10.25675751973041,
+  "control_far_mm3": 0,
+  "top_camera_optical_axis": [
+    0,
+    0,
+    -1
+  ],
+  "top_camera_to_bottle_top_clearance_mm": 110.28359999999998,
+  "step_volume_relative_error": 1.6054731980705553e-10,
+  "visual_inspection": "not performed: vision tool provider error",
+  "manufacturing_release": false
+}
