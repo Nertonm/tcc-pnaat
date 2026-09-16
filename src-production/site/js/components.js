@@ -165,7 +165,7 @@ const renderOperacao = () => {
                                 class="mr-1 h-3.5 w-3.5"
                             ></i>
 
-                            ${mockStats.producaoAnterior}
+                            ${escDoDebug(mockStats.producaoAnterior)}
                         </span>
 
                         <span class="ml-1">
@@ -184,7 +184,7 @@ const renderOperacao = () => {
                             ${approvedPercentage}%
                         </span>
 
-                        dos itens decididos (${mockStats.inconclusivos ?? '--'} inconclusivo(s)
+                        dos itens decididos (${escDoDebug(mockStats.inconclusivos ?? '--')} inconclusivo(s)
                         fora da conta)
                     `
                 })}
@@ -201,7 +201,7 @@ const renderOperacao = () => {
                                 text-brand-red
                             "
                         >
-                            ${mockStats.inconclusivos ?? '--'} evento(s)
+                            ${escDoDebug(mockStats.inconclusivos ?? '--')} evento(s)
                         </span>
 
                         aguardam revisão
@@ -221,7 +221,7 @@ const renderOperacao = () => {
                                 font-semibold
                             "
                         >
-                            ${mockStats.latenciaMedia}
+                            ${escDoDebug(mockStats.latenciaMedia)}
                         </span>
                     `
                 })}
@@ -315,7 +315,10 @@ const renderOperacao = () => {
                             .slice(0, 5)
                             .map(cap => `
                                 <div
-                                    onclick="app.navigate('investigacao', '${cap.id}')"
+                                    role="button"
+                                    tabindex="0"
+                                    onclick="app.navigate('investigacao', ${jsArg(cap.id)})"
+                                    onkeydown="if(event.key === 'Enter' || event.key === ' '){event.preventDefault(); this.click();}"
 
                                     class="feed-row group"
                                 >
@@ -332,8 +335,8 @@ const renderOperacao = () => {
                                         <div class="feed-thumb">
 
                                             <img
-                                                src="${cap.img}"
-                                                alt="${cap.item}"
+                                                src="${safeUrl(cap.img)}"
+                                                alt="${escDoDebug(cap.item)}"
                                             >
 
                                         </div>
@@ -355,7 +358,7 @@ const renderOperacao = () => {
                                                         font-bold
                                                     "
                                                 >
-                                                    ${cap.item}
+                                                    ${escDoDebug(cap.item)}
                                                 </h3>
 
                                                 <span
@@ -368,7 +371,7 @@ const renderOperacao = () => {
                                                         sm:inline
                                                     "
                                                 >
-                                                    ${cap.id}
+                                                    ${escDoDebug(cap.id)}
                                                 </span>
                                             </div>
 
@@ -387,7 +390,7 @@ const renderOperacao = () => {
                                                 "
                                             >
                                                 <span>
-                                                    ${cap.vista}
+                                                    ${escDoDebug(cap.vista)}
                                                 </span>
 
                                                 <span>
@@ -395,7 +398,7 @@ const renderOperacao = () => {
                                                 </span>
 
                                                 <span>
-                                                    ${cap.timestamp}
+                                                    ${escDoDebug(cap.timestamp)}
                                                 </span>
 
                                                 <span
@@ -413,7 +416,7 @@ const renderOperacao = () => {
                                                         sm:inline
                                                     "
                                                 >
-                                                    Confiança ${cap.confianca}
+                                                    Confiança ${escDoDebug(cap.confianca)}
                                                 </span>
                                             </div>
 
@@ -517,7 +520,7 @@ const renderOperacao = () => {
                                             font-bold
                                         "
                                     >
-                                        ${mockHealth.status}
+                                        ${escDoDebug(mockHealth.status)}
                                     </span>
                                 </div>
                             </div>
@@ -573,7 +576,7 @@ const renderOperacao = () => {
                                         font-bold
                                     "
                                 >
-                                    ${mockHealth.temperatura}
+                                    ${escDoDebug(mockHealth.temperatura)}
                                 </div>
                             </div>
 
@@ -608,7 +611,7 @@ const renderOperacao = () => {
                                         font-bold
                                     "
                                 >
-                                    ${mockHealth.latencia}
+                                    ${escDoDebug(mockHealth.latencia)}
                                 </div>
                             </div>
 
@@ -643,7 +646,7 @@ const renderOperacao = () => {
                                         font-bold
                                     "
                                 >
-                                    ${mockHealth.cpu}
+                                    ${escDoDebug(mockHealth.cpu)}
                                 </div>
                             </div>
 
@@ -678,7 +681,7 @@ const renderOperacao = () => {
                                         font-bold
                                     "
                                 >
-                                    ${mockHealth.filaImagens}
+                                    ${escDoDebug(mockHealth.filaImagens)}
 
                                     <span
                                         class="
@@ -925,12 +928,13 @@ const renderCapturas = () => `
 
                     <input
                         id="capture-search"
+                        aria-label="Buscar captura por ID, item ou lote"
 
                         oninput="app.filterCaptures()"
 
                         type="text"
 
-                        placeholder="ID ou item..."
+                        placeholder="ID, item ou lote..."
 
                         class="
                             app-input
@@ -1027,9 +1031,9 @@ const renderCapturas = () => `
                         sm:inline
                     "
                 >
-                    ${mockCapturas.length} linhas de vista de ${mockStats.totalLote ?? '--'} itens
+                    ${mockCapturas.length} linhas carregadas de ${escDoDebug(PNAAT_API.estado.totalCapturas ?? '--')} capturas (limite da consulta)
                     (${mockStats.aprovados ?? '--'} itens OK, ${mockStats.reprovados ?? '--'} com defeito,
-                    ${mockStats.inconclusivos ?? '--'} inconclusivo(s))
+                    ${escDoDebug(mockStats.inconclusivos ?? '--')} inconclusivo(s))
                 </span>
 
                 <button
@@ -1176,13 +1180,17 @@ const renderCapturas = () => `
 
             ${mockCapturas.map((cap, index) => `
                 <article
+                    role="button"
+                    tabindex="0"
                     data-capture-card
-                    data-id="${cap.id}"
-                    data-item="${cap.item}"
-                    data-view="${cap.vista_registro}"
-                    data-status="${cap.status}"
+                    data-id="${escDoDebug(cap.id)}"
+                    data-item="${escDoDebug(cap.item)}"
+                    data-lote="${escDoDebug(cap.lote)}"
+                    data-view="${escDoDebug(cap.vista_registro)}"
+                    data-status="${escDoDebug(cap.status)}"
 
-                    onclick="app.navigate('investigacao', '${cap.id}')"
+                    onclick="app.navigate('investigacao', ${jsArg(cap.id)})"
+                    onkeydown="if(event.key === 'Enter' || event.key === ' '){event.preventDefault(); this.click();}"
 
                     class="
                         capture-card
@@ -1204,8 +1212,8 @@ const renderCapturas = () => `
                     >
 
                         <img
-                            src="${cap.img}"
-                            alt="evidencia da vista ${cap.vista} do item ${cap.item}"
+                            src="${safeUrl(cap.img)}"
+                            alt="evidencia da vista ${escDoDebug(cap.vista)} do item ${escDoDebug(cap.item)}"
                             loading="lazy"
                             decoding="async"
                         >
@@ -1224,11 +1232,11 @@ const renderCapturas = () => `
                             ${cap.status_vista && cap.status_vista !== 'ok'
                                 ? `<span class="status-badge status-badge-pending ml-1">
                                        <i data-lucide="clock-3" class="mr-1.5 h-3.5 w-3.5"></i>
-                                       vista ${cap.status_vista}
+                                       vista ${escDoDebug(cap.status_vista)}
                                    </span>
 
                                    ${cap.motivo
-                                       ? `<span class="ml-1 rounded bg-black/60 px-2 py-0.5 text-[10px] font-normal text-white">${cap.motivo}</span>`
+                                       ? `<span class="ml-1 rounded bg-black/60 px-2 py-0.5 text-[10px] font-normal text-white">${escDoDebug(cap.motivo)}</span>`
                                        : ''}`
                                 : ''}
                         </div>
@@ -1280,7 +1288,7 @@ const renderCapturas = () => `
                                         font-bold
                                     "
                                 >
-                                    ${cap.item}
+                                    ${escDoDebug(cap.item)}
                                 </h3>
 
                                 <p
@@ -1291,7 +1299,7 @@ const renderCapturas = () => `
                                         text-gray-400
                                     "
                                 >
-                                    ${cap.id}
+                                    ${escDoDebug(cap.id)}
                                 </p>
 
                             </div>
@@ -1313,7 +1321,7 @@ const renderCapturas = () => `
                                     dark:text-gray-400
                                 "
                             >
-                                ${cap.timestamp}
+                                ${escDoDebug(cap.timestamp)}
                             </span>
 
                         </div>
@@ -1352,7 +1360,7 @@ const renderCapturas = () => `
                                         font-semibold
                                     "
                                 >
-                                    ${cap.vista}
+                                    ${escDoDebug(cap.vista)}
                                 </div>
                             </div>
 
@@ -1385,7 +1393,7 @@ const renderCapturas = () => `
                                         }
                                     "
                                 >
-                                    ${cap.confianca}
+                                    ${escDoDebug(cap.confianca)}
                                 </div>
                             </div>
 
@@ -1414,7 +1422,7 @@ const renderCapturas = () => `
                                     text-gray-400
                                 "
                             >
-                                Lote ${cap.lote}
+                                Lote ${escDoDebug(cap.lote)}
                             </span>
 
                             <span
@@ -1531,11 +1539,11 @@ const renderInvestigacao = id => {
         detalhe && detalhe.evidencias && detalhe.evidencias.length
             ? detalhe.evidencias.map(e => `
                 <tr class="border-b border-black/5 dark:border-white/5">
-                    <td class="py-1.5 pr-4 font-mono text-xs">${e.grandeza}</td>
-                    <td class="py-1.5 pr-4">${e.valor === null || e.valor === undefined ? '--' : e.valor} ${e.unidade}</td>
-                    <td class="py-1.5 pr-4">${e.origem}</td>
-                    <td class="py-1.5 pr-4">${e.papel}</td>
-                    <td class="py-1.5 font-mono text-xs">${e.metodo}</td>
+                    <td class="py-1.5 pr-4 font-mono text-xs">${escDoDebug(e.grandeza)}</td>
+                    <td class="py-1.5 pr-4">${escDoDebug(e.valor === null || e.valor === undefined ? '--' : e.valor)} ${escDoDebug(e.unidade)}</td>
+                    <td class="py-1.5 pr-4">${escDoDebug(e.origem)}</td>
+                    <td class="py-1.5 pr-4">${escDoDebug(e.papel)}</td>
+                    <td class="py-1.5 font-mono text-xs">${escDoDebug(e.metodo)}</td>
                 </tr>`).join('')
             : `<tr><td colspan="5" class="py-3 text-gray-400">
                    nenhuma grandeza registrada para este item
@@ -1544,8 +1552,8 @@ const renderInvestigacao = id => {
     const correcoes =
         detalhe && detalhe.correcoes && detalhe.correcoes.length
             ? detalhe.correcoes.map(c => `
-                <li>${c.decisao_original} &rarr; ${c.decisao_corrigida}
-                    (por ${c.corrigido_por || '--'})</li>`).join('')
+                <li>${escDoDebug(c.decisao_original)} &rarr; ${escDoDebug(c.decisao_corrigida)}
+                    (por ${escDoDebug(c.corrigido_por || '--')})</li>`).join('')
             : '<li class="text-gray-400">nenhuma correcao de operador registrada</li>';
 
     const blocoDetalhe = `
@@ -1557,7 +1565,7 @@ const renderInvestigacao = id => {
 
                 ${automatico
                     ? `<p class="text-xs text-gray-400">
-                           sem item selecionado — abrindo o defeito mais recente (${cap.id});
+                           sem item selecionado — abrindo o defeito mais recente (${escDoDebug(cap.id)});
                            escolha um cartao em Capturas para abrir um item especifico
                        </p>`
                     : ''}
@@ -1681,7 +1689,7 @@ const renderInvestigacao = id => {
                         dark:text-gray-300
                     "
                 >
-                    ${cap.id}
+                    ${escDoDebug(cap.id)}
                 </span>
 
             </div>
@@ -1728,8 +1736,8 @@ const renderInvestigacao = id => {
                         >
 
                             <img
-                                src="${cap.img}"
-                                alt="Evidência ${cap.id}"
+                                src="${safeUrl(cap.img)}"
+                                alt="Evidência ${escDoDebug(cap.id)}"
 
                                 class="
                                     h-full
@@ -1772,7 +1780,7 @@ const renderInvestigacao = id => {
                                         backdrop-blur-lg
                                     "
                                 >
-                                    ${cap.vista}
+                                    ${escDoDebug(cap.vista)}
                                 </span>
 
                                 <span
@@ -1794,7 +1802,7 @@ const renderInvestigacao = id => {
                                         backdrop-blur-lg
                                     "
                                 >
-                                    ${cap.timestamp}
+                                    ${escDoDebug(cap.timestamp)}
                                 </span>
 
                             </div>
@@ -1877,7 +1885,7 @@ const renderInvestigacao = id => {
                                         text-gray-400
                                     "
                                 >
-                                    Vistas associadas a ${cap.item}
+                                    Vistas associadas a ${escDoDebug(cap.item)}
                                 </p>
                             </div>
 
@@ -1888,7 +1896,7 @@ const renderInvestigacao = id => {
                                     text-gray-400
                                 "
                             >
-                                ${cap.lote}
+                                ${escDoDebug(cap.lote)}
                             </span>
 
                         </div>
@@ -1925,7 +1933,7 @@ const renderInvestigacao = id => {
                             >
 
                                 <img
-                                    src="${cap.img}"
+                                    src="${safeUrl(cap.img)}"
 
                                     class="
                                         h-28
@@ -1958,7 +1966,7 @@ const renderInvestigacao = id => {
                                             text-white
                                         "
                                     >
-                                        ${cap.vista}
+                                        ${escDoDebug(cap.vista)}
                                     </div>
 
                                     <div
@@ -2176,7 +2184,7 @@ const renderInvestigacao = id => {
                                         font-bold
                                     "
                                 >
-                                    ${cap.confianca}
+                                    ${escDoDebug(cap.confianca)}
                                 </span>
                             </div>
 
@@ -2230,7 +2238,7 @@ const renderInvestigacao = id => {
                                 </span>
 
                                 <strong class="text-xs">
-                                    ${cap.item}
+                                    ${escDoDebug(cap.item)}
                                 </strong>
                             </div>
 
@@ -2263,7 +2271,7 @@ const renderInvestigacao = id => {
                                 </span>
 
                                 <strong class="text-xs">
-                                    ${cap.lote}
+                                    ${escDoDebug(cap.lote)}
                                 </strong>
                             </div>
 
@@ -2296,7 +2304,7 @@ const renderInvestigacao = id => {
                                 </span>
 
                                 <strong class="text-xs">
-                                    ${cap.vista}
+                                    ${escDoDebug(cap.vista)}
                                 </strong>
                             </div>
 
@@ -2334,7 +2342,7 @@ const renderInvestigacao = id => {
                                         text-xs
                                     "
                                 >
-                                    ${cap.timestamp}
+                                    ${escDoDebug(cap.timestamp)}
                                 </strong>
                             </div>
 
@@ -2367,7 +2375,7 @@ const renderInvestigacao = id => {
                                 </span>
 
                                 <strong class="text-xs">
-                                    ${cap.latencia}
+                                    ${escDoDebug(cap.latencia)}
                                 </strong>
                             </div>
 
@@ -2434,9 +2442,9 @@ const renderInvestigacao = id => {
 
                             ${(mockItemDetalhe && mockItemDetalhe.correcao_vigente)
                                 ? `<p class="mt-2 text-xs text-brand-green">
-                                       decisão vigente: ${mockItemDetalhe.decisao_efetiva}
-                                       por ${mockItemDetalhe.correcao_vigente.corrigido_por}
-                                       em ${mockItemDetalhe.correcao_vigente.timestamp}
+                                       decisão vigente: ${escDoDebug(mockItemDetalhe.decisao_efetiva)}
+                                       por ${escDoDebug(mockItemDetalhe.correcao_vigente.corrigido_por)}
+                                       em ${escDoDebug(mockItemDetalhe.correcao_vigente.timestamp)}
                                    </p>`
                                 : `<p class="mt-2 text-xs text-gray-400">
                                        sem correção registrada: vale a decisão do registro
@@ -2552,10 +2560,20 @@ const renderInvestigacao = id => {
     `;
 };
 
-/*: escapa texto que vem de fora (motivo livre, detalhe de erro do rig) antes de entrar em innerHTML */
-const escDoDebug = valor => String(valor === null || valor === undefined ? '' : valor)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+/*: todos os dados externos passam pelo escape comum antes de entrar em innerHTML */
+const escDoDebug = (typeof window !== 'undefined' && typeof window.PNAAT_ESCAPE === 'function')
+    ? window.PNAAT_ESCAPE
+    : valor => String(valor === null || valor === undefined ? '' : valor)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+const safeUrl = valor => {
+    const checker = typeof window !== 'undefined' && typeof window.PNAAT_SAFE_URL === 'function'
+        ? window.PNAAT_SAFE_URL : value => String(value || '').startsWith('/') ? String(value) : '';
+    return escDoDebug(checker(valor));
+};
+
+const jsArg = valor => escDoDebug(JSON.stringify(String(valor === null || valor === undefined ? '' : valor)));
 
 
 // Painel do modelo servido: contrato da entrega (imutavel) + estado vivo do detector.
@@ -2638,18 +2656,18 @@ const renderDebug = () => {
 
     const linha = (rotulo, valor) => `
         <div class="flex items-baseline justify-between gap-4 border-b border-black/5 py-1 dark:border-white/5">
-            <span class="text-xs uppercase tracking-wider text-gray-400">${rotulo}</span>
-            <span class="font-mono text-xs">${valor === null || valor === undefined || valor === ''
-                ? '&mdash;' : valor}</span>
+            <span class="text-xs uppercase tracking-wider text-gray-400">${escDoDebug(rotulo)}</span>
+            <span class="font-mono text-xs">${escDoDebug(valor === null || valor === undefined || valor === ''
+                ? '—' : valor)}</span>
         </div>`;
 
     const painel = (titulo, corpo, nota) => `
         <section class="surface-card p-6">
-            <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">${titulo}</h3>
+            <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">${escDoDebug(titulo)}</h3>
 
             <div class="mt-3">${corpo}</div>
 
-            ${nota ? `<p class="mt-3 text-xs text-gray-400">${nota}</p>` : ''}
+            ${nota ? `<p class="mt-3 text-xs text-gray-400">${escDoDebug(nota)}</p>` : ''}
         </section>`;
 
     const acao = d.acao || null;
@@ -2666,7 +2684,7 @@ const renderDebug = () => {
                     Estado do gatilho e da camera, delay de captura, captura manual e teste do gatilho.
                     Cada ensaio de bancada entra no registro como evento de gatilho (marcado como teste),
                     para o disparo nao ficar invisivel. Leitura de
-                    <span class="font-mono text-xs">${d.atualizado_em || '&mdash;'}</span>.
+                    <span class="font-mono text-xs">${escDoDebug(d.atualizado_em || '—')}</span>.
                 </p>
 
                 <div class="mt-4 flex flex-wrap gap-2">
@@ -2875,7 +2893,7 @@ const renderDebug = () => {
                 (series.length ? `
                     <p class="mb-3 text-xs text-gray-400">
                         ${d.series.completas || 0} completa(s) e ${d.series.parciais || 0} incompleta(s) em
-                        <span class="font-mono">${d.series.pasta || '&mdash;'}</span>.
+                        <span class="font-mono">${escDoDebug(d.series.pasta || '&mdash;')}</span>.
                         A captura que falhou no meio CONTINUA aqui: a foto que existe aparece, a que falta
                         e nomeada.
                     </p>
@@ -2884,7 +2902,7 @@ const renderDebug = () => {
                         ${series.slice(0, 8).map(s => `
                             <div>
                                 <div class="flex flex-wrap items-baseline gap-2">
-                                    <span class="font-mono text-xs">${s.serie}</span>
+                                    <span class="font-mono text-xs">${escDoDebug(s.serie)}</span>
 
                                     <span class="rounded-full px-2 py-0.5 text-[10px] font-bold ${s.completa
                                         ? 'bg-brand-green/15 text-brand-green'
@@ -2903,14 +2921,14 @@ const renderDebug = () => {
                                     <div class="mt-2 grid grid-cols-3 gap-2">
                                         ${s.fotos.map(f => `
                                             <figure>
-                                                <a href="${f.url}" target="_blank" rel="noopener">
-                                                    <img src="${f.url}"
-                                                         alt="foto ${f.camera || f.arquivo} da serie ${s.serie}"
+                                                <a href="${safeUrl(f.url)}" target="_blank" rel="noopener">
+                                                    <img src="${safeUrl(f.url)}"
+                                                         alt="foto ${escDoDebug(f.camera || f.arquivo)} da serie ${escDoDebug(s.serie)}"
                                                          loading="lazy" decoding="async"
                                                          class="h-24 w-full rounded-lg object-cover">
                                                 </a>
                                                 <figcaption class="mt-1 text-[10px] text-gray-400">
-                                                    ${f.camera || f.arquivo} • ${Math.round((f.bytes || 0) / 1024)} kB
+                                                    ${escDoDebug(f.camera || f.arquivo)} • ${Math.round((f.bytes || 0) / 1024)} kB
                                                     <br>${escDoDebug(f.quando || '')}
                                                 </figcaption>
                                             </figure>`).join('')}
@@ -2938,14 +2956,14 @@ const renderDebug = () => {
                                 <div class="mt-2 grid grid-cols-3 gap-2">
                                     ${(item.fotos || []).map(f => `
                                         <figure>
-                                            <a href="${f.url}" target="_blank" rel="noopener">
-                                                <img src="${f.url}"
-                                                     alt="evidencia da vista ${f.vista} do item ${item.item_id}"
+                                            <a href="${safeUrl(f.url)}" target="_blank" rel="noopener">
+                                                <img src="${safeUrl(f.url)}"
+                                                     alt="evidencia da vista ${escDoDebug(f.vista)} do item ${escDoDebug(item.item_id)}"
                                                      loading="lazy" decoding="async"
                                                      class="h-24 w-full rounded-lg object-cover">
                                             </a>
                                             <figcaption class="mt-1 text-[10px] text-gray-400">
-                                                ${f.vista} (${f.dominio}) — ${escDoDebug(f.arquivo)}
+                                                ${escDoDebug(f.vista)} (${escDoDebug(f.dominio)}) — ${escDoDebug(f.arquivo)}
                                             </figcaption>
                                         </figure>`).join('')}
                                 </div>
@@ -2974,11 +2992,11 @@ const renderDebug = () => {
                         <tbody>
                             ${gatilhos.map(g => `
                                 <tr class="border-b border-black/5 dark:border-white/5 ${g.teste ? 'text-orange-500' : ''}">
-                                    <td class="py-1.5 pr-3 font-mono text-xs">${g.id}</td>
-                                    <td class="py-1.5 pr-3 font-mono text-xs">${g.timestamp}</td>
-                                    <td class="py-1.5 pr-3">${g.fonte}</td>
-                                    <td class="py-1.5 pr-3">${g.estado}</td>
-                                    <td class="py-1.5 pr-3 font-mono text-xs">${g.item_id || '(sem item)'}</td>
+                                    <td class="py-1.5 pr-3 font-mono text-xs">${escDoDebug(g.id)}</td>
+                                    <td class="py-1.5 pr-3 font-mono text-xs">${escDoDebug(g.timestamp)}</td>
+                                    <td class="py-1.5 pr-3">${escDoDebug(g.fonte)}</td>
+                                    <td class="py-1.5 pr-3">${escDoDebug(g.estado)}</td>
+                                    <td class="py-1.5 pr-3 font-mono text-xs">${escDoDebug(g.item_id || '(sem item)')}</td>
                                     <td class="py-1.5 text-xs">${escDoDebug(g.motivo) || '&mdash;'}${g.teste ? ' [teste]' : ''}</td>
                                 </tr>`).join('')}
                         </tbody>
@@ -2996,21 +3014,21 @@ const renderQualidade = () => {
      */
     const q = mockQualidade || {};
 
-    const vazio = texto => `<p class="text-sm text-gray-400">${texto}</p>`;
+    const vazio = texto => `<p class="text-sm text-gray-400">${escDoDebug(texto)}</p>`;
 
     const cartao = (titulo, corpo, nota) => `
         <section class="surface-card p-6">
-            <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">${titulo}</h3>
+            <h3 class="text-xs font-bold uppercase tracking-[.18em] text-gray-500">${escDoDebug(titulo)}</h3>
 
             <div class="mt-3">${corpo}</div>
 
-            ${nota ? `<p class="mt-3 text-xs text-gray-400">${nota}</p>` : ''}
+            ${nota ? `<p class="mt-3 text-xs text-gray-400">${escDoDebug(nota)}</p>` : ''}
         </section>`;
 
     const tabela = (cabecalhos, linhas) => `
         <table class="w-full text-left text-sm">
             <thead class="text-xs uppercase tracking-wider text-gray-400">
-                <tr>${cabecalhos.map(c => `<th class="pb-2 pr-4">${c}</th>`).join('')}</tr>
+                <tr>${cabecalhos.map(c => `<th class="pb-2 pr-4">${escDoDebug(c)}</th>`).join('')}</tr>
             </thead>
 
             <tbody>${linhas.join('')}</tbody>
@@ -3018,7 +3036,7 @@ const renderQualidade = () => {
 
     const linha = celulas => `
         <tr class="border-b border-black/5 dark:border-white/5">
-            ${celulas.map((c, indice) => `<td class="py-1.5 ${indice ? '' : 'pr-4 font-mono text-xs'}">${c}</td>`).join('')}
+            ${celulas.map((c, indice) => `<td class="py-1.5 ${indice ? '' : 'pr-4 font-mono text-xs'}">${escDoDebug(c)}</td>`).join('')}
         </tr>`;
 
     return `
@@ -3142,7 +3160,7 @@ const renderSaude = () => `
                 value: mockHealth.status,
                 icon: 'activity',
                 type: 'success',
-                subtitle: `Heartbeat ${mockHealth.ultimoHeartbeat}`
+                subtitle: `Heartbeat ${escDoDebug(mockHealth.ultimoHeartbeat)}`
             })}
 
             ${renderMetricCard({
@@ -3158,7 +3176,7 @@ const renderSaude = () => `
                 title: 'Carga (1 min)',
                 value: mockHealth.cpu,
                 icon: 'cpu',
-                subtitle: `Memória ${mockHealth.memoria}`
+                subtitle: `Memória ${escDoDebug(mockHealth.memoria)}`
             })}
 
             ${renderMetricCard({
@@ -3227,7 +3245,7 @@ const renderSaude = () => `
                         ? 'status-success' : 'status-warning'} mr-2"></span>
 
                     Sistema operacional${(mockHealth.sem_leitura || []).length
-                        ? ` (sem leitura: ${mockHealth.sem_leitura.join(', ')})` : ''}
+                        ? ` (sem leitura: ${escDoDebug(mockHealth.sem_leitura.join(', '))})` : ''}
                 </span>
 
             </div>
@@ -3294,7 +3312,7 @@ const renderSaude = () => `
                                 "
                             >
                                 <i
-                                    data-lucide="${service.icon}"
+                                    data-lucide="${escDoDebug(service.icon)}"
 
                                     class="
                                         h-5
@@ -3312,7 +3330,7 @@ const renderSaude = () => `
                                         font-bold
                                     "
                                 >
-                                    ${service.name}
+                                    ${escDoDebug(service.name)}
                                 </div>
 
                                 <div
@@ -3324,7 +3342,7 @@ const renderSaude = () => `
                                         text-gray-400
                                     "
                                 >
-                                    ${service.detail}
+                                    ${escDoDebug(service.detail)}
                                 </div>
 
                             </div>
@@ -3345,7 +3363,7 @@ const renderSaude = () => `
                                 }
                             "
                         >
-                            ${service.status}
+                            ${escDoDebug(service.status)}
                         </span>
 
                     </div>
@@ -3385,13 +3403,13 @@ const renderLote = () => {
 
     const linha = lote => `
         <tr class="border-b border-black/5 dark:border-white/5 ${lote === atual ? 'font-semibold' : ''}">
-            <td class="py-1.5 pr-4 font-mono text-xs">${lote.lote_id}</td>
-            <td class="py-1.5 pr-4">${lote.data_inicio}</td>
-            <td class="py-1.5 pr-4">${lote.itens}</td>
-            <td class="py-1.5 pr-4">${lote.ok}</td>
-            <td class="py-1.5 pr-4">${lote.defeitos}</td>
-            <td class="py-1.5 pr-4">${lote.inconclusivos}</td>
-            <td class="py-1.5">${pct(lote.taxa_defeito)}</td>
+            <td class="py-1.5 pr-4 font-mono text-xs">${escDoDebug(lote.lote_id)}</td>
+            <td class="py-1.5 pr-4">${escDoDebug(lote.data_inicio)}</td>
+            <td class="py-1.5 pr-4">${escDoDebug(lote.itens)}</td>
+            <td class="py-1.5 pr-4">${escDoDebug(lote.ok)}</td>
+            <td class="py-1.5 pr-4">${escDoDebug(lote.defeitos)}</td>
+            <td class="py-1.5 pr-4">${escDoDebug(lote.inconclusivos)}</td>
+            <td class="py-1.5">${escDoDebug(pct(lote.taxa_defeito))}</td>
         </tr>`;
 
     return `
@@ -3471,7 +3489,7 @@ const renderLote = () => {
 
                 <p class="mt-4 text-xs text-gray-400">
                     Soma dos lotes: ${lotes.reduce((soma, l) => soma + (l.itens || 0), 0)} itens —
-                    o resumo do registro declara ${mockStats.totalLote ?? '--'}.
+                    o resumo do registro declara ${escDoDebug(mockStats.totalLote ?? '--')}.
                 </p>
             </section>
 

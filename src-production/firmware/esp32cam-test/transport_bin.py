@@ -17,9 +17,16 @@ Contrato v1 (tudo little-endian):
   15      PAYLOAD    LEN
           PAYLOAD_CRC32 4 CRC-32 do payload desta mensagem
 
-  BEGIN leva como payload 8 bytes: TOTAL_LEN (u32) + FRAME_CRC32 (u32) do JPEG
-  completo. Logs ASCII da ESP convivem no mesmo fio: o parser sincroniza por
-  SOF + HDR_CRC16 e descarta o que nao casa, entao nunca publica lixo.
+  BEGIN leva como payload 16 bytes: TOTAL_LEN (u32) + FRAME_CRC32 (u32) do JPEG
+  completo + TRIGGER_US (i64, instante do trigger no relogio da ESP). O parser
+  exige exatamente 16 (FrameAssembler.feed) -- implementar por um contrato de 8
+  bytes rejeita todos os BEGIN. Logs ASCII da ESP convivem no mesmo fio: o parser
+  sincroniza por SOF + HDR_CRC16 e descarta o que nao casa, nunca publica lixo.
+
+  Limite conhecido do v1: EVENT_ID tem 2 bytes, mas o contador da ESP e' u32 --
+  a partir de 65536 capturas o id do fio repete e dois frames diferentes passam a
+  se chamar igual (a rastreabilidade foto<->evento, que a nota ext_ref usa, deixa
+  de ser univoca). Um v2 precisa de EVENT_ID u32 no cabecalho.
 
 Regras fail-closed: mensagem com CRC invalido e descartada (nao publicada);
 frame so e publicado depois de todos os chunks contiguos, tamanho e CRC do JPEG
@@ -30,6 +37,7 @@ crc32() fica como referencia independente e o teste diferencial garante que as
 duas concordam. Medido no cenario sintetico do bench (frame de 13 kB + log
 intercalado, fatias de 4096 B): 1,67 ms -> 0,08 ms por frame.
 """
+
 from __future__ import annotations
 
 import struct
@@ -48,12 +56,17 @@ TYPE_END = 3
 TYPE_ACK = 4
 TYPE_NACK = 5
 
-TYPE_NAMES = {TYPE_BEGIN: "BEGIN", TYPE_CHUNK: "CHUNK", TYPE_END: "END",
-              TYPE_ACK: "ACK", TYPE_NACK: "NACK"}
+TYPE_NAMES = {
+    TYPE_BEGIN: "BEGIN",
+    TYPE_CHUNK: "CHUNK",
+    TYPE_END: "END",
+    TYPE_ACK: "ACK",
+    TYPE_NACK: "NACK",
+}
 
-HDR_SIZE = 15          # SOF(2) + VER..HDR_CRC16(13)
-HDR_CRC_OFFSET = 2     # CRC16 cobre de VER ate LEN
-HDR_CRC_SPAN = 11      # bytes 2..12 inclusive
+HDR_SIZE = 15  # SOF(2) + VER..HDR_CRC16(13)
+HDR_CRC_OFFSET = 2  # CRC16 cobre de VER ate LEN
+HDR_CRC_SPAN = 11  # bytes 2..12 inclusive
 PAYLOAD_CRC_SIZE = 4
 MAX_PAYLOAD = 4096
 
@@ -92,23 +105,35 @@ def crc32(data: bytes) -> int:
 
 
 def crc32_fast(data: bytes) -> int:
-    """Mesma especificacao, implementacao em C (zlib) — usada no caminho quente."""
+    """Mesma especificacao, implementacao em C (zlib); usada no caminho quente."""
     return zlib.crc32(data) & 0xFFFFFFFF
 
 
-def encode_message(msg_type: int, event_id: int, seq: int, payload: bytes = b"",
-                   flags: int = 0) -> bytes:
+def encode_message(
+    msg_type: int, event_id: int, seq: int, payload: bytes = b"", flags: int = 0
+) -> bytes:
     """Codifica uma mensagem. Usado pelo encoder da ESP e pelos testes."""
-    assert 0 <= len(payload) <= MAX_PAYLOAD, "payload acima do limite"
-    core = struct.pack("<BBBHIH", VERSION, msg_type, flags & 0xFF, event_id & 0xFFFF,
-                       seq & 0xFFFFFFFF, len(payload))
+    if not 0 <= len(payload) <= MAX_PAYLOAD:
+        raise ValueError(f"payload fora de [0,{MAX_PAYLOAD}]: {len(payload)}")
+    core = struct.pack(
+        "<BBBHIH",
+        VERSION,
+        msg_type,
+        flags & 0xFF,
+        event_id & 0xFFFF,
+        seq & 0xFFFFFFFF,
+        len(payload),
+    )
     header = bytes([SOF1, SOF2]) + core + struct.pack("<H", crc16(core))
     return header + payload + struct.pack("<I", crc32_fast(payload))
 
 
-def encode_begin(event_id: int, total_len: int, frame_crc32: int, trigger_us: int = 0) -> bytes:
-    return encode_message(TYPE_BEGIN, event_id, 0,
-                          struct.pack("<IIq", total_len, frame_crc32, trigger_us))
+def encode_begin(
+    event_id: int, total_len: int, frame_crc32: int, trigger_us: int = 0
+) -> bytes:
+    return encode_message(
+        TYPE_BEGIN, event_id, 0, struct.pack("<IIq", total_len, frame_crc32, trigger_us)
+    )
 
 
 def encode_chunk(event_id: int, seq: int, chunk: bytes) -> bytes:
@@ -138,6 +163,7 @@ class Decoder:
     Sincroniza por SOF + CRC16 do cabecalho. Bytes que nao casam (logs ASCII,
     ruido de boot, mensagem truncada) sao descartados sem publicar nada.
     """
+
     buffer: bytearray = field(default_factory=bytearray)
     discarded_bytes: int = 0
     bad_header: int = 0
@@ -206,13 +232,15 @@ class Decoder:
                 return ("need", None)
             self._discard(drop)
             return ("skip", None)
-        core = bytes(buf[HDR_CRC_OFFSET:HDR_CRC_OFFSET + HDR_CRC_SPAN])
+        core = bytes(buf[HDR_CRC_OFFSET : HDR_CRC_OFFSET + HDR_CRC_SPAN])
         want = struct.unpack_from("<H", buf, HDR_CRC_OFFSET + HDR_CRC_SPAN)[0]
         if crc16(core) != want:
             self._discard(1)
             self.bad_header += 1
             return ("skip", None)
-        version, msg_type, flags, event_id, seq, length = struct.unpack_from("<BBBHIH", buf, 2)
+        version, msg_type, _flags, event_id, seq, length = struct.unpack_from(
+            "<BBBHIH", buf, 2
+        )
         if version != VERSION:
             self._discard(1)
             self.unsupported_version += 1
@@ -224,7 +252,7 @@ class Decoder:
         total = HDR_SIZE + length + PAYLOAD_CRC_SIZE
         if len(buf) < total:
             return ("need", None)
-        payload = bytes(buf[HDR_SIZE:HDR_SIZE + length])
+        payload = bytes(buf[HDR_SIZE : HDR_SIZE + length])
         got_crc = struct.unpack_from("<I", buf, HDR_SIZE + length)[0]
         del buf[:total]
         if crc32_fast(payload) != got_crc:
@@ -237,6 +265,7 @@ class Decoder:
 @dataclass
 class FrameAssembler:
     """Reconstroi o JPEG a partir de BEGIN/CHUNK/END, com gates fail-closed."""
+
     chunk_size: int = 1024
     frame: bytearray | None = None
     total_len: int = 0
@@ -260,7 +289,9 @@ class FrameAssembler:
                 self.rejected += 1
                 self._note(f"BEGIN com payload de {len(msg.payload)} bytes")
                 return None
-            self.total_len, self.frame_crc32, _trigger = struct.unpack("<IIq", msg.payload)
+            self.total_len, self.frame_crc32, _trigger = struct.unpack(
+                "<IIq", msg.payload
+            )
             if not 0 < self.total_len <= 4 * 1024 * 1024:
                 self.rejected += 1
                 self._note(f"BEGIN com total_len invalido: {self.total_len}")
@@ -278,7 +309,9 @@ class FrameAssembler:
                 return None
             if msg.event_id != self.event_id:
                 self.rejected += 1
-                self._note(f"CHUNK de evento {msg.event_id} dentro do evento {self.event_id}")
+                self._note(
+                    f"CHUNK de evento {msg.event_id} dentro do evento {self.event_id}"
+                )
                 return None
             if msg.seq < self.expect_seq:
                 self.duplicates += 1
@@ -289,6 +322,13 @@ class FrameAssembler:
                 self._note(f"lacuna: esperado seq={self.expect_seq}, veio {msg.seq}")
                 self.frame = None
                 return None
+            if len(self.frame) + len(msg.payload) > self.total_len:
+                self.rejected += 1
+                self._note(
+                    f"CHUNK excede total_len: {len(self.frame) + len(msg.payload)} > {self.total_len}"
+                )
+                self.frame = None
+                return None
             self.frame.extend(msg.payload)
             self.expect_seq += 1
             return None
@@ -297,6 +337,30 @@ class FrameAssembler:
             if self.frame is None:
                 self.rejected += 1
                 self._note("END sem frame montado")
+                return None
+            if msg.event_id != self.event_id:
+                # END de outro evento rotularia a foto errada
+                self.rejected += 1
+                self._note(
+                    f"END do evento {msg.event_id} dentro do evento {self.event_id}"
+                )
+                self.frame = None
+                return None
+            if msg.seq != 0:
+                self.rejected += 1
+                self._note(f"END com seq invalida: {msg.seq}")
+                self.frame = None
+                return None
+            if len(msg.payload) != 4:
+                self.rejected += 1
+                self._note(f"END com payload de {len(msg.payload)} bytes; esperado 4")
+                self.frame = None
+                return None
+            end_crc32 = struct.unpack("<I", msg.payload)[0]
+            if end_crc32 != self.frame_crc32:
+                self.rejected += 1
+                self._note("CRC-32 do END diverge do BEGIN")
+                self.frame = None
                 return None
             frame = bytes(self.frame)
             self.frame = None

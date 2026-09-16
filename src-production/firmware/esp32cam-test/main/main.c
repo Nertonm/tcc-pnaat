@@ -56,13 +56,13 @@
 #define CAM_PIN_HREF 23
 #define CAM_PIN_PCLK 22
 
-static const char *TAG = "esp32cam_test";
 static QueueHandle_t trigger_queue;
 static volatile uint32_t dropped_isr_events;
-static bool camera_ready;
-static bool sensor_armed;
-static int camera_ativa = 0;
-static int forcar_falha_init = 0;      /* diagnostico: proxima captura falha na init */            /* 1 = driver inicializado/energizado */
+static volatile bool camera_ready;
+static volatile bool sensor_armed;
+static volatile int camera_ativa = 0;
+static volatile int forcar_falha_init = 0;
+static uint32_t ultimo_ext_ref = 0;    /* so a capture_task escreve/le */      /* diagnostico: proxima captura falha na init */            /* 1 = driver inicializado/energizado */
 static int transport_bin = 0;          /* 0 = texto base64, 1 = binario enquadrado */
 static uint32_t bin_chunks_total = 0;
 static int uart_baud_atual = UART_BAUD;
@@ -114,22 +114,41 @@ static int camera_power_is_on(void)
  * mensagem binaria e invalidar o frame por CRC. Todo o caminho de escrita passa
  * por este mutex. */
 static SemaphoreHandle_t uart_mutex;
+/* Dono do driver da camera: serial_rx_task (CMD_SENSOR) e capture_task nao
+ * podem mexer no driver ao mesmo tempo -- o deinit libera o framebuffer que a
+ * outra task esta transmitindo. */
+static SemaphoreHandle_t camera_mutex;
+
+static uint32_t tx_falhas;
+static volatile bool bin_tx_active;
 
 static void log_printf(const char *fmt, ...)
 {
+    char line[2048];
     va_list ap;
     va_start(ap, fmt);
-    if (uart_mutex != NULL) xSemaphoreTake(uart_mutex, portMAX_DELAY);
-    vprintf(fmt, ap);
-    if (uart_mutex != NULL) xSemaphoreGive(uart_mutex);
+    int n = vsnprintf(line, sizeof(line), fmt, ap);
     va_end(ap);
+    if (n < 0 || bin_tx_active) return;
+    size_t len = (size_t)n < sizeof(line) ? (size_t)n : sizeof(line) - 1;
+    if (uart_mutex != NULL) xSemaphoreTake(uart_mutex, portMAX_DELAY);
+    int wrote = uart_write_bytes(UART_NUM_0, line, len);
+    if (uart_mutex != NULL) xSemaphoreGive(uart_mutex);
+    if (wrote != (int)len) tx_falhas++;
 }
 
-static inline void uart_write_msg(const uint8_t *buf, size_t len)
+/* contador usado tambem por log_printf */
+/* Devolve 1 se a mensagem foi escrita por inteiro; conta a falha em vez de
+ * seguir como se tivesse saido (antes o retorno era descartado e o no imprimia
+ * FRAME_END_BIN para um frame que nunca chegou ao host). */
+static inline int uart_write_msg(const uint8_t *buf, size_t len)
 {
+    int ok;
     if (uart_mutex != NULL) xSemaphoreTake(uart_mutex, portMAX_DELAY);
-    uart_write_bytes(UART_NUM_0, (const char *)buf, len);
+    ok = (uart_write_bytes(UART_NUM_0, (const char *)buf, len) == (int)len);
     if (uart_mutex != NULL) xSemaphoreGive(uart_mutex);
+    if (!ok) tx_falhas++;
+    return ok;
 }
 
 static void camera_pwdn_assert(int power_down)
@@ -154,9 +173,12 @@ typedef struct {
     uint32_t tick;
     int64_t timestamp_us;
     TriggerSource source;
+    uint32_t ext_ref;          /* n do evento no no de trigger (0 = interno) */
 } TriggerEvent;
 
 
+/* e18_local: sensor ligado direto nesta placa; e18_ext: veio do no de trigger
+ * pela ponte do host (ver TRIGGER_ACCEPTED, que carrega ext_ref). */
 static const char *trigger_source_name(TriggerSource source) {
     return source == TRIGGER_SOURCE_E18 ? "e18_d80nk" : "usb_command";
 }
@@ -247,9 +269,10 @@ static int camera_detect_with_pwdn(int pwdn_high)
         return 0;
     }
     camera_fb_t *fb = esp_camera_fb_get();
+    int entregou = (fb != NULL && fb->format == PIXFORMAT_JPEG && fb->len > 0);
     if (fb != NULL) esp_camera_fb_return(fb);
     esp_camera_deinit();
-    return 1;
+    return entregou;      /* 1 = sensor respondeu E entregou JPEG */
 }
 
 static esp_err_t init_camera(void) {
@@ -257,12 +280,12 @@ static esp_err_t init_camera(void) {
     camera_config_fill(&config, CAM_PWDN_WIRED ? CAM_PIN_PWDN : -1);
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "CAMERA_INIT_FAIL err=0x%x", err);
+        log_printf("CAMERA_INIT_FAIL err=0x%x\n", err);
         return err;
     }
     sensor_t *sensor = esp_camera_sensor_get();
     if (sensor == NULL) {
-        ESP_LOGE(TAG, "CAMERA_SENSOR_NULL");
+        log_printf("CAMERA_SENSOR_NULL\n");
         esp_camera_deinit();          /* nao deixar driver/clock vivos no erro */
         return ESP_FAIL;
     }
@@ -274,7 +297,10 @@ static esp_err_t init_camera(void) {
     sensor->set_ae_level(sensor, 1);
     sensor->set_brightness(sensor, 1);
     sensor->set_contrast(sensor, 1);
-    log_printf("CAMERA_CONTROLS auto_exposure=1 auto_gain=1 aec2=1 awb=1 ae_level=1 standby=1\n");
+    /* Montagem da ESP-CAM esta invertida: rotacao 180 graus = flip vertical + mirror horizontal. */
+    sensor->set_vflip(sensor, 1);
+    sensor->set_hmirror(sensor, 1);
+    log_printf("CAMERA_CONTROLS auto_exposure=1 auto_gain=1 aec2=1 awb=1 ae_level=1 rotacao=180 vflip=1 hmirror=1 standby=1\n");
     log_printf("CAMERA_OK framesize=%d quality=%d psram_free=%u\n", FRAME_SIZE,
            JPEG_QUALITY, (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
     return ESP_OK;
@@ -364,8 +390,9 @@ static uint16_t bin_encode(uint8_t msg_type, uint16_t event_id, uint32_t seq,
 static void send_frame_bin(uint32_t event_id, int64_t trigger_us, TriggerSource source,
                            camera_fb_t *fb, uint32_t frame_crc)
 {
-    log_printf("FRAME_INFO source=%s event=%lu trigger_us=%lld len=%u crc32=%08lx encoding=bin\n",
-           trigger_source_name(source), (unsigned long)event_id, (long long)trigger_us,
+    log_printf("FRAME_INFO source=%s event=%u ext_ref=%lu trigger_us=%lld len=%u crc32=%08lx encoding=bin\n",
+           ultimo_ext_ref > 0 ? "e18_ext" : trigger_source_name(source), (unsigned)event_id,
+           (unsigned long)ultimo_ext_ref, (long long)trigger_us,
            (unsigned)fb->len, (unsigned long)frame_crc);
 
     put_u32(bin_payload + 0, (uint32_t)fb->len);
@@ -379,7 +406,7 @@ static void send_frame_bin(uint32_t event_id, int64_t trigger_us, TriggerSource 
         size_t chunk = fb->len - offset;
         if (chunk > BIN_CHUNK) chunk = BIN_CHUNK;
         n = bin_encode(BIN_TYPE_CHUNK, (uint16_t)event_id, seq++, fb->buf + offset, (uint16_t)chunk);
-        uart_write_msg(bin_buf, n);
+        if (!uart_write_msg(bin_buf, n)) break;
     }
     bin_chunks_total = seq;
 
@@ -402,7 +429,7 @@ static void send_frame(uint32_t event_id, int64_t trigger_us, TriggerSource sour
     camera_fb_t *fb = esp_camera_fb_get();
     int64_t capture_end_us = esp_timer_get_time();
     if (fb == NULL || fb->format != PIXFORMAT_JPEG || fb->len == 0) {
-        log_printf("CAPTURE_FAIL event=%lu wake_us=%lld warmup_us=%lld capture_us=%lld\n", (unsigned long)event_id,
+        log_printf("CAPTURE_FAIL event=%u wake_us=%lld warmup_us=%lld capture_us=%lld\n", (unsigned)event_id,
                (long long)(wake_end_us - wake_start_us),
                (long long)(warmup_end_us - wake_end_us),
                (long long)(capture_end_us - capture_start_us));
@@ -411,18 +438,21 @@ static void send_frame(uint32_t event_id, int64_t trigger_us, TriggerSource sour
     }
     uint32_t checksum = crc32(fb->buf, fb->len);
     if (transport_bin) {
+        bin_tx_active = true;
         send_frame_bin(event_id, trigger_us, source, fb, checksum);
         uart_wait_tx_done(UART_NUM_0, pdMS_TO_TICKS(5000));
+        bin_tx_active = false;
         int64_t bin_end_us = esp_timer_get_time();
-        log_printf("FRAME_END_BIN event=%lu tx_us=%lld total_us=%lld chunks=%lu\n",
-               (unsigned long)event_id, (long long)(bin_end_us - capture_end_us),
-               (long long)(bin_end_us - trigger_us), (unsigned long)bin_chunks_total);
+        log_printf("FRAME_END_BIN event=%u tx_us=%lld total_us=%lld chunks=%lu tx_falhas=%lu\n",
+               (unsigned)event_id, (long long)(bin_end_us - capture_end_us),
+               (long long)(bin_end_us - trigger_us), (unsigned long)bin_chunks_total,
+               (unsigned long)tx_falhas);
         fflush(stdout);
         esp_camera_fb_return(fb);
         return;
     }
-    log_printf("FRAME_BEGIN v=1 encoding=base64 source=%s event=%lu trigger_us=%lld len=%u crc32=%08lx wake_us=%lld warmup_us=%lld capture_us=%lld\n",
-           trigger_source_name(source), (unsigned long)event_id, (long long)trigger_us, (unsigned)fb->len,
+    log_printf("FRAME_BEGIN v=1 encoding=base64 source=%s event=%u trigger_us=%lld len=%u crc32=%08lx wake_us=%lld warmup_us=%lld capture_us=%lld\n",
+           trigger_source_name(source), (unsigned)event_id, (long long)trigger_us, (unsigned)fb->len,
            (unsigned long)checksum, (long long)(wake_end_us - wake_start_us),
            (long long)(warmup_end_us - wake_end_us),
            (long long)(capture_end_us - capture_start_us));
@@ -433,20 +463,20 @@ static void send_frame(uint32_t event_id, int64_t trigger_us, TriggerSource sour
         size_t chunk = fb->len - offset;
         if (chunk > 48) chunk = 48;
         base64_encode(fb->buf + offset, chunk, encoded);
-        log_printf("FRAME_DATA event=%lu seq=%u data=%s\n", (unsigned long)event_id,
+        log_printf("FRAME_DATA event=%u seq=%u data=%s\n", (unsigned)event_id,
                sequence++, encoded);
         fflush(stdout);
     }
     uart_wait_tx_done(UART_NUM_0, pdMS_TO_TICKS(5000));
     int64_t finished_us = esp_timer_get_time();
-    log_printf("FRAME_END event=%lu tx_us=%lld total_us=%lld\n", (unsigned long)event_id,
+    log_printf("FRAME_END event=%u tx_us=%lld total_us=%lld\n", (unsigned)event_id,
            (long long)(finished_us - capture_end_us),
            (long long)(finished_us - trigger_us));
     fflush(stdout);
     esp_camera_fb_return(fb);
 }
 
-static void enqueue_synthetic_trigger(void) {
+static int enqueue_synthetic_trigger(void) {
     TriggerEvent event = {
         .tick = (uint32_t)xTaskGetTickCount(),
         .timestamp_us = esp_timer_get_time(),
@@ -454,7 +484,9 @@ static void enqueue_synthetic_trigger(void) {
     };
     if (xQueueSend(trigger_queue, &event, 0) != pdTRUE) {
         dropped_isr_events++;
+        return 0;                     /* fila cheia: NAO dizer que aceitou */
     }
+    return 1;
 }
 
 static void serial_rx_task(void *arg) {
@@ -466,8 +498,36 @@ static void serial_rx_task(void *arg) {
         if (byte == '\n' || byte == '\r') {
             command[command_len] = '\0';
             if (strcmp(command, "CMD_CAPTURE") == 0) {
-                enqueue_synthetic_trigger();
-                log_printf("COMMAND_CAPTURE_ACCEPTED\n");
+                if (enqueue_synthetic_trigger()) {
+                    log_printf("COMMAND_CAPTURE_ACCEPTED\n");
+                } else {
+                    log_printf("COMMAND_DROP name=CMD_CAPTURE motivo=fila_cheia\n");
+                }
+            } else if (strncmp(command, "CMD_TRIG ", 9) == 0) {
+                const char *arg = command + 9;
+                int valido = (*arg != '\0');
+                for (const char *c = arg; *c; ++c) {
+                    if (*c < '0' || *c > '9') { valido = 0; break; }
+                }
+                long ref_l = valido ? strtol(arg, NULL, 10) : -1;
+                if (!valido || ref_l < 1) {
+                    log_printf("TRIG_INVALID arg=%s (esperado inteiro decimal >= 1, long)\n", arg);
+                    command_len = 0;
+                    continue;
+                }
+                uint32_t ref = (uint32_t)ref_l;
+                TriggerEvent ev = {
+                    .tick = (uint32_t)xTaskGetTickCount(),
+                    .timestamp_us = esp_timer_get_time(),
+                    .source = TRIGGER_SOURCE_E18,
+                    .ext_ref = ref,
+                };
+                if (xQueueSend(trigger_queue, &ev, 0) != pdTRUE) {
+                    dropped_isr_events++;
+                    log_printf("TRIG_DROP ext_ref=%lu motivo=fila_cheia\n", (unsigned long)ref);
+                } else {
+                    log_printf("TRIG_RECEBIDO ext_ref=%lu origem=host\n", (unsigned long)ref);
+                }
             } else if (strncmp(command, "CMD_BAUD ", 9) == 0) {
                 int novo = atoi(command + 9);
                 if (novo < UART_BAUD_MIN || novo > UART_BAUD_MAX) {
@@ -493,6 +553,7 @@ static void serial_rx_task(void *arg) {
                 forcar_falha_init = 1;
                 log_printf("TEST_FALHA_INIT armado=1\n");
             } else if (strcmp(command, "CMD_SENSOR") == 0) {
+                if (camera_mutex != NULL) xSemaphoreTake(camera_mutex, portMAX_DELAY);
                 set_camera_power(1);
                 int detect_on = camera_detect_with_pwdn(0);
                 camera_clock_off();
@@ -503,6 +564,19 @@ static void serial_rx_task(void *arg) {
                 log_printf("SENSOR_VERDICT pwdn_desliga_sensor=%d\n",
                        (detect_on && !detect_off) ? 1 : 0);
                 camera_standby("fim_do_teste", 0);
+                if (camera_mutex != NULL) xSemaphoreGive(camera_mutex);
+            } else if (strcmp(command, "CMD_REARM") == 0) {
+                /* Se o boot pegou o feixe bloqueado, o no ficava morto ate o reset
+                 * fisico. Agora da' para re-armar sem reiniciar. */
+                if (sensor_armed) {
+                    log_printf("REARM ok=1 ja_armado\n");
+                } else if (gpio_get_level(SENSOR_GPIO) == 1) {
+                    gpio_isr_handler_add(SENSOR_GPIO, sensor_isr, NULL);
+                    sensor_armed = true;
+                    log_printf("REARM ok=1 armaram_agora\n");
+                } else {
+                    log_printf("REARM ok=0 motivo=linha_em_nivel_de_objeto\n");
+                }
             } else if (strcmp(command, "CMD_STATUS") == 0) {
                 log_printf("STATUS camera=%s driver=%d power_en=%d armed=%d transport=%s baud=%d\n",
                        camera_ativa ? "ativa" : "standby", camera_ready ? 1 : 0,
@@ -538,29 +612,50 @@ static void capture_task(void *arg) {
         }
         last_trigger_us = now;
         event_id++;
-        log_printf("TRIGGER_ACCEPTED source=%s event=%lu level=%d trigger_us=%lld dropped=%lu\n",
-               trigger_source_name(event.source), (unsigned long)event_id,
-               gpio_get_level(SENSOR_GPIO), (long long)now,
-               (unsigned long)dropped_isr_events);
+        ultimo_ext_ref = event.ext_ref;
+        /* O nivel do pino local so faz sentido para trigger local: quando o evento
+         * veio do outro no, GPIO13 nao esta ligado a nada e "level=" seria um
+         * numero sem significado no log. */
+        if (event.ext_ref > 0) {
+            log_printf("TRIGGER_ACCEPTED source=e18_ext event=%u ext_ref=%lu pin_local=nao_aplicavel trigger_us=%lld dropped=%lu\n",
+                       (unsigned)event_id, (unsigned long)event.ext_ref,
+                       (long long)now, (unsigned long)dropped_isr_events);
+        } else {
+            log_printf("TRIGGER_ACCEPTED source=%s event=%u ext_ref=0 nivel_pino=%d trigger_us=%lld dropped=%lu\n",
+                       trigger_source_name(event.source), (unsigned)event_id,
+                       gpio_get_level(SENSOR_GPIO), (long long)now,
+                       (unsigned long)dropped_isr_events);
+        }
+        if (camera_mutex != NULL) xSemaphoreTake(camera_mutex, portMAX_DELAY);
+        int64_t liga_us = esp_timer_get_time();
         set_camera_power(1);
         camera_pwdn_assert(0);
         vTaskDelay(pdMS_TO_TICKS(CAMERA_WAKE_MS));
-        camera_ready = (!forcar_falha_init && init_camera() == ESP_OK);
-        forcar_falha_init = 0;
+        int forcar = forcar_falha_init;
+        if (forcar) forcar_falha_init = 0;
+        camera_ready = (!forcar && init_camera() == ESP_OK);
         if (!camera_ready) {
-            log_printf("CAPTURE_FAIL event=%lu reason=camera_init\n", (unsigned long)event_id);
+            log_printf("CAPTURE_FAIL event=%u reason=camera_init\n", (unsigned)event_id);
             camera_standby("falha_init", event_id);
+            if (camera_mutex != NULL) xSemaphoreGive(camera_mutex);
             continue;
         }
+        /* custo real de acordar a camera: do power-on ate o driver pronto.
+         * Antes esse numero nao existia em lugar nenhum (wake_us media dois
+         * esp_timer_get_time() colados e saia ~0). */
+        log_printf("CAMERA_ON event=%u modo=on_demand acordar_us=%lld\n",
+                   (unsigned)event_id, (long long)(esp_timer_get_time() - liga_us));
         camera_ativa = 1;
         send_frame(event_id, now, event.source);
         camera_standby("fim_da_captura", event_id);
+        if (camera_mutex != NULL) xSemaphoreGive(camera_mutex);
     }
 }
 
 void app_main(void) {
     setvbuf(stdout, NULL, _IONBF, 0);
     uart_mutex = xSemaphoreCreateMutex();
+    camera_mutex = xSemaphoreCreateMutex();
     /* Logs de componentes (ESP_LOGI do driver da camera) escrevem direto no UART,
      * por fora do nosso mutex: podem intercalar dentro de uma mensagem binaria e
      * ainda somam ~0,5 kB de ruido por foto na linha. Nossos logs usam log_printf. */
@@ -609,15 +704,6 @@ void app_main(void) {
         .intr_type = GPIO_INTR_NEGEDGE,
     };
     ESP_ERROR_CHECK(gpio_config(&io));
-    gpio_config_t test_output = {
-        .pin_bit_mask = 1ULL << GPIO_NUM_4,
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    ESP_ERROR_CHECK(gpio_config(&test_output));
-    gpio_set_level(GPIO_NUM_4, 0);
     ESP_ERROR_CHECK(gpio_install_isr_service(ESP_INTR_FLAG_IRAM));
 
     log_printf("BOOT_TEST firmware=esp32cam_test sensor_gpio=%d active=LOW baud=%d\n",
@@ -630,12 +716,16 @@ void app_main(void) {
 
     vTaskDelay(pdMS_TO_TICKS(SENSOR_ARM_SETTLE_MS));
     int level = gpio_get_level(SENSOR_GPIO);
-    if (level == 1) {
-        ESP_ERROR_CHECK(gpio_isr_handler_add(SENSOR_GPIO, sensor_isr, NULL));
-        sensor_armed = true;
+    /* Instala o ISR mesmo se o sensor estiver ativo durante o boot. O estado
+     * alto/repouso controla apenas o diagnostico; exigir nivel alto aqui
+     * deixava o no sem rearmamento ate um reboot. A borda NEGATIVE seguinte
+     * sera processada normalmente depois que o alvo voltar ao repouso. */
+    ESP_ERROR_CHECK(gpio_isr_handler_add(SENSOR_GPIO, sensor_isr, NULL));
+    sensor_armed = (level == 1);
+    if (sensor_armed) {
         log_printf("SENSOR_ARMED level=1 settle_ms=%d\n", SENSOR_ARM_SETTLE_MS);
     } else {
-        log_printf("SENSOR_NOT_ARMED level=%d reason=not_at_rest\n", level);
+        log_printf("SENSOR_WAIT_REARM level=%d reason=active_at_boot\n", level);
     }
 
     BaseType_t rx_task_ok = xTaskCreatePinnedToCore(serial_rx_task, "serial_rx", 4096, NULL, 5, NULL, 0);
@@ -644,6 +734,6 @@ void app_main(void) {
         log_printf("TASKS_FAIL serial_rx=%d capture=%d\n", rx_task_ok, capture_task_ok);
         return;
     }
-    log_printf("TASKS_READY serial_rx=core0 capture=core1 gpio4=LOW irq_queue=1 armed=%d\n", sensor_armed);
+    log_printf("TASKS_READY serial_rx=core0 capture=core1 irq_queue=1 armed=%d\n", sensor_armed);
     vTaskDelete(NULL);
 }

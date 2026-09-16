@@ -8,16 +8,20 @@ logits = 3x), para que a expectativa de cada teste possa ser calculada a mao:
     a = 1.0  ->  p0 = 0.909...  < 0.95  -> INCONCLUSIVO (roteia para o fallback)
     a = 1.5  ->  p0 = 0.978... >= 0.95  -> decide
 """
+
 from __future__ import annotations
 
 import json
 
 import numpy as np
 import pytest
-
 from classificador import ErroDeClassificacao
-from classificador_artefato import (ARTEFATO_PADRAO, ClassificadorDoArtefato, Procedencia,
-                                    construir_embutidor)
+from classificador_artefato import (
+    ARTEFATO_PADRAO,
+    ClassificadorDoArtefato,
+    Procedencia,
+    construir_embutidor,
+)
 from dominio import Classe, Dominio, Qualidade, Vista
 
 NOMES = ("normal", "tampa_ausente", "defeito_tampa")
@@ -27,20 +31,34 @@ NOMES = ("normal", "tampa_ausente", "defeito_tampa")
 D, K = 4, 4
 
 #: fixture NAO degenerado: e o que o teste de fidelidade usa. Com transformacao identidade, remover a
-#: PCA ou a padronizacao do port nao muda numero nenhum — o teste passaria com o port mutado (foi o que
+#: PCA ou a padronizacao do port nao muda numero nenhum; o teste passaria com o port mutado (foi o que
 #: aconteceu na primeira rodada de mutacao). Fidelidade so se prova com transformacao que age.
 D_REAL, K_REAL = 6, 4
 
 
-def _artefato(caminho, *, limiar=0.95, nomes=NOMES, vintage="teste-1", aviso="PROTOTIPO de teste",
-              coef=None, sem_chave=None, sem_metadado=False, sem_vintage=False, tipo="torchvision"):
+def _artefato(
+    caminho,
+    *,
+    limiar=0.95,
+    nomes=NOMES,
+    vintage="teste-1",
+    aviso="PROTOTIPO de teste",
+    coef=None,
+    sem_chave=None,
+    sem_metadado=False,
+    sem_vintage=False,
+    tipo="torchvision",
+):
     dados = {
         "mu0": np.zeros(D, dtype=np.float32),
         "P": np.eye(D, K, dtype=np.float32),
         "classes": np.array(nomes, dtype=f"<U{max(len(n) for n in nomes)}"),
-        "coef": np.array(coef if coef is not None else [[3.0, 0.0, 0.0, 0.0],
-                                                        [0.0, 3.0, 0.0, 0.0],
-                                                        [0.0, 0.0, 3.0, 0.0]], dtype=np.float32),
+        "coef": np.array(
+            coef
+            if coef is not None
+            else [[3.0, 0.0, 0.0, 0.0], [0.0, 3.0, 0.0, 0.0], [0.0, 0.0, 3.0, 0.0]],
+            dtype=np.float32,
+        ),
         "intercept": np.zeros(len(nomes), dtype=np.float32),
         "mu_nosso": np.zeros(K, dtype=np.float32),
         "sd_nosso": np.ones(K, dtype=np.float32),
@@ -52,13 +70,26 @@ def _artefato(caminho, *, limiar=0.95, nomes=NOMES, vintage="teste-1", aviso="PR
     np.savez(caminho, **dados)
     if sem_metadado:
         return caminho
-    meta = {"vintage": vintage, "extrator": "mobilenetv3s", "limiar_abstencao": limiar,
-            "classes": list(nomes), "avaliacao": {"n": 43, "recall_medio": 0.85}, "aviso": aviso,
-            "config_extrator": {"tipo": tipo, "fn": "mobilenet_v3_small", "pesos": "IMAGENET1K_V1",
-                                "size": 224, "corta": "classifier"}}
+    meta = {
+        "vintage": vintage,
+        "extrator": "mobilenetv3s",
+        "limiar_abstencao": limiar,
+        "classes": list(nomes),
+        "avaliacao": {"n": 43, "recall_medio": 0.85},
+        "aviso": aviso,
+        "config_extrator": {
+            "tipo": tipo,
+            "fn": "mobilenet_v3_small",
+            "pesos": "IMAGENET1K_V1",
+            "size": 224,
+            "corta": "classifier",
+        },
+    }
     if sem_vintage:
         meta.pop("vintage")
-    caminho.with_suffix(".json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+    caminho.with_suffix(".json").write_text(
+        json.dumps(meta, ensure_ascii=False), encoding="utf-8"
+    )
     return caminho
 
 
@@ -82,12 +113,25 @@ def _artefato_nao_degenerado(caminho, *, limiar=0.95):
         mu_apoio=rng.normal(size=K_REAL).astype(np.float32),
         sd_apoio=(1.0 + rng.random(K_REAL)).astype(np.float32),
     )
-    caminho.with_suffix(".json").write_text(json.dumps(
-        {"vintage": "teste-nao-degenerado", "extrator": "mobilenetv3s", "limiar_abstencao": limiar,
-         "aviso": "PROTOTIPO de teste",
-         "config_extrator": {"tipo": "torchvision", "fn": "mobilenet_v3_small",
-                             "pesos": "IMAGENET1K_V1", "size": 224, "corta": "classifier"}},
-        ensure_ascii=False), encoding="utf-8")
+    caminho.with_suffix(".json").write_text(
+        json.dumps(
+            {
+                "vintage": "teste-nao-degenerado",
+                "extrator": "mobilenetv3s",
+                "limiar_abstencao": limiar,
+                "aviso": "PROTOTIPO de teste",
+                "config_extrator": {
+                    "tipo": "torchvision",
+                    "fn": "mobilenet_v3_small",
+                    "pesos": "IMAGENET1K_V1",
+                    "size": 224,
+                    "corta": "classifier",
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
     return caminho
 
 
@@ -120,7 +164,9 @@ def test_probabilidades_reproduzem_a_logreg_do_sklearn(artefato_realista):
     """A receita portada tem de bater com `predict_proba` do consumidor do artefato (o servico)."""
     sklearn = pytest.importorskip("sklearn.linear_model")
     artefato = artefato_realista
-    cls = ClassificadorDoArtefato.abrir(artefato, embutidor=_embutidor(np.zeros(D_REAL)))
+    cls = ClassificadorDoArtefato.abrir(
+        artefato, embutidor=_embutidor(np.zeros(D_REAL))
+    )
     with np.load(artefato, allow_pickle=False) as a:
         clf = sklearn.LogisticRegression()
         clf.classes_ = a["classes"]
@@ -140,8 +186,9 @@ def test_probabilidades_reproduzem_a_logreg_do_sklearn(artefato_realista):
 
         # GUARDA DO PROPRIO TESTE: se as transformacoes fossem no-op, este teste passaria com o port
         # mutado. Sem esta linha, o oraculo seria insensivel ao que ele diz provar.
-        assert not np.allclose(z, embedding[:K], atol=1e-6), \
+        assert not np.allclose(z, embedding[:K], atol=1e-6), (
             "fixture degenerado: PCA/padronizacao nao mudam o vetor, o teste nao prova o port"
+        )
         esperado = clf.predict_proba(z.reshape(1, -1))[0]
         obtido = cls.probabilidades(embedding)
         assert np.allclose(obtido, esperado, atol=1e-12), (obtido, esperado)
@@ -159,23 +206,29 @@ def test_a_padronizacao_usa_a_fonte_declarada(artefato, tmp_path):
     embedding = np.array([1.0, 0.0, 0.0, 0.0])
     padrao = ClassificadorDoArtefato.abrir(artefato, embutidor=_embutidor(embedding))
     deslocado = ClassificadorDoArtefato.abrir(outra, embutidor=_embutidor(embedding))
-    assert not np.allclose(padrao.probabilidades(embedding), deslocado.probabilidades(embedding))
+    assert not np.allclose(
+        padrao.probabilidades(embedding), deslocado.probabilidades(embedding)
+    )
 
 
 # ------------------------------------------------------------------ o limiar vem do artefato
 
 
 def test_limiar_do_metadado_manda_no_roteamento(tmp_path):
-    apertado = ClassificadorDoArtefato.abrir(_artefato(tmp_path / "a.npz", limiar=0.95),
-                                             embutidor=_embutidor(np.array([1.0, 0.0, 0.0, 0.0])))
+    apertado = ClassificadorDoArtefato.abrir(
+        _artefato(tmp_path / "a.npz", limiar=0.95),
+        embutidor=_embutidor(np.array([1.0, 0.0, 0.0, 0.0])),
+    )
     medida = apertado.prever(_imagem(), Dominio.TAMPA, Vista.LATERAL1)
     assert medida.classe is Classe.INCONCLUSIVO
     assert medida.qualidade is Qualidade.INSUFICIENTE
     assert not medida.conclusiva
     assert medida.confianca == pytest.approx(0.9094, abs=1e-3)
 
-    folgado = ClassificadorDoArtefato.abrir(_artefato(tmp_path / "b.npz", limiar=0.0),
-                                            embutidor=_embutidor(np.array([1.0, 0.0, 0.0, 0.0])))
+    folgado = ClassificadorDoArtefato.abrir(
+        _artefato(tmp_path / "b.npz", limiar=0.0),
+        embutidor=_embutidor(np.array([1.0, 0.0, 0.0, 0.0])),
+    )
     decidida = folgado.prever(_imagem(), Dominio.TAMPA, Vista.LATERAL1)
     assert decidida.classe is Classe.NORMAL
     assert decidida.qualidade is Qualidade.OK
@@ -184,7 +237,8 @@ def test_limiar_do_metadado_manda_no_roteamento(tmp_path):
 
 def test_confianca_acima_do_limiar_decide_a_classe_do_argmax(artefato):
     cls = ClassificadorDoArtefato.abrir(
-        artefato, embutidor=_embutidor(np.array([0.0, 0.0, 1.5, 0.0])))
+        artefato, embutidor=_embutidor(np.array([0.0, 0.0, 1.5, 0.0]))
+    )
     medida = cls.prever(_imagem(), Dominio.TAMPA, Vista.TOPO)
     assert medida.classe is Classe.DEFEITO_TAMPA
     assert medida.conclusiva
@@ -199,12 +253,19 @@ def test_corpo_devolve_none_e_nao_embute_nada(artefato):
     embutidor = _embutidor(np.zeros(D))
     cls = ClassificadorDoArtefato.abrir(artefato, embutidor=embutidor)
     assert cls.prever(_imagem(), Dominio.CORPO, Vista.LATERAL1) is None
-    assert embutidor.chamadas == [], "sem modelo do corpo nada pode ser extraido da imagem"
+    assert embutidor.chamadas == [], (
+        "sem modelo do corpo nada pode ser extraido da imagem"
+    )
 
 
 def test_recorte_que_nao_e_imagem_e_erro(artefato):
     cls = ClassificadorDoArtefato.abrir(artefato, embutidor=_embutidor(np.zeros(D)))
-    for ruim in ("/tmp/x.jpg", None, np.zeros((8, 8), dtype=np.uint8), np.zeros((0, 8, 3), dtype=np.uint8)):
+    for ruim in (
+        "/tmp/x.jpg",
+        None,
+        np.zeros((8, 8), dtype=np.uint8),
+        np.zeros((0, 8, 3), dtype=np.uint8),
+    ):
         with pytest.raises(ErroDeClassificacao):
             cls.prever(ruim, Dominio.TAMPA, Vista.LATERAL1)
 
@@ -231,7 +292,9 @@ def test_embedding_com_dimensao_errada_e_erro(artefato):
 
 def test_fonte_sem_estatistica_no_artefato_e_erro(artefato):
     with pytest.raises(ErroDeClassificacao, match="publico"):
-        ClassificadorDoArtefato.abrir(artefato, fonte="publico", embutidor=_embutidor(np.zeros(D)))
+        ClassificadorDoArtefato.abrir(
+            artefato, fonte="publico", embutidor=_embutidor(np.zeros(D))
+        )
 
 
 def test_artefato_sem_metadado_e_erro(tmp_path):
@@ -267,7 +330,9 @@ def test_artefato_inexistente_e_erro(tmp_path):
 
 
 def test_procedencia_e_rastro_do_artefato(artefato):
-    cls = ClassificadorDoArtefato.abrir(artefato, embutidor=_embutidor(np.array([1.0, 0.0, 0.0, 0.0])))
+    cls = ClassificadorDoArtefato.abrir(
+        artefato, embutidor=_embutidor(np.array([1.0, 0.0, 0.0, 0.0]))
+    )
     p = cls.procedencia
     assert isinstance(p, Procedencia)
     assert p.vintage == "teste-1" and p.extrator == "mobilenetv3s"
@@ -280,15 +345,25 @@ def test_procedencia_e_rastro_do_artefato(artefato):
 
 
 def test_limitacao_declarada_viaja_na_medida_como_provisoria(artefato):
-    cls = ClassificadorDoArtefato.abrir(artefato, embutidor=_embutidor(np.array([1.0, 0.0, 0.0, 0.0])))
+    cls = ClassificadorDoArtefato.abrir(
+        artefato, embutidor=_embutidor(np.array([1.0, 0.0, 0.0, 0.0]))
+    )
     medida = cls.prever(_imagem(), Dominio.TAMPA, Vista.LATERAL1)
-    limitacao = [e for e in medida.evidencias if e.grandeza == "limitacao_declarada_pelo_artefato"]
+    limitacao = [
+        e
+        for e in medida.evidencias
+        if e.grandeza == "limitacao_declarada_pelo_artefato"
+    ]
     assert len(limitacao) == 1
     assert limitacao[0].provisorio() is True
     assert limitacao[0].metodo == "PROTOTIPO de teste"
-    limiar = [e for e in medida.evidencias if e.grandeza == "limiar_de_confianca_do_fallback"][0]
+    limiar = [
+        e for e in medida.evidencias if e.grandeza == "limiar_de_confianca_do_fallback"
+    ][0]
     assert limiar.provisorio() is False and limiar.fonte.endswith("#limiar_abstencao")
-    probabilidade = [e for e in medida.evidencias if e.grandeza == "probabilidade_da_classe_decidida"][0]
+    probabilidade = [
+        e for e in medida.evidencias if e.grandeza == "probabilidade_da_classe_decidida"
+    ][0]
     assert probabilidade.valor == pytest.approx(medida.confianca)
 
 
@@ -314,37 +389,57 @@ def test_a_cadeia_registra_a_evidencia_do_modelo(tmp_path, artefato):
     from datetime import UTC, datetime
 
     import cv2
-
     from captura import Alinhamento, ItemCapturado, VistaCapturada
     from orquestracao import IdentidadeDoRig, executar
     from registro import Registro
 
-    cls = ClassificadorDoArtefato.abrir(artefato,
-                                        embutidor=_embutidor(np.array([1.5, 0.0, 0.0, 0.0])))
+    cls = ClassificadorDoArtefato.abrir(
+        artefato, embutidor=_embutidor(np.array([1.5, 0.0, 0.0, 0.0]))
+    )
     imagem = tmp_path / "lateral1.jpg"
     cv2.imwrite(str(imagem), np.zeros((32, 32, 3), dtype=np.uint8))
     agora = datetime.now(UTC)
-    item = ItemCapturado(item_id="T-1", trigger_em=agora, vistas=(
-        VistaCapturada(vista=Vista.LATERAL1, imagem=imagem, capturado_em=agora,
-                       alinhamento=Alinhamento.OK, no_janela=True,
-                       motivo_da_janela="janela declarada pelo teste"),))
+    item = ItemCapturado(
+        item_id="T-1",
+        trigger_em=agora,
+        vistas=(
+            VistaCapturada(
+                vista=Vista.LATERAL1,
+                imagem=imagem,
+                capturado_em=agora,
+                alinhamento=Alinhamento.OK,
+                no_janela=True,
+                motivo_da_janela="janela declarada pelo teste",
+            ),
+        ),
+    )
     banco = tmp_path / "t.db"
     registro = Registro.abrir(str(banco))
     try:
-        executar(item, cls, registro, IdentidadeDoRig("bancada", "teste"), roi=(0.0, 0.0, 1.0, 1.0))
+        executar(
+            item,
+            cls,
+            registro,
+            IdentidadeDoRig("bancada", "teste"),
+            roi=(0.0, 0.0, 1.0, 1.0),
+        )
     finally:
         registro.fechar()
 
-    linhas = list(sqlite3.connect(str(banco)).execute(
-        "select grandeza, origem, papel, metodo from evidencia"))
+    linhas = list(
+        sqlite3.connect(str(banco)).execute(
+            "select grandeza, origem, papel, metodo from evidencia"
+        )
+    )
     do_modelo = [linha for linha in linhas if linha[1] == "classificador"]
     assert do_modelo, f"nenhuma evidencia do classificador no registro: {linhas}"
     metodos = {linha[3] for linha in do_modelo}
     assert any("teste-1" in metodo for metodo in metodos), metodos
     grandeza = {linha[0] for linha in do_modelo}
     assert "probabilidade_da_classe_decidida" in grandeza
-    assert any(linha[0] == "limitacao_declarada_pelo_artefato" for linha in do_modelo), \
-        "a limitacao declarada pelo artefato nao chegou ao registro"
+    assert any(
+        linha[0] == "limitacao_declarada_pelo_artefato" for linha in do_modelo
+    ), "a limitacao declarada pelo artefato nao chegou ao registro"
 
 
 def test_fabrica_prefere_o_artefato_e_declara_quando_nao_ha_modelo(tmp_path, artefato):
@@ -366,8 +461,9 @@ def test_fabrica_prefere_o_artefato_e_declara_quando_nao_ha_modelo(tmp_path, art
 
 # ------------------------------------------------------------------ o artefato real do repo
 
-real = pytest.mark.skipif(not ARTEFATO_PADRAO.is_file(),
-                          reason=f"artefato real ausente: {ARTEFATO_PADRAO}")
+real = pytest.mark.skipif(
+    not ARTEFATO_PADRAO.is_file(), reason=f"artefato real ausente: {ARTEFATO_PADRAO}"
+)
 
 
 @real
@@ -380,5 +476,7 @@ def test_artefato_real_abre_com_a_procedencia_declarada():
     assert p.limiar_de_abstencao == pytest.approx(0.95)
     assert set(p.classes) == {"normal", "tampa_ausente", "defeito_tampa"}
     assert p.config_extrator.get("tipo") == "hub"
-    assert p.aviso and "NAO VALIDADO" in p.aviso.upper().replace("Ã", "A").replace("Ó", "O")
+    assert p.aviso and "NAO VALIDADO" in p.aviso.upper().replace("Ã", "A").replace(
+        "Ó", "O"
+    )
     assert cls.probabilidades(np.zeros(384)).shape == (3,)

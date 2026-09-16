@@ -1,0 +1,2 @@
+recursive-include site *
+include esquema.sql

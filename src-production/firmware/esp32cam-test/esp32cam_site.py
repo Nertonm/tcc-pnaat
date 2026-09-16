@@ -14,6 +14,7 @@ indica erro de implementacao de CRC, nao corrupcao de enlace.
 
 Uso: python3 esp32cam_site.py [--porta 8091] [--host 0.0.0.0] [--serial /dev/ttyUSB0]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -22,9 +23,9 @@ import binascii
 import heapq
 import json
 import os
-import os
 import re
 import sys
+import tempfile
 import threading
 import time
 import zlib
@@ -37,12 +38,18 @@ from urllib.parse import parse_qs, urlparse
 import serial
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from transport_bin import Decoder, FrameAssembler  # noqa: E402
+from transport_bin import Decoder, FrameAssembler
 
 SERIAL_BAUD = 921600
-ALLOWED_COMMANDS = ("CMD_CAPTURE", "CMD_STATUS", "CMD_SENSOR",
-                    "CMD_TRANSPORT BIN", "CMD_TRANSPORT TEXT",
-                    "CMD_TEST_FALHA_INIT", "CMD_TRIG_NEXT")
+ALLOWED_COMMANDS = (
+    "CMD_CAPTURE",
+    "CMD_STATUS",
+    "CMD_SENSOR",
+    "CMD_TRANSPORT BIN",
+    "CMD_TRANSPORT TEXT",
+    "CMD_TEST_FALHA_INIT",
+    "CMD_TRIG_NEXT",
+)
 EV_OPEN_RE = re.compile(r"EV OPEN .*?n=(\d+)")
 EV_ARMED_RE = re.compile(r"EV ARMED")
 EV_WARMUP_RE = re.compile(r"EV (READY|WARMUP_DONE)")
@@ -53,7 +60,9 @@ PINOS_PING_RE = re.compile(r"p(\d+)=(\d)")
 EV_READY_PIN_RE = re.compile(r"EV READY pin=(\d+)")
 PINO_CHANGE_RE = re.compile(r"EV PINO_CHANGE p(\d+)=(\d) antes=(\d)")
 EXT_REF_RE = re.compile(r"ext_ref=(\d+)")
-TRIG_ACCEPTED_RE = re.compile(r"TRIGGER_ACCEPTED source=(\S+) event=(\d+) ext_ref=(\d+)")
+TRIG_ACCEPTED_RE = re.compile(
+    r"TRIGGER_ACCEPTED source=(\S+) event=(\d+) ext_ref=(\d+)"
+)
 TRIGGER_BAUD = 115200
 ALLOWED_PREFIXES = ("CMD_BAUD ",)
 BAUD_ACK_RE = re.compile(r"BAUD_ACK ok=1 de=(\d{4,7}) para=(\d{4,7})")
@@ -69,13 +78,17 @@ INFO_RE = re.compile(
     r"FRAME_INFO source=(\S+) event=(\d+) ext_ref=(\d+) trigger_us=(-?\d+) "
     r"len=(\d+) crc32=([0-9a-f]{8})"
 )
-END_BIN_RE = re.compile(r"FRAME_END_BIN event=(\d+) tx_us=(\d+) total_us=(\d+) chunks=(\d+)")
+END_BIN_RE = re.compile(
+    r"FRAME_END_BIN event=(\d+) tx_us=(\d+) total_us=(\d+) chunks=(\d+)"
+)
 
 # Tabela de sanear logs: qualquer byte fora de 32..126 vira "." (via C, por byte)
 _SANITIZE = bytes(0x2E if not (32 <= b < 127) else b for b in range(256))
 TRANSPORT_RE = re.compile(r"TRANSPORT mode=(\w+)")
-STATUS_RE = re.compile(r"STATUS camera=(\w+) driver=(\d+) power_en=(-?\d+) "
-                       r"armed=(\d+) transport=(\w+) baud=(\d+)")
+STATUS_RE = re.compile(
+    r"STATUS camera=(\w+) driver=(\d+) power_en=(-?\d+) "
+    r"armed=(\d+) transport=(\w+) baud=(\d+)"
+)
 TRIGGER_RE = re.compile(r"TRIGGER_ACCEPTED")
 CAMERA_OFF_RE = re.compile(r"CAMERA_OFF[^\n]*motivo=(\w+)|CAMERA_OFF boot=1")
 
@@ -87,6 +100,7 @@ def _e_residuo(linha: bytes) -> bool:
         return True
     ruins = sum(1 for b in linha if not (32 <= b < 127))
     return ruins / len(linha) > 0.2
+
 
 lock = threading.Lock()
 latest: bytes | None = None
@@ -104,25 +118,27 @@ booted = False
 transport = "desconhecido"
 camera_estado = "desconhecido"
 driver_estado = -1
-trigger_porta = None                # dona unica da porta do no de trigger
+trigger_porta = None  # dona unica da porta do no de trigger
 trigger_aberta = False
 trigger_erro = ""
-trigger_estado = "desconhecido"     # warmup | armando | armado
+trigger_estado = "desconhecido"  # warmup | armando | armado
 trigger_ultimo_n = None
 trigger_ultimo_em = 0.0
 trigger_total = 0
 trigger_linhas: deque[str] = deque(maxlen=200)
-trigger_pendente: int | None = None   # ext_ref pedido, aguardando a foto
-sensor_nivel: int | None = None       # ultimo nivel lido no sensor (PING)
-pino_sensor = 27          # atualizado pelo `pin=` do EV READY do firmware
-TOKEN = ""                # --token: exige token nos POST destrutivos
+trigger_pendente: int | None = None  # ext_ref pedido, aguardando a foto
+sensor_nivel: int | None = None  # ultimo nivel lido no sensor (PING)
+pino_sensor = 27  # atualizado pelo `pin=` do EV READY do firmware
+TOKEN = ""  # --token: exige token nos POST destrutivos
 sensor_em = 0.0
-pinos_vistos: dict[int, int] = {}     # varredura de pinos do heartbeat
+pinos_vistos: dict[int, int] = {}  # varredura de pinos do heartbeat
 pareamento: dict[str, object] = {"status": "sem dado"}
-transport_desejado: str | None = "bin"   # modo que o site quer (reaplicado se a camera reiniciar)
+transport_desejado: str | None = (
+    "bin"  # modo que o site quer (reaplicado se a camera reiniciar)
+)
 # A camera reinicia ao abrir a porta e volta ao modo de boot (texto). Sem isso o site
 # roda em texto (2x de bytes na linha) sem o operador perceber.
-capturas_dir: Path | None = None      # None = nao grava
+capturas_dir: Path | None = None  # None = nao grava
 capturas_total = 0
 capturas_bytes = 0
 captura_ultima: dict[str, object] = {}
@@ -130,14 +146,17 @@ latencias: deque[dict[str, object]] = deque(maxlen=30)
 latencia_pendente: dict[str, float] = {}
 delay_ultimo: dict[str, object] = {}
 delay_serie_ativa = False
-eventos_ui: deque[dict[str, object]] = deque(maxlen=40)   # linha do tempo do painel
+eventos_ui: deque[dict[str, object]] = deque(maxlen=40)  # linha do tempo do painel
 
 
 def evento(tipo: str, texto: str, **campos: object) -> None:
     """Evento visivel no painel, com horario. A UI le isto em /status."""
     with lock:
-        eventos_ui.appendleft({"t": time.strftime("%H:%M:%S"), "tipo": tipo,
-                               "texto": texto, **campos})
+        eventos_ui.appendleft(
+            {"t": time.strftime("%H:%M:%S"), "tipo": tipo, "texto": texto, **campos}
+        )
+
+
 NOME_SEGURO = re.compile(r"^[A-Za-z0-9._-]{1,120}$")
 crosscheck: dict[str, object] = {"status": "sem dado"}
 started_at = time.time()
@@ -145,7 +164,7 @@ log_lines: deque[str] = deque(maxlen=400)
 command_queue: Queue[bytes] = Queue(maxsize=4)
 decoder = Decoder()
 assembler = FrameAssembler()
-serial_port = None                 # dona do /dev/ttyUSB0 durante a sessao
+serial_port = None  # dona do /dev/ttyUSB0 durante a sessao
 baud_atual = SERIAL_BAUD
 baud_pendente: int | None = None
 baud_troca_em = 0.0
@@ -158,9 +177,9 @@ baud_troca_em = 0.0
 text_buf = bytearray()
 pending_header: re.Match[bytes] | None = None
 pending_chunks: dict[int, bytes] = {}
-announced: dict[int, tuple[int, int, int]] = {}   # evento -> (len, crc32, ext_ref)
-ext_ref_por_evento: dict[int, int] = {}           # aprende pelo TRIGGER_ACCEPTED
-ANUNCIOS_MAX = 256      # o dict por evento nao pode crescer sem limite
+announced: dict[int, tuple[int, int, int]] = {}  # evento -> (len, crc32, ext_ref)
+ext_ref_por_evento: dict[int, int] = {}  # aprende pelo TRIGGER_ACCEPTED
+ANUNCIOS_MAX = 256  # o dict por evento nao pode crescer sem limite
 
 
 def log(kind: str, text: str) -> None:
@@ -169,12 +188,18 @@ def log(kind: str, text: str) -> None:
 
 
 def publish(frame: bytes, event: int, encoding: str, extra: dict[str, object]) -> None:
-    global latest, latest_meta, frames_ok, frames_text, frames_bin, crosscheck, trigger_pendente
+    global latest, latest_meta, frames_ok, frames_text, frames_bin, crosscheck
     crc = f"{zlib.crc32(frame) & 0xFFFFFFFF:08x}"
     with lock:
         latest = frame
-        latest_meta = {"event": event, "len": len(frame), "encoding": encoding,
-                       "crc32": crc, "received_at": time.time(), **extra}
+        latest_meta = {
+            "event": event,
+            "len": len(frame),
+            "encoding": encoding,
+            "crc32": crc,
+            "received_at": time.time(),
+            **extra,
+        }
         frames_ok += 1
         if encoding == "bin":
             frames_bin += 1
@@ -185,49 +210,78 @@ def publish(frame: bytes, event: int, encoding: str, extra: dict[str, object]) -
             crosscheck = {"status": "sem anuncio", "event": event}
         else:
             anunciado_len, anunciado_crc, _anunciado_ref = esperado
-            ok = (anunciado_len == len(frame) and f"{anunciado_crc:08x}" == crc)
-            crosscheck = {"status": "ok" if ok else "DIVERGENTE", "event": event,
-                          "anunciado_len": anunciado_len,
-                          "anunciado_crc32": f"{anunciado_crc:08x}",
-                          "calculado_len": len(frame)}
+            ok = anunciado_len == len(frame) and f"{anunciado_crc:08x}" == crc
+            crosscheck = {
+                "status": "ok" if ok else "DIVERGENTE",
+                "event": event,
+                "anunciado_len": anunciado_len,
+                "anunciado_crc32": f"{anunciado_crc:08x}",
+                "calculado_len": len(frame),
+            }
         latest_meta["crosscheck"] = crosscheck["status"]
         estado_cc = crosscheck["status"]
         meta_publicado = dict(latest_meta)
-    log("FRAME", f"encoding={encoding} event={event} {len(frame)}B "
-                 f"crc32={crc} crosscheck={estado_cc}")
-    evento("foto", f"foto publicada ({len(frame)} B, evento {event}, {encoding})",
-           ext_ref=int(extra.get("ext_ref") or 0), evento_id=event)
+    log(
+        "FRAME",
+        f"encoding={encoding} event={event} {len(frame)}B "
+        f"crc32={crc} crosscheck={estado_cc}",
+    )
+    evento(
+        "foto",
+        f"foto publicada ({len(frame)} B, evento {event}, {encoding})",
+        ext_ref=int(extra.get("ext_ref") or 0),
+        evento_id=event,
+    )
     with lock:
         # so mede delay quando o frame veio de um trigger DE VERDADE: uma captura
         # manual publicada depois herda o t_sensor do trigger anterior e fabricava
         # a metrica (medido: 7630 ms para um frame sem trigger).
         ref_frame_atual = int(extra.get("ext_ref") or 0)
-        mede = bool(latencia_pendente) and ref_frame_atual != 0 and \
-            latencia_pendente.get("ref") == ref_frame_atual
+        mede = (
+            bool(latencia_pendente)
+            and ref_frame_atual != 0
+            and latencia_pendente.get("ref") == ref_frame_atual
+        )
         if mede:
             latencia_pendente["t_foto"] = time.time()
             total = latencia_pendente["t_foto"] - latencia_pendente["t_sensor"]
-            if total < 30:      # descarta par sem relacao (teste manual antigo)
-                delay_ultimo.update({
-                    "evento": event,
-                    "ext_ref": int(extra.get("ext_ref") or 0),
-                    "sensor_comando_ms": round(
-                        (latencia_pendente["t_comando"] - latencia_pendente["t_sensor"]) * 1000),
-                    "comando_foto_ms": round(
-                        (latencia_pendente["t_foto"] - latencia_pendente["t_comando"]) * 1000),
-                    "sensor_foto_ms": round(total * 1000),
-                    "camera_total_ms": round(int(extra.get("total_us") or 0) / 1000),
-                    "camera_linha_ms": round(int(extra.get("tx_us") or 0) / 1000),
-                    "em": time.time(),
-                })
+            if total < 30:  # descarta par sem relacao (teste manual antigo)
+                delay_ultimo.update(
+                    {
+                        "evento": event,
+                        "ext_ref": int(extra.get("ext_ref") or 0),
+                        "sensor_comando_ms": round(
+                            (
+                                latencia_pendente["t_comando"]
+                                - latencia_pendente["t_sensor"]
+                            )
+                            * 1000
+                        ),
+                        "comando_foto_ms": round(
+                            (
+                                latencia_pendente["t_foto"]
+                                - latencia_pendente["t_comando"]
+                            )
+                            * 1000
+                        ),
+                        "sensor_foto_ms": round(total * 1000),
+                        "camera_total_ms": round(
+                            int(extra.get("total_us") or 0) / 1000
+                        ),
+                        "camera_linha_ms": round(int(extra.get("tx_us") or 0) / 1000),
+                        "em": time.time(),
+                    }
+                )
                 latencias.append(dict(delay_ultimo))
                 # os tempos internos da camera chegam depois (FRAME_END_BIN): nao
                 # imprimir zero aqui, que era lido como "a camera nao gastou tempo"
-                log("DELAY", f"sensor->foto {delay_ultimo['sensor_foto_ms']} ms "
-                             f"(comando->foto {delay_ultimo['comando_foto_ms']} ms; "
-                             f"tempos da camera em /status)")
+                log(
+                    "DELAY",
+                    f"sensor->foto {delay_ultimo['sensor_foto_ms']} ms "
+                    f"(comando->foto {delay_ultimo['comando_foto_ms']} ms; "
+                    f"tempos da camera em /status)",
+                )
         # a foto chegou: o pendente cumpriu o papel (nao pode ficar "aguardando" para sempre)
-        trigger_pendente = None
     gravar_captura(frame, meta_publicado)
 
 
@@ -247,12 +301,11 @@ def gravar_captura(frame: bytes, meta: dict[str, object]) -> None:
         stamp = time.strftime("%Y%m%d-%H%M%S")
         with lock:
             if (capturas_dir / f"{stamp}_trig{ref:04d}_evt{event:04d}.jpg").exists():
-                stamp = f"{stamp}_{int(time.time()*1000)%1000:03d}"
+                stamp = f"{stamp}_{int(time.time() * 1000) % 1000:03d}"
             nome = f"{stamp}_trig{ref:04d}_evt{event:04d}.jpg"
-            capturas_total += 1
-            capturas_bytes += len(frame)
         caminho = capturas_dir / nome
-        caminho.write_bytes(frame)                      # I/O fora do lock
+        temporario = None
+        publicado = False
         registro = {
             "arquivo": nome,
             "hora": time.strftime("%H:%M:%S"),
@@ -264,36 +317,57 @@ def gravar_captura(frame: bytes, meta: dict[str, object]) -> None:
             "crc32": meta.get("crc32"),
             "crosscheck": meta.get("crosscheck"),
         }
+        fd, temporario = tempfile.mkstemp(
+            prefix=f".{nome}.", suffix=".tmp", dir=capturas_dir
+        )
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(frame)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(temporario, caminho)
+        temporario = None
+        publicado = True
+        linha = (json.dumps(registro, ensure_ascii=False) + "\n").encode("utf-8")
+        with (capturas_dir / "indice.jsonl").open("ab") as fh:
+            fh.write(linha)
+            fh.flush()
+            os.fsync(fh.fileno())
         with lock:
+            capturas_total += 1
+            capturas_bytes += len(frame)
             captura_ultima = dict(registro)
             if "t_foto" in latencia_pendente and "t_gravado" not in latencia_pendente:
                 latencia_pendente["t_gravado"] = registro["gravado_em"]
                 delay_ultimo["foto_arquivo_ms"] = round(
-                    (registro["gravado_em"] - latencia_pendente["t_foto"]) * 1000)
+                    (registro["gravado_em"] - latencia_pendente["t_foto"]) * 1000
+                )
                 delay_ultimo["total_arquivo_ms"] = round(
-                    (registro["gravado_em"] - latencia_pendente["t_sensor"]) * 1000)
-        with (capturas_dir / "indice.jsonl").open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(registro, ensure_ascii=False) + "\n")   # I/O fora do lock
+                    (registro["gravado_em"] - latencia_pendente["t_sensor"]) * 1000
+                )
         log("CAPTURA", f"{nome} ({len(frame)} B) trigger n={ref} evento={event}")
         evento("arquivo", f"gravada {nome}", ext_ref=ref)
     except OSError as exc:
+        if temporario is not None:
+            Path(temporario).unlink(missing_ok=True)
+        if publicado:
+            caminho.unlink(missing_ok=True)
         log("CAPTURA", f"falha ao gravar: {exc}")
 
 
 def handle_text(data: bytes) -> None:
     """Linhas ASCII: logs e, no modo texto, o frame base64."""
-    global pending_header, frames_bad, booted, transport, serial_lines
+    global pending_header, booted, transport, serial_lines
     global baud_atual, baud_pendente, baud_troca_em, camera_estado, driver_estado
-    global pareamento, trigger_pendente
+    global pareamento
     text_buf.extend(data)
     while True:
         idx = text_buf.find(b"\n")
         if idx < 0:
-            if len(text_buf) > 8192:      # linha absurda: descarta
+            if len(text_buf) > 8192:  # linha absurda: descarta
                 text_buf.clear()
             return
         line = bytes(text_buf[:idx]).strip(b"\r")
-        del text_buf[:idx + 1]
+        del text_buf[: idx + 1]
         if not line:
             continue
         begin = BEGIN_RE.search(line)
@@ -318,22 +392,30 @@ def handle_text(data: bytes) -> None:
         serial_lines += 1
         info = INFO_RE.search(text)
         if info:
-            announced[int(info.group(2))] = (int(info.group(5)), int(info.group(6), 16),
-                                             int(info.group(3)))
+            announced[int(info.group(2))] = (
+                int(info.group(5)),
+                int(info.group(6), 16),
+                int(info.group(3)),
+            )
             ref_frame = int(info.group(3))
             if ref_frame:
                 with lock:
                     pareamento = {
-                        "status": "casa" if trigger_pendente == ref_frame else "divergente",
+                        "status": "casa"
+                        if trigger_pendente == ref_frame
+                        else "divergente",
                         "ext_ref": ref_frame,
                         "trigger_n": trigger_pendente,
                         "trigger_em": trigger_ultimo_em,
                         "frame_em": time.time(),
                     }
-                log("PONTE", f"photo ext_ref={ref_frame} casa com trigger "
-                             f"n={trigger_pendente} ({pareamento['status']})")
+                log(
+                    "PONTE",
+                    f"photo ext_ref={ref_frame} casa com trigger "
+                    f"n={trigger_pendente} ({pareamento['status']})",
+                )
             while len(announced) > ANUNCIOS_MAX:
-                announced.pop(next(iter(announced)))   # descarta o mais antigo
+                announced.pop(next(iter(announced)))  # descarta o mais antigo
         fim_bin = END_BIN_RE.search(text)
         if fim_bin:
             evento = int(fim_bin.group(1))
@@ -342,14 +424,23 @@ def handle_text(data: bytes) -> None:
                     latest_meta["tx_us"] = int(fim_bin.group(2))
                     latest_meta["total_us"] = int(fim_bin.group(3))
                     latest_meta["chunks_reportados"] = int(fim_bin.group(4))
-                    if delay_ultimo.get("evento") == evento and "t_foto" in latencia_pendente:
-                        delay_ultimo["camera_total_ms"] = round(int(fim_bin.group(3)) / 1000)
-                        delay_ultimo["camera_linha_ms"] = round(int(fim_bin.group(2)) / 1000)
+                    if (
+                        delay_ultimo.get("evento") == evento
+                        and "t_foto" in latencia_pendente
+                    ):
+                        delay_ultimo["camera_total_ms"] = round(
+                            int(fim_bin.group(3)) / 1000
+                        )
+                        delay_ultimo["camera_linha_ms"] = round(
+                            int(fim_bin.group(2)) / 1000
+                        )
                         if latencias:
-                            latencias[-1].update({
-                                "camera_total_ms": delay_ultimo["camera_total_ms"],
-                                "camera_linha_ms": delay_ultimo["camera_linha_ms"],
-                            })
+                            latencias[-1].update(
+                                {
+                                    "camera_total_ms": delay_ultimo["camera_total_ms"],
+                                    "camera_linha_ms": delay_ultimo["camera_linha_ms"],
+                                }
+                            )
         if "TASKS_READY" in text:
             booted = True
         # Em modo binario a linha do firmware chega colada a residuo binario
@@ -361,7 +452,9 @@ def handle_text(data: bytes) -> None:
                 # a camera reiniciou e voltou ao modo de boot: reaplica o escolhido
                 try:
                     command_queue.put_nowait(
-                        f"CMD_TRANSPORT {transport_desejado.upper()}".encode() + bytes([10]))
+                        f"CMD_TRANSPORT {transport_desejado.upper()}".encode()
+                        + bytes([10])
+                    )
                     log("ESP", f"transporte reaplicado: {transport_desejado}")
                 except Full:
                     pass
@@ -386,7 +479,7 @@ def handle_text(data: bytes) -> None:
         ack = BAUD_ACK_RE.search(text)
         if ack:
             baud_pendente = int(ack.group(2))
-            baud_troca_em = time.time() + 0.4      # deixa o ACK sair no baud antigo
+            baud_troca_em = time.time() + 0.4  # deixa o ACK sair no baud antigo
         ativo = BAUD_ATIVO_RE.search(text)
         if ativo:
             baud_atual = int(ativo.group(1))
@@ -395,15 +488,23 @@ def handle_text(data: bytes) -> None:
             log("ESP", text[:240])
 
 
-def publish_text_frame(header: re.Match[bytes], chunks: dict[int, bytes], end: re.Match[bytes]) -> None:
+def publish_text_frame(
+    header: re.Match[bytes], chunks: dict[int, bytes], end: re.Match[bytes]
+) -> None:
     global frames_bad
     try:
         expected_len = int(header.group(4))
         expected_crc = int(header.group(5), 16)
-        frame = base64.b64decode(b"".join(chunks[i] for i in sorted(chunks)), validate=True)
+        frame = base64.b64decode(
+            b"".join(chunks[i] for i in sorted(chunks)), validate=True
+        )
         actual_crc = binascii.crc32(frame) & 0xFFFFFFFF
-        if (len(frame) != expected_len or frame[:2] != b"\xff\xd8"
-                or frame[-2:] != b"\xff\xd9" or actual_crc != expected_crc):
+        if (
+            len(frame) != expected_len
+            or frame[:2] != b"\xff\xd8"
+            or frame[-2:] != b"\xff\xd9"
+            or actual_crc != expected_crc
+        ):
             raise ValueError("gate do frame texto falhou")
     except (ValueError, KeyError, binascii.Error) as exc:
         with lock:
@@ -412,33 +513,46 @@ def publish_text_frame(header: re.Match[bytes], chunks: dict[int, bytes], end: r
         return
     with lock:
         anuncio = announced.get(int(header.group(2)))
-        ref_texto = anuncio[2] if anuncio else ext_ref_por_evento.get(int(header.group(2)), 0)
-    publish(frame, int(header.group(2)), "text", {
-        "source": header.group(1).decode("ascii"),
-        "ext_ref": ref_texto,
-        "trigger_us": int(header.group(3)),
-        "warmup_us": int(header.group(7)),
-        "capture_us": int(header.group(8)),
-        "tx_us": int(end.group(2)),
-        "total_us": int(end.group(3)),
-    })
+        ref_texto = (
+            anuncio[2] if anuncio else ext_ref_por_evento.get(int(header.group(2)), 0)
+        )
+    publish(
+        frame,
+        int(header.group(2)),
+        "text",
+        {
+            "source": header.group(1).decode("ascii"),
+            "ext_ref": ref_texto,
+            "trigger_us": int(header.group(3)),
+            "warmup_us": int(header.group(7)),
+            "capture_us": int(header.group(8)),
+            "tx_us": int(end.group(2)),
+            "total_us": int(end.group(3)),
+        },
+    )
 
 
 def handle_message(msg) -> None:
     frame = assembler.feed(msg)
     if frame is None:
         return
-    mensagens = assembler.expect_seq + 2          # BEGIN + chunks + END
-    evento_frame = assembler.event_id             # evento do frame montado, nao o da mensagem
+    mensagens = assembler.expect_seq + 2  # BEGIN + chunks + END
+    evento_frame = assembler.event_id  # evento do frame montado, nao o da mensagem
     with lock:
         anuncio = announced.get(evento_frame)
         ext_ref = anuncio[2] if anuncio else ext_ref_por_evento.get(evento_frame, 0)
-    publish(frame, evento_frame, "bin", {
-        "source": "bin",
-        "ext_ref": ext_ref,
-        "chunks": assembler.expect_seq,
-        "bytes_enquadramento": 19 * mensagens,    # 15 B de cabecalho + 4 B de CRC por mensagem
-    })
+    publish(
+        frame,
+        evento_frame,
+        "bin",
+        {
+            "source": "bin",
+            "ext_ref": ext_ref,
+            "chunks": assembler.expect_seq,
+            "bytes_enquadramento": 19
+            * mensagens,  # 15 B de cabecalho + 4 B de CRC por mensagem
+        },
+    )
 
 
 def disparar_camera(ref: int) -> None:
@@ -464,7 +578,9 @@ def disparar_camera(ref: int) -> None:
         return
     trigger_pendente = ref
     log("PONTE", f"trigger n={ref} -> CMD_TRIG {ref} no no da camera")
-    evento("trigger", f"trigger n={ref} recebido, comando enviado a camera", ext_ref=ref)
+    evento(
+        "trigger", f"trigger n={ref} recebido, comando enviado a camera", ext_ref=ref
+    )
 
 
 def registrar_trigger(ref: int, em: float) -> None:
@@ -483,8 +599,8 @@ def registrar_trigger(ref: int, em: float) -> None:
 
 def trigger_reader(port_name: str, baud: int) -> None:
     """Dona unica da porta do no de trigger (MicroPython da PoC-01)."""
-    global trigger_aberta, trigger_erro, trigger_estado, trigger_ultimo_n
-    global trigger_ultimo_em, trigger_total, trigger_porta, sensor_nivel, sensor_em, pinos_vistos
+    global trigger_aberta, trigger_erro, trigger_estado
+    global trigger_porta, sensor_nivel, sensor_em, pinos_vistos
     global pino_sensor
     while True:
         try:
@@ -493,7 +609,7 @@ def trigger_reader(port_name: str, baud: int) -> None:
             port.baudrate = baud
             port.timeout = 0.2
             port.dtr = False
-            port.rts = False           # nao resetar a placa ao abrir
+            port.rts = False  # nao resetar a placa ao abrir
             port.open()
             with lock:
                 trigger_aberta = True
@@ -513,19 +629,27 @@ def trigger_reader(port_name: str, baud: int) -> None:
                             buf.clear()
                         break
                     linha = bytes(buf[:fim]).strip(b"\r")
-                    del buf[:fim + 1]
+                    del buf[: fim + 1]
                     if not linha:
                         continue
-                    texto = linha.translate(_SANITIZE).decode("ascii", "replace").strip()
+                    texto = (
+                        linha.translate(_SANITIZE).decode("ascii", "replace").strip()
+                    )
                     if not texto:
                         continue
                     with lock:
                         trigger_linhas.append(texto)
                     mudanca = PINO_CHANGE_RE.search(texto)
                     if mudanca:
-                        pino, agora, antes_p = mudanca.group(1), mudanca.group(2), mudanca.group(3)
-                        evento("pino", "pino p%s saiu de %s para %s (medicao de fiacao)"
-                               % (pino, antes_p, agora))
+                        pino, agora, antes_p = (
+                            mudanca.group(1),
+                            mudanca.group(2),
+                            mudanca.group(3),
+                        )
+                        evento(
+                            "pino",
+                            f"pino p{pino} saiu de {antes_p} para {agora} (medicao de fiacao)",
+                        )
                     pronto = EV_READY_PIN_RE.search(texto)
                     if pronto:
                         pino_sensor = int(pronto.group(1))
@@ -533,15 +657,22 @@ def trigger_reader(port_name: str, baud: int) -> None:
                     if ping:
                         sensor_nivel = int(ping.group(1))
                         sensor_em = time.time()
-                        pinos_vistos = {int(n): int(v) for n, v in PINOS_PING_RE.findall(texto)}
-                        outros = {p: v for p, v in pinos_vistos.items()
-                                  if v == 0 and p != pino_sensor}
+                        pinos_vistos = {
+                            int(n): int(v) for n, v in PINOS_PING_RE.findall(texto)
+                        }
+                        outros = {
+                            p: v
+                            for p, v in pinos_vistos.items()
+                            if v == 0 and p != pino_sensor
+                        }
                         if sensor_nivel == 1 and outros:
                             # o pino vem do EV READY do proprio firmware: trocar
                             # PRESENCE_PIN nao pode deixar esta dica mentindo
-                            log("DICA", "pino(s) em nivel de objeto %s mas o firmware le P%s "
-                                        "-- sensor pode estar em outro pino"
-                                        % (sorted(outros), pino_sensor))
+                            log(
+                                "DICA",
+                                f"pino(s) em nivel de objeto {sorted(outros)} mas o firmware le P{pino_sensor} "
+                                "-- sensor pode estar em outro pino",
+                            )
                     else:
                         log("TRIG", texto[:240])
                     aberto = EV_OPEN_RE.search(texto)
@@ -558,7 +689,7 @@ def trigger_reader(port_name: str, baud: int) -> None:
                     elif EV_WARMUP_RE.search(texto):
                         trigger_estado = "warmup"
                     elif EV_NEUTRO_RE.search(texto):
-                        pass          # evento de nivel/guarda nao muda o estado
+                        pass  # evento de nivel/guarda nao muda o estado
         except Exception as exc:
             with lock:
                 trigger_aberta = False
@@ -568,7 +699,7 @@ def trigger_reader(port_name: str, baud: int) -> None:
 
 
 def serial_reader(port_name: str) -> None:
-    global serial_bytes, serial_lines, serial_last_error, serial_open, booted
+    global serial_bytes, serial_last_error, serial_open, booted
     global serial_port, baud_atual, baud_pendente
     while True:
         try:
@@ -610,11 +741,11 @@ def serial_reader(port_name: str) -> None:
                     serial_bytes += len(chunk)
                 for kind, payload in decoder.feed_ex(chunk):
                     if kind == "text":
-                        handle_text(payload)          # type: ignore[arg-type]
+                        handle_text(payload)  # type: ignore[arg-type]
                     else:
                         handle_message(payload)
-        except Exception as exc:          # qualquer falha de parse nao pode
-            with lock:                     # matar a thread em silencio
+        except Exception as exc:  # qualquer falha de parse nao pode
+            with lock:  # matar a thread em silencio
                 serial_open = False
                 booted = False
                 serial_last_error = repr(exc)
@@ -639,9 +770,11 @@ def snapshot() -> dict[str, object]:
             "transport": transport,
             "camera": camera_estado,
             "driver": driver_estado,
-            "sensor": {"nivel": sensor_nivel, "idade_s": round(time.time() - sensor_em, 1)
-                                if sensor_em else None,
-                       "pinos": dict(sorted(pinos_vistos.items()))},
+            "sensor": {
+                "nivel": sensor_nivel,
+                "idade_s": round(time.time() - sensor_em, 1) if sensor_em else None,
+                "pinos": dict(sorted(pinos_vistos.items())),
+            },
             "trigger": {
                 "aberta": trigger_aberta,
                 "erro": trigger_erro,
@@ -658,12 +791,23 @@ def snapshot() -> dict[str, object]:
             "delay": {
                 "ultimo": dict(delay_ultimo),
                 "n": len(latencias),
-                "media_ms": round(sum(int(x["sensor_foto_ms"]) for x in latencias) / len(latencias))
-                            if latencias else None,
-                "min_ms": min((int(x["sensor_foto_ms"]) for x in latencias), default=None),
-                "max_ms": max((int(x["sensor_foto_ms"]) for x in latencias), default=None),
-                "media_camera_ms": round(sum(int(x.get("camera_total_ms") or 0) for x in latencias) / len(latencias))
-                                   if latencias else None,
+                "media_ms": round(
+                    sum(int(x["sensor_foto_ms"]) for x in latencias) / len(latencias)
+                )
+                if latencias
+                else None,
+                "min_ms": min(
+                    (int(x["sensor_foto_ms"]) for x in latencias), default=None
+                ),
+                "max_ms": max(
+                    (int(x["sensor_foto_ms"]) for x in latencias), default=None
+                ),
+                "media_camera_ms": round(
+                    sum(int(x.get("camera_total_ms") or 0) for x in latencias)
+                    / len(latencias)
+                )
+                if latencias
+                else None,
                 "serie_ativa": delay_serie_ativa,
             },
             "capturas": {
@@ -673,12 +817,20 @@ def snapshot() -> dict[str, object]:
                 "ultima": dict(captura_ultima),
             },
             "baud": baud_atual,
-            "decoder": {"aceitas": decoder.accepted, "descartados": decoder.discarded_bytes,
-                        "hdr_ruim": decoder.bad_header, "payload_ruim": decoder.bad_payload,
-                        "buffer": len(decoder.buffer)},
-            "assembler": {"frames": assembler.frames_ok, "lacunas": assembler.gaps,
-                          "duplicados": assembler.duplicates, "rejeitados": assembler.rejected,
-                          "ultimo_erro": assembler.last_error},
+            "decoder": {
+                "aceitas": decoder.accepted,
+                "descartados": decoder.discarded_bytes,
+                "hdr_ruim": decoder.bad_header,
+                "payload_ruim": decoder.bad_payload,
+                "buffer": len(decoder.buffer),
+            },
+            "assembler": {
+                "frames": assembler.frames_ok,
+                "lacunas": assembler.gaps,
+                "duplicados": assembler.duplicates,
+                "rejeitados": assembler.rejected,
+                "ultimo_erro": assembler.last_error,
+            },
             "crosscheck": dict(crosscheck),
             "uptime_s": round(time.time() - started_at, 1),
         }
@@ -960,14 +1112,27 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, frame, "image/jpeg")
             return
         if path == "/status":
-            self._send(200, json.dumps(snapshot(), ensure_ascii=False).encode("utf-8"),
-                       "application/json; charset=utf-8")
+            self._send(
+                200,
+                json.dumps(snapshot(), ensure_ascii=False).encode("utf-8"),
+                "application/json; charset=utf-8",
+            )
             return
         if path == "/health":
             snap = snapshot()
-            lines = [f"{k}={snap[k]}" for k in
-                     ("frames_ok", "frames_bad", "frames_text", "frames_bin",
-                      "serial_bytes", "serial_open", "booted", "transport")]
+            lines = [
+                f"{k}={snap[k]}"
+                for k in (
+                    "frames_ok",
+                    "frames_bad",
+                    "frames_text",
+                    "frames_bin",
+                    "serial_bytes",
+                    "serial_open",
+                    "booted",
+                    "transport",
+                )
+            ]
             # o caminho binario nao usa frames_bad: sem estes, um monitor de
             # /health via frames_bad=0 num enlace que esta perdendo frames
             for k in ("lacunas", "rejeitados", "duplicados"):
@@ -987,8 +1152,11 @@ class Handler(BaseHTTPRequestHandler):
                 return
             # 30 mais novos sem ordenar o diretorio inteiro: com centenas de
             # capturas a listagem antiga fazia O(n log n) + n syscalls por request
-            entradas = [e for e in os.scandir(capturas_dir)
-                        if e.name.endswith(".jpg") and e.is_file()]
+            entradas = [
+                e
+                for e in os.scandir(capturas_dir)
+                if e.name.endswith(".jpg") and e.is_file()
+            ]
             novos = heapq.nlargest(30, entradas, key=lambda e: e.stat().st_mtime)
             linhas = [f"{e.name}  {e.stat().st_size} B" for e in novos]
             corpo = "\n".join(linhas) or "nenhuma captura ainda"
@@ -997,7 +1165,11 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path.startswith("/capturas/"):
             nome = path.split("/", 2)[2]
-            if capturas_dir is None or not NOME_SEGURO.match(nome) or not nome.endswith(".jpg"):
+            if (
+                capturas_dir is None
+                or not NOME_SEGURO.match(nome)
+                or not nome.endswith(".jpg")
+            ):
                 self._text(400, "nome invalido\n")
                 return
             alvo = (capturas_dir / nome).resolve()
@@ -1048,12 +1220,18 @@ class Handler(BaseHTTPRequestHandler):
                     self._text(400, "transporte invalido (text|bin)\n")
                     return
                 transport_desejado = escolha
-            if name.startswith("CMD_BAUD ") and not re.fullmatch(r"CMD_BAUD \d{4,7}", name):
+            if name.startswith("CMD_BAUD ") and not re.fullmatch(
+                r"CMD_BAUD \d{4,7}", name
+            ):
                 self._text(400, "CMD_BAUD exige numero de 4 a 7 digitos\n")
                 return
         elif parsed.path == "/medir":
             consulta = parse_qs(parsed.query)
-            n = int((consulta.get("n") or ["5"])[0]) if (consulta.get("n") or ["5"])[0].isdigit() else 5
+            n = (
+                int((consulta.get("n") or ["5"])[0])
+                if (consulta.get("n") or ["5"])[0].isdigit()
+                else 5
+            )
             n = max(1, min(n, 10))
             threading.Thread(target=serie_medicao, args=(n,), daemon=True).start()
             self._text(202, f"serie de {n} disparos iniciada\n")
@@ -1132,7 +1310,10 @@ def serie_medicao(n: int) -> None:
             if latencias:
                 ultimos = list(latencias)[-n:]
                 media = sum(int(x["sensor_foto_ms"]) for x in ultimos) / len(ultimos)
-                log("DELAY", f"serie concluida: media {media:.0f} ms em {len(ultimos)} disparos")
+                log(
+                    "DELAY",
+                    f"serie concluida: media {media:.0f} ms em {len(ultimos)} disparos",
+                )
             else:
                 log("DELAY", "serie concluida sem amostras")
 
@@ -1160,31 +1341,45 @@ def main() -> None:
     ap.add_argument("--serial", default="/dev/ttyUSB0")
     ap.add_argument("--serial-trigger", default="/dev/ttyUSB1")
     ap.add_argument("--baud-trigger", type=int, default=TRIGGER_BAUD)
-    ap.add_argument("--capturas", default=str(Path.home() / "pnaat-capturas"),
-                    help="diretorio das fotos gravadas (vazio desliga a gravacao)")
-    ap.add_argument("--sem-trigger", action="store_true",
-                    help="roda so com o no da camera (sem a ponte do trigger)")
+    ap.add_argument(
+        "--capturas",
+        default=str(Path.home() / "pnaat-capturas"),
+        help="diretorio das fotos gravadas (vazio desliga a gravacao)",
+    )
+    ap.add_argument(
+        "--sem-trigger",
+        action="store_true",
+        help="roda so com o no da camera (sem a ponte do trigger)",
+    )
     ap.add_argument("--baud", type=int, default=SERIAL_BAUD)
-    ap.add_argument("--token", default="",
-                    help="exige ?token= ou X-Token nos POST destrutivos")
+    ap.add_argument(
+        "--token", default="", help="exige ?token= ou X-Token nos POST destrutivos"
+    )
     args = ap.parse_args()
     baud_atual = args.baud
     global capturas_dir, TOKEN
     capturas_dir = Path(args.capturas).expanduser() if args.capturas else None
     TOKEN = args.token
     if not TOKEN and args.host in ("0.0.0.0", ""):
-        print("AVISO: /capture /cmd /simular /baud aceitam POST de qualquer host da rede; "
-              "use --token para exigir X-Token")
+        print(
+            "AVISO: /capture /cmd /simular /baud aceitam POST de qualquer host da rede; "
+            "use --token para exigir X-Token"
+        )
 
     threading.Thread(target=serial_reader, args=(args.serial,), daemon=True).start()
     threading.Thread(target=poller_status, daemon=True).start()
     if not args.sem_trigger:
-        threading.Thread(target=trigger_reader,
-                         args=(args.serial_trigger, args.baud_trigger), daemon=True).start()
+        threading.Thread(
+            target=trigger_reader,
+            args=(args.serial_trigger, args.baud_trigger),
+            daemon=True,
+        ).start()
     server = ThreadingHTTPServer((args.host, args.porta), Handler)
-    print(f"ESP32CAM_SITE http://{args.host}:{args.porta}/ camera={args.serial}@{args.baud} "
-          f"trigger={'off' if args.sem_trigger else args.serial_trigger + '@' + str(args.baud_trigger)}",
-          flush=True)
+    print(
+        f"ESP32CAM_SITE http://{args.host}:{args.porta}/ camera={args.serial}@{args.baud} "
+        f"trigger={'off' if args.sem_trigger else args.serial_trigger + '@' + str(args.baud_trigger)}",
+        flush=True,
+    )
     server.serve_forever()
 
 

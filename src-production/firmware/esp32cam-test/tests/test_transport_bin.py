@@ -5,6 +5,7 @@ O oraculo e independente: usa zlib.crc32 e um parser proprio em vez das
 funcoes do modulo, de modo que um erro de implementacao nos dois lados nao
 passa despercebido.
 """
+
 from __future__ import annotations
 
 import os
@@ -16,10 +17,24 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from transport_bin import (  # noqa: E402
-    HDR_SIZE, MAX_PAYLOAD, PAYLOAD_CRC_SIZE, SOF1, SOF2, TYPE_BEGIN, TYPE_CHUNK,
-    TYPE_END, Decoder, FrameAssembler, Message, crc16, crc32, crc32_fast,
-    encode_begin, encode_chunk, encode_end, encode_message,
+from transport_bin import (
+    HDR_SIZE,
+    MAX_PAYLOAD,
+    PAYLOAD_CRC_SIZE,
+    SOF1,
+    SOF2,
+    TYPE_BEGIN,
+    TYPE_CHUNK,
+    TYPE_END,
+    Decoder,
+    FrameAssembler,
+    Message,
+    crc32,
+    crc32_fast,
+    encode_begin,
+    encode_chunk,
+    encode_end,
+    encode_message,
 )
 
 CHUNK = 1024
@@ -47,16 +62,20 @@ def oracle_parse(stream: bytes) -> list[tuple[int, int, int, bytes]]:
         if stream[i] != SOF1 or stream[i + 1] != SOF2:
             i += 1
             continue
-        core = stream[i + 2:i + 13]
-        version, mtype, flags, event, seq, length = struct.unpack_from("<BBBHIH", stream, i + 2)
+        version, mtype, _flags, event, seq, length = struct.unpack_from(
+            "<BBBHIH", stream, i + 2
+        )
         if version != 1 or length > MAX_PAYLOAD:
             i += 1
             continue
         end = i + HDR_SIZE + length + PAYLOAD_CRC_SIZE
         if end > len(stream):
             break
-        payload = stream[i + HDR_SIZE:i + HDR_SIZE + length]
-        if zlib.crc32(payload) & 0xFFFFFFFF != struct.unpack_from("<I", stream, i + HDR_SIZE + length)[0]:
+        payload = stream[i + HDR_SIZE : i + HDR_SIZE + length]
+        if (
+            zlib.crc32(payload) & 0xFFFFFFFF
+            != struct.unpack_from("<I", stream, i + HDR_SIZE + length)[0]
+        ):
             i += 1
             continue
         out.append((mtype, event, seq, payload))
@@ -74,14 +93,16 @@ def test_round_trip_against_oracle():
     jpeg = fake_jpeg()
     event = 42
     stream = encode_begin(event, len(jpeg), crc32(jpeg))
-    chunks = [jpeg[i:i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
+    chunks = [jpeg[i : i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
     for seq, chunk in enumerate(chunks):
         stream += encode_chunk(event, seq, chunk)
     stream += encode_end(event, crc32(jpeg))
 
     # oraculo independente ve as mesmas mensagens
     oracle = oracle_parse(stream)
-    assert [m[0] for m in oracle] == [TYPE_BEGIN] + [TYPE_CHUNK] * len(chunks) + [TYPE_END]
+    assert [m[0] for m in oracle] == [TYPE_BEGIN] + [TYPE_CHUNK] * len(chunks) + [
+        TYPE_END
+    ]
 
     # decoder incremental com fatias de tamanho irregular (fuzz de fronteira)
     rnd = random.Random(11)
@@ -91,7 +112,7 @@ def test_round_trip_against_oracle():
     pos = 0
     while pos < len(stream):
         step = rnd.randrange(1, 300)
-        for msg in dec.feed(stream[pos:pos + step]):
+        for msg in dec.feed(stream[pos : pos + step]):
             frame = asm.feed(msg)
             if frame is not None:
                 got = frame
@@ -104,11 +125,11 @@ def test_round_trip_against_oracle():
 def test_corrupted_payload_is_not_published():
     jpeg = fake_jpeg(4096)
     stream = encode_begin(1, len(jpeg), crc32(jpeg))
-    chunks = [jpeg[i:i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
+    chunks = [jpeg[i : i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
     for seq, chunk in enumerate(chunks):
         encoded = bytearray(encode_chunk(1, seq, chunk))
         if seq == 1:
-            encoded[HDR_SIZE + 10] ^= 0x40      # bit virado no payload do chunk 1
+            encoded[HDR_SIZE + 10] ^= 0x40  # bit virado no payload do chunk 1
         stream += bytes(encoded)
     stream += encode_end(1, crc32(jpeg))
 
@@ -123,7 +144,7 @@ def test_corrupted_header_resyncs_to_next_message():
     jpeg = fake_jpeg(2048)
     good = encode_chunk(7, 0, jpeg)
     broken = bytearray(good)
-    broken[4] ^= 0xFF                      # corrompe TYPE/FLAGS dentro do CRC16
+    broken[4] ^= 0xFF  # corrompe TYPE/FLAGS dentro do CRC16
     stream = bytes(broken) + good
     dec = Decoder()
     msgs = dec.feed(stream)
@@ -137,7 +158,7 @@ def test_ascii_logs_interleaved_do_not_break_framing():
     stream += b"I (1204) esp32cam_test: READY sensor=1 camera=0\r\n"
     stream += encode_begin(9, len(jpeg), crc32(jpeg))
     for seq, off in enumerate(range(0, len(jpeg), CHUNK)):
-        stream += encode_chunk(9, seq, jpeg[off:off + CHUNK])
+        stream += encode_chunk(9, seq, jpeg[off : off + CHUNK])
         stream += b"TRIGGER_ACCEPTED source=e18_d80nk event=9\r\n"
     stream += encode_end(9, crc32(jpeg))
     stream += b"CAMERA_OFF event=9 power_en=-1 deinit=0x0 ledc_stop=0x0\r\n"
@@ -155,7 +176,7 @@ def test_ascii_logs_interleaved_do_not_break_framing():
 def test_lost_chunk_blocks_frame():
     jpeg = fake_jpeg(4096)
     stream = encode_begin(3, len(jpeg), crc32(jpeg))
-    chunks = [jpeg[i:i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
+    chunks = [jpeg[i : i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
     for seq, chunk in enumerate(chunks):
         if seq == 1:
             continue
@@ -166,17 +187,19 @@ def test_lost_chunk_blocks_frame():
     frames = [asm.feed(m) for m in dec.feed(stream)]
     assert all(f is None for f in frames), "frame incompleto foi publicado"
     assert asm.gaps == 1 and asm.frames_ok == 0
-    assert any("lacuna" in e for e in asm.events), f"lacuna nao registrada: {asm.events}"
+    assert any("lacuna" in e for e in asm.events), (
+        f"lacuna nao registrada: {asm.events}"
+    )
 
 
 def test_duplicate_chunk_is_tolerated():
     jpeg = fake_jpeg(3000)
     stream = encode_begin(5, len(jpeg), crc32(jpeg))
-    chunks = [jpeg[i:i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
+    chunks = [jpeg[i : i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
     for seq, chunk in enumerate(chunks):
         stream += encode_chunk(5, seq, chunk)
         if seq == 0:
-            stream += encode_chunk(5, seq, chunk)   # reenvio duplicado
+            stream += encode_chunk(5, seq, chunk)  # reenvio duplicado
     stream += encode_end(5, crc32(jpeg))
 
     dec, asm = Decoder(), FrameAssembler()
@@ -191,7 +214,11 @@ def test_duplicate_chunk_is_tolerated():
 
 def test_truncated_header_then_valid_stream():
     jpeg = fake_jpeg(1500)
-    valid = encode_begin(2, len(jpeg), crc32(jpeg)) + encode_chunk(2, 0, jpeg) + encode_end(2, crc32(jpeg))
+    valid = (
+        encode_begin(2, len(jpeg), crc32(jpeg))
+        + encode_chunk(2, 0, jpeg)
+        + encode_end(2, crc32(jpeg))
+    )
     partial = valid[:9]
     dec, asm = Decoder(), FrameAssembler()
     got = None
@@ -204,7 +231,11 @@ def test_truncated_header_then_valid_stream():
 
 def test_jpeg_marker_gate():
     body = b"\x00" * 512
-    stream = encode_begin(4, len(body), crc32(body)) + encode_chunk(4, 0, body) + encode_end(4, crc32(body))
+    stream = (
+        encode_begin(4, len(body), crc32(body))
+        + encode_chunk(4, 0, body)
+        + encode_end(4, crc32(body))
+    )
     dec, asm = Decoder(), FrameAssembler()
     frames = [asm.feed(m) for m in dec.feed(stream)]
     assert all(f is None for f in frames)
@@ -213,7 +244,11 @@ def test_jpeg_marker_gate():
 
 def test_total_len_mismatch_rejected():
     jpeg = fake_jpeg(800)
-    stream = encode_begin(6, len(jpeg) + 10, crc32(jpeg)) + encode_chunk(6, 0, jpeg) + encode_end(6, crc32(jpeg))
+    stream = (
+        encode_begin(6, len(jpeg) + 10, crc32(jpeg))
+        + encode_chunk(6, 0, jpeg)
+        + encode_end(6, crc32(jpeg))
+    )
     dec, asm = Decoder(), FrameAssembler()
     frames = [asm.feed(m) for m in dec.feed(stream)]
     assert all(f is None for f in frames)
@@ -223,22 +258,24 @@ def test_total_len_mismatch_rejected():
 def test_wire_cost_improves_over_text_baseline():
     """Compara com o baseline medido no fio: 33.690 B para um JPEG de 16.155 B."""
     jpeg = fake_jpeg(16155)
-    chunks = [jpeg[i:i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
+    chunks = [jpeg[i : i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
     wire = len(encode_begin(1, len(jpeg), crc32(jpeg)))
     wire += sum(len(encode_chunk(1, s, c)) for s, c in enumerate(chunks))
     wire += len(encode_end(1, crc32(jpeg)))
     baseline = 33690
     fator = wire / len(jpeg)
     ganho = (1 - wire / baseline) * 100
-    print(f"binario: {wire} B para {len(jpeg)} B de JPEG ({fator:.2f}x), "
-          f"texto medido: {baseline} B ({baseline / len(jpeg):.2f}x), ganho {ganho:.0f}%")
+    print(
+        f"binario: {wire} B para {len(jpeg)} B de JPEG ({fator:.2f}x), "
+        f"texto medido: {baseline} B ({baseline / len(jpeg):.2f}x), ganho {ganho:.0f}%"
+    )
     assert fator < 1.05, f"sobrecarga binaria alta: {fator:.3f}x"
     assert ganho > 45, f"ganho insuficiente: {ganho:.0f}%"
 
 
 def test_feed_ex_separates_channels_in_order():
     jpeg = fake_jpeg(3000)
-    chunks = [jpeg[i:i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
+    chunks = [jpeg[i : i + CHUNK] for i in range(0, len(jpeg), CHUNK)]
     log_a = b"READY sensor=1 camera=0 mode=irq_on_demand\r\n"
     log_b = b"TRIGGER_ACCEPTED source=e18_d80nk event=9\r\n"
     log_c = b"CAMERA_OFF event=9 power_en=-1 deinit=0x0 ledc_stop=0x0\r\n"
@@ -271,7 +308,7 @@ def test_eventos_do_montador_tem_limite():
     """Vazamento lento: processo longo nao pode acumular eventos sem limite."""
     asm = FrameAssembler()
     for _ in range(200):
-        asm.feed(Message(TYPE_CHUNK, 1, 0, b"x"))     # CHUNK sem BEGIN: rejeitado
+        asm.feed(Message(TYPE_CHUNK, 1, 0, b"x"))  # CHUNK sem BEGIN: rejeitado
     assert asm.rejected >= 200
     assert len(asm.events) <= 50, f"eventos acumulados: {len(asm.events)}"
 
@@ -279,9 +316,36 @@ def test_eventos_do_montador_tem_limite():
 def test_payload_limit_enforced():
     try:
         encode_message(TYPE_CHUNK, 1, 0, b"x" * (MAX_PAYLOAD + 1))
-    except AssertionError:
+    except ValueError:
         return
     raise AssertionError("payload acima do limite foi aceito")
+
+
+def test_end_exige_evento_sequencia_payload_e_crc_consistentes():
+    jpeg = fake_jpeg(300)
+    asm = FrameAssembler()
+    asm.feed(Message(TYPE_BEGIN, 7, 0, struct.pack("<IIq", len(jpeg), crc32(jpeg), 0)))
+    asm.feed(Message(TYPE_CHUNK, 7, 0, jpeg))
+    assert asm.feed(Message(TYPE_END, 7, 1, struct.pack("<I", crc32(jpeg)))) is None
+    assert asm.rejected == 1
+
+    asm.feed(Message(TYPE_BEGIN, 7, 0, struct.pack("<IIq", len(jpeg), crc32(jpeg), 0)))
+    asm.feed(Message(TYPE_CHUNK, 7, 0, jpeg))
+    assert asm.feed(Message(TYPE_END, 7, 0, b"")) is None
+    assert asm.rejected == 2
+
+    asm.feed(Message(TYPE_BEGIN, 7, 0, struct.pack("<IIq", len(jpeg), crc32(jpeg), 0)))
+    asm.feed(Message(TYPE_CHUNK, 7, 0, jpeg))
+    assert asm.feed(Message(TYPE_END, 7, 0, struct.pack("<I", crc32(jpeg) ^ 1))) is None
+    assert asm.rejected == 3
+
+
+def test_chunk_nao_pode_exceder_total_len():
+    asm = FrameAssembler()
+    asm.feed(Message(TYPE_BEGIN, 9, 0, struct.pack("<IIq", 1, crc32(b"x"), 0)))
+    assert asm.feed(Message(TYPE_CHUNK, 9, 0, b"xx")) is None
+    assert asm.rejected == 1
+    assert asm.frame is None
 
 
 if __name__ == "__main__":

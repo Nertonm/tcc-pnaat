@@ -11,7 +11,15 @@ Este diretório contém a proposta de interface (draft) para o site local de aco
 
 ## Como Visualizar
 
-Basta abrir o arquivo `index.html` em qualquer navegador moderno. Nenhuma instalação ou servidor web é estritamente necessário para esta versão de demonstração.
+O site é servido pela API local (`src-production/api.py`), na mesma origem: o adaptador
+(`js/api.js`) busca `/api/...` por caminho relativo e não existe dado embutido para preencher a tela.
+
+```sh
+python3 api.py --db hub.db --site src-production/site
+```
+
+Abrir o `index.html` direto do disco (`file://`) NÃO funciona: sem servidor não há `/api`, e a tela
+mostra o aviso de API indisponível — de propósito, porque número inventado já foi defeito aqui.
 
 ## Cores e Design (Conforme Requisito)
 
@@ -29,7 +37,7 @@ Como este é um novo módulo do projeto, você deve realizar as seguintes açõe
 
 1. **Criar uma Branch ou Pull Request**:
    - Crie uma branch para essa feature: `git checkout -b feature/dashboard-local`
-   - Faça o commit dos arquivos: `git add site/` e `git commit -m "feat: adiciona draft do site de visualização (HTML/CSS/JS)"`
+   - Faça o commit dos arquivos: `git add src-production/site/` e `git commit -m "feat: adiciona draft do site de visualização (HTML/CSS/JS)"`
    - Faça o push e abra um Pull Request (PR) para revisão, permitindo que outros membros do TCC validem o layout.
 
 2. **Abrir Issues para as Definições Pendentes (TBD)**:
@@ -42,4 +50,4 @@ Como este é um novo módulo do projeto, você deve realizar as seguintes açõe
    - Adicione os placeholders de requisitos (SITE-01 a SITE-10) como cards no GitHub Projects/Kanban do grupo, movendo do status "Draft" para "Em Desenvolvimento" conforme a API de comunicação for definida.
 
 4. **GitHub Pages (Opcional)**:
-   - Se quiserem mostrar o mockup para professores sem precisar rodar localmente, podem habilitar o **GitHub Pages** na pasta `/site` da branch principal, permitindo o acesso via um link público do próprio GitHub.
+   - Se quiserem mostrar o mockup para professores sem precisar rodar localmente, podem habilitar o **GitHub Pages** na pasta `/src-production/site` da branch principal, permitindo o acesso via um link público do próprio GitHub.

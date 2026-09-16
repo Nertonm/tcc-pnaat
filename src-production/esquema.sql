@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS inspecao_vista (
 
 -- Eventos de gatilho (RF-01.1). Existe separado do item porque o disparo que NAO virou item e
 -- justamente o que precisa ser registrado: falso disparo e duplicata sao observaveis aqui, e a
--- perda de deteccao (item passou sem gatilho) NAO e — ela exige referencia externa (encoder).
+-- perda de deteccao (item passou sem gatilho) NAO e, ela exige referencia externa (encoder).
 CREATE TABLE IF NOT EXISTS evento_gatilho (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   timestamp TEXT NOT NULL,
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS descritor_geometrico (
 --
 -- Por que a MESMA medicao aparece em mais de uma linha: a medicao geometrica e da VISTA (um recorte),
 -- e cada vista tem uma linha de inspecao por dominio. Se a mesma medida sustenta a decisao da tampa
--- e a do corpo, ela aparece nas duas linhas — isso e o rastro de duas decisoes, nao duplicacao de
+-- e a do corpo, ela aparece nas duas linhas; isso e o rastro de duas decisoes, nao duplicacao de
 -- dado. O calculo, esse sim, e feito uma unica vez por vista (orquestracao).
 CREATE TABLE IF NOT EXISTS evidencia (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

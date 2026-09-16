@@ -1,24 +1,25 @@
 """Identidade do item: formato e geracao do `item_id` (DAT-01, RF-06, RF-01.2).
 
 Decisao implementada (revisao de 2026-09-12): `item_id` = `lote-sequencia`, com a sequencia
-monotonica **por lote** e o timestamp do trigger como atributo — nao dentro da chave. O motivo de
+monotonica **por lote** e o timestamp do trigger como atributo; nao dentro da chave. O motivo de
 nao embutir data/hora no id: o schema ja guarda `timestamp_trigger` e a tendencia por hora consulta
 ele; duplicar a data na chave quebraria ordenacao e ocuparia espaco sem ganho.
 
 A sequencia NAO vive em memoria: ela e derivada do que ja esta gravado (`MAX(sequencia)` do lote).
-Assim um reboot nao reinicia o contador — e reiniciar em 1 faria dois itens distintos receberem o
+Assim um reboot nao reinicia o contador; e reiniciar em 1 faria dois itens distintos receberem o
 mesmo `item_id`, o que o criterio de reprovacao do RF-01.2 proibe explicitamente.
 
 Contrato de uso (fail-closed): `proxima()` exige transacao aberta; `reservar()` abre a transacao,
 cede o id e so confirma no fim do bloco com sucesso. Reservar e gravar tem de ser a mesma transacao,
 senao dois escritores podem escolher o mesmo numero.
 """
+
 from __future__ import annotations
 
 import re
 import sqlite3
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 #: formato canonico: <lote>-<sequencia de 6 digitos>
 FORMATO = "{lote}-{sequencia:06d}"
@@ -31,7 +32,9 @@ class ErroDeIdentidade(Exception):
 
 def validar_lote(lote: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9_]{1,32}", lote or ""):
-        raise ErroDeIdentidade(f"lote invalido: {lote!r} (use letras, digitos e _ ate 32)")
+        raise ErroDeIdentidade(
+            f"lote invalido: {lote!r} (use letras, digitos e _ ate 32)"
+        )
     return lote
 
 
@@ -56,12 +59,13 @@ class SequenciaDeItens:
         self._cx = conexao
 
     def proxima(self, lote: str) -> str:
-        """Proximo id do lote. Exige transacao aberta — reserva e gravacao sao a mesma unidade."""
+        """Proximo id do lote. Exige transacao aberta; reserva e gravacao sao a mesma unidade."""
         validar_lote(lote)
         if not self._cx.in_transaction:
             raise ErroDeIdentidade(
                 "proxima() exige transacao aberta (use reservar() ou BEGIN IMMEDIATE): reservar o "
-                "numero fora da transacao que grava o item permite dois itens com o mesmo item_id")
+                "numero fora da transacao que grava o item permite dois itens com o mesmo item_id"
+            )
         return self._proximo_do_lote(lote)
 
     @contextmanager
@@ -81,11 +85,12 @@ class SequenciaDeItens:
     def _proximo_do_lote(self, lote: str) -> str:
         vistas: list[int] = []
         for (item_id,) in self._cx.execute(
-                "SELECT item_id FROM item WHERE item_id LIKE ?", (f"{lote}-%",)):
+            "SELECT item_id FROM item WHERE item_id LIKE ?", (f"{lote}-%",)
+        ):
             try:
                 lote_lido, sequencia = decompor(item_id)
             except ErroDeIdentidade:
-                continue                      # id fora do formato nao conta para a sequencia
+                continue  # id fora do formato nao conta para a sequencia
             if lote_lido == lote:
                 vistas.append(sequencia)
         return montar(lote, (max(vistas) + 1) if vistas else 1)

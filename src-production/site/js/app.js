@@ -1,3 +1,9 @@
+const escHtml = (typeof window !== 'undefined' && typeof window.PNAAT_ESCAPE === 'function')
+    ? window.PNAAT_ESCAPE
+    : valor => String(valor === null || valor === undefined ? '' : valor)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
 class App {
     constructor() {
         this.contentArea =
@@ -562,6 +568,10 @@ class App {
                 card.dataset.id
                     ?.toLowerCase() || '';
 
+            const lote =
+                card.dataset.lote
+                    ?.toLowerCase() || '';
+
 
             const cardView =
                 card.dataset.view;
@@ -577,7 +587,8 @@ class App {
             const matchSearch =
                 !search ||
                 item.includes(search) ||
-                id.includes(search);
+                id.includes(search) ||
+                lote.includes(search);
 
 
             /*
@@ -944,7 +955,7 @@ class App {
         try {
             const resposta = await fetch(`${window.PNAAT_API.base}${rota}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: (typeof window.PNAAT_HEADERS === 'function' ? window.PNAAT_HEADERS : (h => h))({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify(corpo || {}),
                 // teto de tempo: sem ele o botao fica em "enviando..." para sempre se o hub travar
                 signal: AbortSignal.timeout(60000)
@@ -953,7 +964,8 @@ class App {
 
             mockDebug.acao = {
                 rotulo: rotulo,
-                estado: (resposta.ok && texto.ok) ? 'ok' : 'falhou',
+                estado: (resposta.ok && typeof window.PNAAT_OPERATION_OK === 'function'
+                    && window.PNAAT_OPERATION_OK(texto)) ? 'ok' : 'falhou',
                 erro: texto.erro || null,
                 detalhe: texto.detalhe || null,
                 dados: texto.dados || null
@@ -1094,7 +1106,7 @@ class App {
         try {
             const resposta = await fetch(`${window.PNAAT_API.base}/api/correcao`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: (typeof window.PNAAT_HEADERS === 'function' ? window.PNAAT_HEADERS : (h => h))({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ item_id: item, decisao_corrigida: decisao,
                                        corrigido_por: operador })
             });
@@ -1299,7 +1311,7 @@ class App {
                                             font-bold
                                         "
                                     >
-                                        ${notification.title}
+                                        ${escHtml(notification.title)}
                                     </span>
 
                                     <span
@@ -1316,7 +1328,7 @@ class App {
                                             dark:text-gray-400
                                         "
                                     >
-                                        ${notification.message}
+                                        ${escHtml(notification.message)}
                                     </span>
 
                                     <span
@@ -1331,7 +1343,7 @@ class App {
                                             text-gray-400
                                         "
                                     >
-                                        ${notification.time}
+                                        ${escHtml(notification.time)}
                                     </span>
 
                                 </span>

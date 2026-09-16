@@ -2,12 +2,13 @@
 
 Por que este modulo existe separado do `painel`: o painel responde indicador (taxa, latencia,
 discordancia) e cada numero dele tem teste celula a celula. Estas consultas respondem outra
-pergunta — "o que passou por esta vista" e "mostre este item" — com paging e filtro. Misturar as
+pergunta; "o que passou por esta vista" e "mostre este item"; com paging e filtro. Misturar as
 duas coisas faria o modulo de indicador carregar SQL de tela.
 
 Contrato: dataclasses congeladas, nenhum `dict` cru na fronteira; a API serializa o dataclass e nao
-reinventa campo. `caminho_evidencia` sai como o caminho gravado no banco — quem monta URL e a API.
+reinventa campo. `caminho_evidencia` sai como o caminho gravado no banco; quem monta URL e a API.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -100,22 +101,43 @@ _SELECT_VISTA = (
 
 def _linha(r) -> CapturaResumida:
     return CapturaResumida(
-        id=r["id"], item_id=r["item_id"], vista=r["vista"], dominio=r["dominio"], papel=r["papel"],
-        status_vista=r["status_vista"], codigo_defeito=r["codigo_defeito"], confianca=r["confianca"],
-        latencia_ms=r["latencia_ms"], caminho_evidencia=r["caminho_evidencia"],
-        timestamp_captura=r["timestamp_captura"], status_final=r["status_final"], lote_id=r["lote_id"],
-        qualidade_registro=r["qualidade_registro"], motivo_inconclusivo=r["motivo_inconclusivo"],
-        timestamp_trigger=r["timestamp_trigger"], discordancia_lateral=r["discordancia_lateral"])
+        id=r["id"],
+        item_id=r["item_id"],
+        vista=r["vista"],
+        dominio=r["dominio"],
+        papel=r["papel"],
+        status_vista=r["status_vista"],
+        codigo_defeito=r["codigo_defeito"],
+        confianca=r["confianca"],
+        latencia_ms=r["latencia_ms"],
+        caminho_evidencia=r["caminho_evidencia"],
+        timestamp_captura=r["timestamp_captura"],
+        status_final=r["status_final"],
+        lote_id=r["lote_id"],
+        qualidade_registro=r["qualidade_registro"],
+        motivo_inconclusivo=r["motivo_inconclusivo"],
+        timestamp_trigger=r["timestamp_trigger"],
+        discordancia_lateral=r["discordancia_lateral"],
+    )
 
 
-def capturas_recentes(painel: Painel, limite: int = 100, vista: str | None = None,
-                      estado: str | None = None) -> tuple[CapturaResumida, ...]:
+def capturas_recentes(
+    painel: Painel,
+    limite: int = 100,
+    vista: str | None = None,
+    estado: str | None = None,
+) -> tuple[CapturaResumida, ...]:
     """Mais recente primeiro. `estado` filtra pelo ITEM (`status_final`), `vista` pela linha."""
     if limite < 1:
         raise ValueError("limite deve ser >= 1")
     if vista is not None and vista not in ("topo", "lateral1", "lateral2"):
         raise ValueError(f"vista fora do vocabulario: {vista!r}")
-    if estado is not None and estado not in ("ok", "defeito", "inconclusivo", "erro_processamento"):
+    if estado is not None and estado not in (
+        "ok",
+        "defeito",
+        "inconclusivo",
+        "erro_processamento",
+    ):
         raise ValueError(f"estado fora do vocabulario: {estado!r}")
     sql = _SELECT_VISTA + " WHERE 1=1"
     par: list = []
@@ -132,7 +154,9 @@ def capturas_recentes(painel: Painel, limite: int = 100, vista: str | None = Non
 
 def total_de_capturas(painel: Painel) -> int:
     """Base do recorte: sem ela, lista vazia e indistinguivel de filtro que zerou tudo."""
-    return int(painel.conexao.execute("SELECT COUNT(*) FROM inspecao_vista").fetchone()[0])
+    return int(
+        painel.conexao.execute("SELECT COUNT(*) FROM inspecao_vista").fetchone()[0]
+    )
 
 
 def itens_de_serie(painel: Painel, limite: int = 20) -> tuple[dict, ...]:
@@ -146,24 +170,34 @@ def itens_de_serie(painel: Painel, limite: int = 20) -> tuple[dict, ...]:
         " v.vista, v.dominio, v.status_vista, v.caminho_evidencia"
         " FROM item i JOIN inspecao_vista v ON v.item_id = i.item_id"
         " WHERE v.caminho_evidencia LIKE '%/series/%'"
-        " ORDER BY i.timestamp_trigger DESC, i.item_id DESC LIMIT ?", (limite * 6,)).fetchall()
+        " ORDER BY i.timestamp_trigger DESC, i.item_id DESC LIMIT ?",
+        (limite * 6,),
+    ).fetchall()
 
     itens: dict[str, dict] = {}
     for linha in linhas:
-        item = itens.setdefault(linha["item_id"], {
-            "item_id": linha["item_id"], "timestamp_trigger": linha["timestamp_trigger"],
-            "status_final": linha["status_final"], "qualidade_registro": linha["qualidade_registro"],
-            "fotos": [],
-        })
+        item = itens.setdefault(
+            linha["item_id"],
+            {
+                "item_id": linha["item_id"],
+                "timestamp_trigger": linha["timestamp_trigger"],
+                "status_final": linha["status_final"],
+                "qualidade_registro": linha["qualidade_registro"],
+                "fotos": [],
+            },
+        )
         vistas_ja = {f["vista"] for f in item["fotos"]}
         if linha["caminho_evidencia"] and linha["vista"] not in vistas_ja:
             # a tabela tem uma linha por (vista, dominio): a FOTO e por vista, entao nao se repete
-            item["fotos"].append({
-                "vista": linha["vista"], "dominio": linha["dominio"],
-                "status_vista": linha["status_vista"],
-                "arquivo": Path(linha["caminho_evidencia"]).name,
-                "url": f"/api/evidencia?item={linha['item_id']}&vista={linha['vista']}",
-            })
+            item["fotos"].append(
+                {
+                    "vista": linha["vista"],
+                    "dominio": linha["dominio"],
+                    "status_vista": linha["status_vista"],
+                    "arquivo": Path(linha["caminho_evidencia"]).name,
+                    "url": f"/api/evidencia?item={linha['item_id']}&vista={linha['vista']}",
+                }
+            )
         if len(itens) >= limite:
             break
     return tuple(itens.values())
@@ -172,19 +206,32 @@ def itens_de_serie(painel: Painel, limite: int = 20) -> tuple[dict, ...]:
 def gatilhos_recentes(painel: Painel, limite: int = 50) -> tuple[dict, ...]:
     """Ultimos eventos de gatilho, mais recente primeiro.
 
-    O registro guarda o disparo que NAO virou item (falso, duplicado, invalido) — e o unico jeito de
+    O registro guarda o disparo que NAO virou item (falso, duplicado, invalido); e o unico jeito de
     isso ser observavel. `teste` marca o ensaio de bancada (motivo), para nao se confundir com o
     disparo do sensor em producao.
     """
     linhas = painel.conexao.execute(
         "SELECT id, timestamp, ponto_id, fonte, estado, item_id, motivo, debounce_ms"
-        " FROM evento_gatilho ORDER BY id DESC LIMIT ?", (limite,)).fetchall()
-    return tuple({
-        "id": linha["id"], "timestamp": linha["timestamp"], "ponto_id": linha["ponto_id"],
-        "fonte": linha["fonte"], "estado": linha["estado"], "item_id": linha["item_id"],
-        "motivo": linha["motivo"], "debounce_ms": linha["debounce_ms"],
-        "teste": bool(linha["motivo"] and ("bancada" in linha["motivo"] or "debug" in linha["motivo"])),
-    } for linha in linhas)
+        " FROM evento_gatilho ORDER BY id DESC LIMIT ?",
+        (limite,),
+    ).fetchall()
+    return tuple(
+        {
+            "id": linha["id"],
+            "timestamp": linha["timestamp"],
+            "ponto_id": linha["ponto_id"],
+            "fonte": linha["fonte"],
+            "estado": linha["estado"],
+            "item_id": linha["item_id"],
+            "motivo": linha["motivo"],
+            "debounce_ms": linha["debounce_ms"],
+            "teste": bool(
+                linha["motivo"]
+                and ("bancada" in linha["motivo"] or "debug" in linha["motivo"])
+            ),
+        }
+        for linha in linhas
+    )
 
 
 def item_detalhe(painel: Painel, item_id: str) -> ItemDetalhe | None:
@@ -192,43 +239,75 @@ def item_detalhe(painel: Painel, item_id: str) -> ItemDetalhe | None:
     r = painel.conexao.execute(
         "SELECT item_id, lote_id, timestamp_trigger, status_final, status_tampa, status_corpo,"
         " qualidade_registro, motivo_inconclusivo, discordancia_lateral, equipamento, localizacao,"
-        " fonte_trigger, velocidade_rig_mm_s FROM item WHERE item_id = ?", (item_id,)).fetchone()
+        " fonte_trigger, velocidade_rig_mm_s FROM item WHERE item_id = ?",
+        (item_id,),
+    ).fetchone()
     if r is None:
         return None
-    vistas = tuple(_linha(x) for x in painel.conexao.execute(
-        _SELECT_VISTA + " WHERE v.item_id = ? ORDER BY v.vista", (item_id,)))
+    vistas = tuple(
+        _linha(x)
+        for x in painel.conexao.execute(
+            _SELECT_VISTA + " WHERE v.item_id = ? ORDER BY v.vista", (item_id,)
+        )
+    )
     evidencias = tuple(
-        EvidenciaDoItem(grandeza=e["grandeza"], valor=e["valor"], unidade=e["unidade"],
-                        origem=e["origem"], papel=e["papel"], metodo=e["metodo"], fonte=e["fonte"])
+        EvidenciaDoItem(
+            grandeza=e["grandeza"],
+            valor=e["valor"],
+            unidade=e["unidade"],
+            origem=e["origem"],
+            papel=e["papel"],
+            metodo=e["metodo"],
+            fonte=e["fonte"],
+        )
         for e in painel.conexao.execute(
             "SELECT e.grandeza, e.valor, e.unidade, e.origem, e.papel, e.metodo, e.fonte"
             " FROM evidencia e JOIN inspecao_vista v ON v.id = e.inspecao_vista_id"
-            " WHERE v.item_id = ? ORDER BY e.id", (item_id,)))
+            " WHERE v.item_id = ? ORDER BY e.id",
+            (item_id,),
+        )
+    )
     # consulta filtrada (nao a tabela inteira em Python): o detalhe de um item nao cresce com o
     # historico do hub. O indice `idx_correcao_item` sustenta o WHERE.
     correcoes = painel.correcoes_do_item(item_id)
     vigente = correcoes[-1] if correcoes else None
     return ItemDetalhe(
-        item_id=r["item_id"], lote_id=r["lote_id"], timestamp_trigger=r["timestamp_trigger"],
-        status_final=r["status_final"], status_tampa=r["status_tampa"], status_corpo=r["status_corpo"],
-        qualidade_registro=r["qualidade_registro"], motivo_inconclusivo=r["motivo_inconclusivo"],
-        decisao_efetiva=str(vigente.decisao_corrigida) if vigente else r["status_final"],
-        correcao_vigente=(None if vigente is None else {
-            "decisao_original": vigente.decisao_original,
-            "decisao_corrigida": vigente.decisao_corrigida,
-            "corrigido_por": vigente.corrigido_por,
-            "timestamp": vigente.timestamp,
-        }),
-        discordancia_lateral=r["discordancia_lateral"], equipamento=r["equipamento"],
-        localizacao=r["localizacao"], fonte_trigger=r["fonte_trigger"],
-        velocidade_rig_mm_s=r["velocidade_rig_mm_s"], vistas=vistas, evidencias=evidencias,
-        correcoes=correcoes)
+        item_id=r["item_id"],
+        lote_id=r["lote_id"],
+        timestamp_trigger=r["timestamp_trigger"],
+        status_final=r["status_final"],
+        status_tampa=r["status_tampa"],
+        status_corpo=r["status_corpo"],
+        qualidade_registro=r["qualidade_registro"],
+        motivo_inconclusivo=r["motivo_inconclusivo"],
+        decisao_efetiva=str(vigente.decisao_corrigida)
+        if vigente
+        else r["status_final"],
+        correcao_vigente=(
+            None
+            if vigente is None
+            else {
+                "decisao_original": vigente.decisao_original,
+                "decisao_corrigida": vigente.decisao_corrigida,
+                "corrigido_por": vigente.corrigido_por,
+                "timestamp": vigente.timestamp,
+            }
+        ),
+        discordancia_lateral=r["discordancia_lateral"],
+        equipamento=r["equipamento"],
+        localizacao=r["localizacao"],
+        fonte_trigger=r["fonte_trigger"],
+        velocidade_rig_mm_s=r["velocidade_rig_mm_s"],
+        vistas=vistas,
+        evidencias=evidencias,
+        correcoes=correcoes,
+    )
 
 
 def lotes_resumo(painel: Painel) -> tuple[LoteResumo, ...]:
     """Lote com contagem por estado.
 
-    A taxa e `defeitos / itens` — o inconclusivo tem coluna propria mas ENTRA no denominador (o item
+    A taxa e `defeitos / itens`; o inconclusivo tem coluna propria mas ENTRA no denominador (o item
     foi inspecionado; o que ele nao fez foi decidir). Lote sem item devolve `taxa_defeito=None`, e nao
     0.0: zero se leria como "nenhum defeito medido" quando nao houve medida.
     """
@@ -238,17 +317,27 @@ def lotes_resumo(painel: Painel) -> tuple[LoteResumo, ...]:
         " SUM(i.status_final = 'defeito') AS defeitos,"
         " SUM(i.status_final = 'inconclusivo') AS inconclusivos"
         " FROM item i LEFT JOIN lote l ON l.lote_id = i.lote_id"
-        " GROUP BY l.lote_id, l.data_inicio ORDER BY l.data_inicio, lote_id").fetchall()
-    return tuple(LoteResumo(lote_id=r["lote_id"], data_inicio=r["data_inicio"], itens=r["itens"],
-                            ok=r["ok"] or 0, defeitos=r["defeitos"] or 0,
-                            inconclusivos=r["inconclusivos"] or 0,
-                            taxa_defeito=(r["defeitos"] or 0) / r["itens"] if r["itens"] else None)
-                 for r in linhas)
+        " GROUP BY l.lote_id, l.data_inicio ORDER BY l.data_inicio, lote_id"
+    ).fetchall()
+    return tuple(
+        LoteResumo(
+            lote_id=r["lote_id"],
+            data_inicio=r["data_inicio"],
+            itens=r["itens"],
+            ok=r["ok"] or 0,
+            defeitos=r["defeitos"] or 0,
+            inconclusivos=r["inconclusivos"] or 0,
+            taxa_defeito=(r["defeitos"] or 0) / r["itens"] if r["itens"] else None,
+        )
+        for r in linhas
+    )
 
 
 def caminho_da_evidencia(painel: Painel, item_id: str, vista: str) -> str | None:
     """Caminho gravado para a evidencia desta vista. `None` = nao ha rastro registrado."""
     r = painel.conexao.execute(
         "SELECT caminho_evidencia FROM inspecao_vista WHERE item_id = ? AND vista = ?"
-        " AND caminho_evidencia IS NOT NULL ORDER BY id LIMIT 1", (item_id, vista)).fetchone()
+        " AND caminho_evidencia IS NOT NULL ORDER BY id LIMIT 1",
+        (item_id, vista),
+    ).fetchone()
     return r["caminho_evidencia"] if r else None

@@ -1,12 +1,13 @@
 """A serie publicada no site tem de dizer DE ONDE veio o trigger.
 
 Sem `trigger_n` e `origem_trigger` o operador nao consegue distinguir captura do sensor
-fisico de teste de bancada — foi exatamente a confusao que travou a bancada hoje.
+fisico de teste de bancada; foi exatamente a confusao que travou a bancada hoje.
 """
+
 from __future__ import annotations
+
 import json
 from pathlib import Path
-from types import SimpleNamespace
 
 import api
 
@@ -20,8 +21,9 @@ def _serie_valida(tmp_path: Path, nome: str, extra: dict) -> Path:
 
 
 def test_series_publicam_trigger_n_e_origem(monkeypatch, tmp_path):
-    _serie_valida(tmp_path, "20260915-183824-267",
-                  {"trigger_n": 1, "origem_trigger": "fisico"})
+    _serie_valida(
+        tmp_path, "20260915-183824-267", {"trigger_n": 1, "origem_trigger": "fisico"}
+    )
     monkeypatch.setattr(api, "SERIES_DIR", tmp_path)
     series = api._series_locais(limite=5)
     assert series[0]["trigger_n"] == 1

@@ -17,7 +17,14 @@ reescrita tipada.
 | `registro.py` | Persistencia idempotente por `item_id`; recusa evidencia divergente |
 | `painel.py` | As 14 consultas analiticas de `docs/dados-telemetria.md` secao 3, somente leitura |
 | `orquestracao.py` | Pipeline unica (captura -> decisao -> conformidade -> registro) e entry point |
+| `classificador.py` | Classificador da tampa (extrator congelado + linear) atras do protocolo da D-30; CORPO devolve `None` |
+| `fonte_gatilho.py` | Le o CSV de eventos de gatilho da bancada e persiste pela API do registro (RF-01.1) |
+| `apresentacao.py` | Relatorio HTML estatico a partir das consultas do painel (o elo 'apresenta') |
 | `esquema.sql` | Esquema do hub, com as invariantes no banco (o topo nunca decide; decidir exige dominio) |
+
+## Frontend do site
+
+O frontend estatico foi organizado em `src-production/site/` e e servido pela API na mesma origem. O default de `api.py` aponta para esse diretorio; use `--site` apenas para sobrescrever o caminho.
 
 ## Regras desta arvore
 
