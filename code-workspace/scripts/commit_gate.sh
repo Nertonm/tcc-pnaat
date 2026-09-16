@@ -11,10 +11,10 @@ PY="${AI_PY:-$RAIZ/.venv/bin/python}"
 [ -x "$PY" ] || PY="$(command -v python3)"
 falhas=0
 
-echo "[gate] (1/5) suite de testes (code-workspace)"
+echo "[gate] (1/6) suite de testes (code-workspace)"
 ( cd "$CW" && "$PY" -m pytest -q ) || { echo "[gate] FALHA nos testes"; falhas=1; }
 
-echo "[gate] (2/5) suite do firmware ESP32-CAM"
+echo "[gate] (2/6) suite do firmware ESP32-CAM"
 ( cd "$RAIZ" && "$PY" -m pytest -q src-production/firmware/esp32cam-test/tests ) || { echo "[gate] FALHA nos testes do firmware"; falhas=1; }
 # A suite do PRODUTO: rodar de dentro de src-production respeita o testpaths=[tests] do pyproject
 # (rodar `pytest src-production` de fora recolheria revisar/tests junto).
