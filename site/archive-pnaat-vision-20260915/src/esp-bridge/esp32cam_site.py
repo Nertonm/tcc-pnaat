@@ -243,7 +243,7 @@ def publish(frame: bytes, event: int, encoding: str, extra: dict[str, object]) -
 
 
 def notificar_captura_trigger(event: int, ext_ref: int) -> None:
-    """Entrega o frame validado ao site do Acerola para fechar a serie de 3."""
+    """Entrega o frame validado ao site de captura para fechar a serie de 3."""
     if not ext_ref:
         return
     import urllib.parse

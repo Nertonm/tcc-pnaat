@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """Site da garrafa: câmera do Pi -> veredito (OK / qual defeito).
 
@@ -44,7 +45,8 @@ def _usb_device() -> str:
         if 'webcam' in texto or 'usb camera' in texto or 'generalplus' in texto:
             return '/dev/' + nome.parent.name
     return USB_CAMERA_DEVICE
-SERIES_DIR = Path("/home/nerton/pnaat-dataset") / "series-3-cameras"
+SERIES_DIR = Path(os.environ.get("PNAAT_SERIES_DIR",
+                           Path.home() / "pnaat-dataset")) / "series-3-cameras"
 ROTACAO_USB = 90    # webcam montada girada: 90 graus anti-horario corrige
 ROTACAO_ESP = 180   # sensor do ESP-CAM montado invertido
 TRIGGER_DIR = DADOS / "triggers"
@@ -243,7 +245,7 @@ def _capturar_esp_novo(destino: Path) -> None:
 
 
 def _capturar_esp(destino: Path) -> None:
-    """Busca o ultimo JPEG real da ESP-CAM pela ponte do Gaspar."""
+    """Busca o ultimo JPEG real da ESP-CAM pela ponte do host de captura."""
     from urllib.request import Request, urlopen
     req = Request(ESP_CAM_FRAME_URL, headers={"Cache-Control": "no-cache"})
     with urlopen(req, timeout=10) as resp:
