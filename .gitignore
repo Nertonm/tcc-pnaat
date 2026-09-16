@@ -161,3 +161,22 @@ src-production/firmware/**/*.bak-*
 
 # mapa camera->vista da instalacao (nomes de camera sao dado do rig, nao vao para o repo)
 src-production/mapeamento-rig.json
+
+# Convencao de backup ad-hoc: nunca versionar (foi assim que um backup entrou no repo)
+_backup-*/
+._backup-*/
+.series-backup-*/
+.dashboard-*-backup-*/
+*.backup-*/
+
+# cad-produto e o entregavel do CAD e vai versionado COM os binarios.
+# Excecao estreita, alinhada a politica unica em code-workspace/scripts/politica_midia.py:
+# vale so dentro de cad-produto, e o CAD de terceiro continua fora.
+!cad-produto/
+!cad-produto/**/*.stl
+!cad-produto/**/*.step
+!cad-produto/**/*.png
+!cad-produto/**/*.pdf
+
+# Area de workspaces sujos: fica no disco, nao entra no historico
+dirty-workspaces/
