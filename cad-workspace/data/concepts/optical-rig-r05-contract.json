@@ -1,20 +1,99 @@
 {
   "status": "CONTRACT_REVISION",
   "release_class": "OPTICAL_RIG_R05_v7_3CAM",
-  "coordinate_system": {"+X": "transport downstream", "+Y": "transverse", "+Z": "up"},
+  "coordinate_system": {
+    "+X": "transport downstream",
+    "+Y": "transverse",
+    "+Z": "up"
+  },
   "belt_plane_z": 0,
   "inspection_plane_x": 0,
   "product": {
     "scope": "PET refill bottles only",
-    "envelope_mm": {"height_max": 370, "height_min": 130, "diameter_max": 120, "diameter_min": 50},
+    "envelope_mm": {
+      "height_max": 370,
+      "height_min": 130,
+      "diameter_max": 120,
+      "diameter_min": 50
+    },
     "sizes": [
-      {"volume_ml": 3000, "height_cm": [36.0, 37.0], "diameter_base_cm": [11.5, 12.0]},
-      {"volume_ml": 2500, "height_cm": [34.5, 35.5], "diameter_base_cm": [11.0, 11.5]},
-      {"volume_ml": 2000, "height_cm": [33.0, 34.5], "diameter_base_cm": [10.0, 10.5]},
-      {"volume_ml": 1500, "height_cm": [31.5, 33.0], "diameter_base_cm": [9.0, 9.5]},
-      {"volume_ml": 1000, "height_cm": [28.0, 30.0], "diameter_base_cm": [8.0, 8.5]},
-      {"volume_ml": 600,  "height_cm": [23.0, 24.0], "diameter_base_cm": [6.5, 7.5]},
-      {"volume_ml": 200,  "height_cm": [13.0, 14.0], "diameter_base_cm": [5.0, 5.5]}
+      {
+        "volume_ml": 3000,
+        "height_cm": [
+          36.0,
+          37.0
+        ],
+        "diameter_base_cm": [
+          11.5,
+          12.0
+        ]
+      },
+      {
+        "volume_ml": 2500,
+        "height_cm": [
+          34.5,
+          35.5
+        ],
+        "diameter_base_cm": [
+          11.0,
+          11.5
+        ]
+      },
+      {
+        "volume_ml": 2000,
+        "height_cm": [
+          33.0,
+          34.5
+        ],
+        "diameter_base_cm": [
+          10.0,
+          10.5
+        ]
+      },
+      {
+        "volume_ml": 1500,
+        "height_cm": [
+          31.5,
+          33.0
+        ],
+        "diameter_base_cm": [
+          9.0,
+          9.5
+        ]
+      },
+      {
+        "volume_ml": 1000,
+        "height_cm": [
+          28.0,
+          30.0
+        ],
+        "diameter_base_cm": [
+          8.0,
+          8.5
+        ]
+      },
+      {
+        "volume_ml": 600,
+        "height_cm": [
+          23.0,
+          24.0
+        ],
+        "diameter_base_cm": [
+          6.5,
+          7.5
+        ]
+      },
+      {
+        "volume_ml": 200,
+        "height_cm": [
+          13.0,
+          14.0
+        ],
+        "diameter_base_cm": [
+          5.0,
+          5.5
+        ]
+      }
     ]
   },
   "conveyor_reference": {
@@ -28,13 +107,48 @@
   },
   "camera_views": {
     "count": 3,
-    "C_TOP": {"role": "cap", "connection": "Raspberry Pi CSI", "axis": [0,0,-1], "height": "above tallest bottle; nominal lens-front Z540"},
-    "C_LEFT": {"role": "body left", "connection": "Raspberry Pi CSI", "axis": [0,1,0], "nominal_lens_center": [0,-175,245]},
-    "C_RIGHT": {"role": "body right", "connection": "USB-C/UVC", "axis": [0,-1,0], "nominal_lens_center": [0,175,245], "model_status": "envelope only; exact USB camera model and connector are pending"}
+    "C_TOP": {
+      "role": "cap",
+      "connection": "Raspberry Pi CSI",
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "height": "above tallest bottle; nominal lens-front Z540"
+    },
+    "C_LEFT": {
+      "role": "body left",
+      "connection": "Raspberry Pi CSI",
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "nominal_lens_center": [
+        0,
+        -175,
+        245
+      ]
+    },
+    "C_RIGHT": {
+      "role": "body right",
+      "connection": "USB-C/UVC",
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "nominal_lens_center": [
+        0,
+        175,
+        245
+      ],
+      "model_status": "envelope only; exact USB camera model and connector are pending"
+    }
   },
   "pi_placement": "HIGH on the column (near top), so the two CSI cameras reach with short FPC cables; the USB-C/UVC route is independently strain-relieved",
   "grip": "third-party G-clamp candidate with a 1/4-20 tripod interface; use only a project-designed adapter and do not vendor the third-party model without its license",
   "fabrication": "3D print K1C 220x220x250 PETG; conveyor not printed; physical clamp interface remains blocked pending G0",
-  "assumptions": true,
   "fabrication_allowed": false
 }

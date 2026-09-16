@@ -1,4 +1,4 @@
-# SPEC — Mount da câmera CM3 Wide para trilho DIN TS35 (v1)
+# SPEC: Mount da câmera CM3 Wide para trilho DIN TS35 (v1)
 
 Status: **spec congelada antes da modelagem** (2026-09-10). Todos os números
 abaixo foram EXTRAÍDOS de fonte primária (STEP oficial / medição das peças),
@@ -10,7 +10,7 @@ o eixo óptico em 49° e se fixa ao trilho DIN TS35 que corre na vertical.
 Todas as demais peças do rig já são prontas (case Pi5 DIN, angle adapter 90°,
 bracket M6, trilho comercial).
 
-## A. Interface 1 — trilho DIN TS35 (IEC 60715)
+## A. Interface 1: trilho DIN TS35 (IEC 60715)
 | item | valor | origem |
 |---|---|---|
 | perfil do trilho | 35 mm largura × 7.5 mm profundidade | norma IEC 60715 |
@@ -22,9 +22,9 @@ bracket M6, trilho comercial).
 | trava anti-deriva | **parafuso M3** contra o trilho (a definir no desenho) | requisito do doc grip-extensivel (estabilizar pós-ajuste) |
 
 **Decisão de design:** importar `din-clip-redux-*.3mf` como base (garante o
-encaixe DIN medido) em vez de redesenhar o clip — elimina a maior fonte de erro.
+encaixe DIN medido) em vez de redesenhar o clip; elimina a maior fonte de erro.
 
-## B. Interface 2 — Camera Module 3 Wide (STEP oficial)
+## B. Interface 2: Camera Module 3 Wide (STEP oficial)
 Sistema local do STEP (`Camera_module_3_wide_model_simple.stp`):
 | item | valor | origem |
 |---|---|---|
@@ -39,7 +39,7 @@ Sistema local do STEP (`Camera_module_3_wide_model_simple.stp`):
 | folga obrigatória | região do conector LIVRE (nenhum material do mount) | requisito mecânico |
 
 Atenção: o centro da lente (X=14.40) **não** coincide com o centro da PCB
-(X=11.93) — deslocado +2.5 mm em X.
+(X=11.93); deslocado +2.5 mm em X.
 
 ## C. Óptica (da análise R05-CAMERA-DISTANCE-ANALYSIS)
 | item | valor |

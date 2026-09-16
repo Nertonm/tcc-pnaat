@@ -1,4 +1,4 @@
-# Deep Research — CAD paramétrico scriptável para pipelines agênticos
+# Deep Research: CAD paramétrico scriptável para pipelines agênticos
 
 Status: relatório de agente de pesquisa independente, recebido 2026-09-10.
 Fonte: prompt autocontido `prompts/deep-research-cad-approach.md` (SHA a6a347d9).
@@ -8,26 +8,26 @@ ingest estão marcados [SOURCE-UNVERIFIED] abaixo.
 
 ## Resumo executivo
 
-- CONFIRMED — OpenSCAD não atende R1: sem import STEP B-Rep nativo; STEP→STL
+- CONFIRMED; OpenSCAD não atende R1: sem import STEP B-Rep nativo; STEP→STL
   perde a representação exata.
-- CONFIRMED — CadQuery e build123d importam/exportam STEP/STL sobre OCP/OCCT,
+- CONFIRMED; CadQuery e build123d importam/exportam STEP/STL sobre OCP/OCCT,
   headless.
-- LIKELY — melhor equilíbrio: build123d para DSL + OCP/OCCT como QA; CadQuery
+- LIKELY; melhor equilíbrio: build123d para DSL + OCP/OCCT como QA; CadQuery
   como plano B comparado no PoC.
-- CONFIRMED — FreeCAD só se .FCStd for obrigatório; isolar em FreeCADCmd de
+- CONFIRMED; FreeCAD só se .FCStd for obrigatório; isolar em FreeCADCmd de
   empacotamento, não GUI/MCP como fonte da verdade.
-- LIKELY/NÃO MEDIDO — sem benchmark primário para STEPs Pi5 77MB/CM3 30MB;
+- LIKELY/NÃO MEDIDO; sem benchmark primário para STEPs Pi5 77MB/CM3 30MB;
   qualquer alegação de performance antes do benchmark seria inventada.
-- CONFIRMED — build123d/OCP tem QA determinístico: bbox, distância, validity,
+- CONFIRMED; build123d/OCP tem QA determinístico: bbox, distância, validity,
   interseção volumétrica, eixo/shape, wire length.
-- LIKELY — SHA-256 byte-a-byte de output não é critério primário entre
+- LIKELY; SHA-256 byte-a-byte de output não é critério primário entre
   máquinas (timestamp/UUID/version do writer variam). Usar hash dos inputs +
   fingerprint geométrico + round-trip.
-- CONFIRMED — CM3 = conector 15 vias; Pi5 = mini 22 vias (Standard-Mini).
+- CONFIRMED; CM3 = conector 15 vias; Pi5 = mini 22 vias (Standard-Mini).
   Cabo oficial Pi5: 200/300/500mm.
-- CONFIRMED — CM3 Wide: FoV H102° V67° diag120°, foco 5cm-∞, F/2.2;
+- CONFIRMED; CM3 Wide: FoV H102° V67° diag120°, foco 5cm-∞, F/2.2;
   rolling shutter não é corrigido por calibração em movimento.
-- LIKELY — spike de 30 min com os 2 STEPs falsifica rápido a recomendação.
+- LIKELY; spike de 30 min com os 2 STEPs falsifica rápido a recomendação.
 
 ## Comparação de stacks
 | Stack | STEP real in/out | Headless | Param/assembly | STEP 30-80MB | QA geom | Julgamento |
@@ -84,11 +84,11 @@ export STEP+STL → re-import+fingerprint → FreeCADCmd→FCStd derivado.
 | CM3 Wide ótica | Product Brief | oficial | f=2.75, H102 V67 diag120, foco 5cm, F/2.2 |
 | Pi5 Camera Cable | raspberrypi.com | oficial | shielded, 22-way, 200/300/500mm |
 | Topologia conectores | RPi docs | oficial | 15-pin câmera / 22-pin mini Pi5 |
-| R_min FPC | — | SPECULATIVE (sem fonte numérica) | não inventar valor |
+| R_min FPC |; | SPECULATIVE (sem fonte numérica) | não inventar valor |
 | OpenCV calibração | docs 4.13 | oficial | >=10 padrões, RMSReproj |
 | Fisheye OpenCV | docs | oficial | cv::fisheye disponível |
 
-Sanity FOV a 171mm (pinhole idealizado): W~422mm H~226mm — NÃO valida
+Sanity FOV a 171mm (pinhole idealizado): W~422mm H~226mm; NÃO valida
 garrafa inteira no rig real (elevação 49°, distorção Wide). Validação
 correta: projetar pontos 3D com intrínsecos+distorção calibrados.
 
@@ -98,11 +98,11 @@ correta: projetar pontos 3D com intrínsecos+distorção calibrados.
 - Sem objeto compartilhado persistente entre agentes; cada execução =
   commit + inputs hashados → arquivos + report JSON.
 - MCP CAD: existem (FreeCAD MCP jan/2026, 82+ tools; CadQuery MCP diretório
-  MCP) — conveniência p/ exploração, NÃO executor autoritativo de CI.
+  MCP); conveniência p/ exploração, NÃO executor autoritativo de CI.
 - Regra de governança: agente não transforma WARN em PASS; só QA decide.
   [pontos MCP generalizáveis = SPECULATIVE; incidentes do projeto =
   CONFIRMED como incidentes, não como verdades universais FreeCAD]
-- Worktrees separados por agente (git worktree add) — sem cwd/processo
+- Worktrees separados por agente (git worktree add); sem cwd/processo
   compartilhado.
 - Contrato PASS := exit 0 AND hashes ok AND solids>0 AND breps valid AND
   interferência<=tol AND óptica ok AND fpc ok AND roundtrips ok.
@@ -122,7 +122,7 @@ correta: projetar pontos 3D com intrínsecos+distorção calibrados.
   (UNVERIFIED_FROM_PRIMARY permitido), derived YES/NO, SHA-256.
 
 ## Literatura CAD agêntico
-[SOURCE-UNVERIFIED — IDs arXiv relatados pelo agente, não re-verificados no
+[SOURCE-UNVERIFIED; IDs arXiv relatados pelo agente, não re-verificados no
 ingest; verificar antes de citar academicamente]
 - ArtisanCAD (2026, arXiv:2607.05750): representação intermediária
   procedural + invariantes + execução em backend CAD (CATIA/MCP).

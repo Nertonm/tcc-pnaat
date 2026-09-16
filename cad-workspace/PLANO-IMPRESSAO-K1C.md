@@ -1,4 +1,4 @@
-# Plano de impressão — K1C (uma oportunidade)
+# Plano de impressão: K1C (uma oportunidade)
 
 Data: 2026-09-11 · Workspace: `cad-workspace` (<host>)
 Status: **planejamento**. Nada foi fatiado, nenhum G-code existe, nada impresso.
@@ -7,7 +7,7 @@ Status: **planejamento**. Nada foi fatiado, nenhum G-code existe, nada impresso.
 
 ## 0. A impressora do laboratório
 
-**Creality K1C** — referenciada no projeto em `reports/GRIP-MDF-FDM-DECISION-R01.md`
+**Creality K1C**; referenciada no projeto em `reports/GRIP-MDF-FDM-DECISION-R01.md`
 (seção "8. FDM na K1C"), que registra PETG como candidato e alerta que *"não foram
 usados limites dimensionais da K1C"*.
 
@@ -44,24 +44,24 @@ Todas caem dentro de 220 × 220 × 250 → **viável em uma chapa**, com sobra.
 
 | item | medida | qtd | observação |
 |---|---|---|---|
-| Trilho DIN TS35 | 450 mm | 2 | montantes — aço |
-| Trilho DIN TS35 | 600 mm | 1 | travessa — aço |
-| Parafuso 1/4"-20 | — | 4 | 2 por clamp (os dois furos) |
-| Parafuso M3 | — | 8 | 2 por luva (trava) — **envelope no CAD, parafuso real a escolher** |
+| Trilho DIN TS35 | 450 mm | 2 | montantes; aço |
+| Trilho DIN TS35 | 600 mm | 1 | travessa; aço |
+| Parafuso 1/4"-20 |; | 4 | 2 por clamp (os dois furos) |
+| Parafuso M3 |; | 8 | 2 por luva (trava); **envelope no CAD, parafuso real a escolher** |
 
-**Custo estimado: BLOCKED** — sem inventário, preços ou disponibilidade do lab.
+**Custo estimado: BLOCKED**; sem inventário, preços ou disponibilidade do lab.
 
 ---
 
-## 3. CHECKLIST PRÉ-IMPRESSÃO — o que precisa ser revisado
+## 3. CHECKLIST PRÉ-IMPRESSÃO: o que precisa ser revisado
 
 ### A. Geometria e ajuste (crítico)
 
 | # | item | estado | por que importa |
 |---|---|---|---|
-| A1 | **Folga de impressão não modelada** | ✗ ABERTO | cada canaleta é a **fêmea exata** do trilho (folga 0 nominal). Na impressão são precisos **0,2–0,3 mm por lado**. Se imprimir como está, **não entra** — ou entra e não desliza |
-| A2 | **Folga zero cancela a antirrotação** | ✗ ABERTO | a antirrotação demonstrada (colisão a 1°) depende do contato nominal. Com folga real, a luva gira **até encostar na chaveta** — a chaveta passa a ser o único bloqueio |
-| A3 | Encaixe do trilho comprado | ✗ ABERTO | o CAD usa a seção **nominal** do fabricante. O trilho comprado tem tolerância de laminação — **medir o trilho real** antes de fechar a folga |
+| A1 | **Folga de impressão não modelada** | ✗ ABERTO | cada canaleta é a **fêmea exata** do trilho (folga 0 nominal). Na impressão são precisos **0,2–0,3 mm por lado**. Se imprimir como está, **não entra**; ou entra e não desliza |
+| A2 | **Folga zero cancela a antirrotação** | ✗ ABERTO | a antirrotação demonstrada (colisão a 1°) depende do contato nominal. Com folga real, a luva gira **até encostar na chaveta**; a chaveta passa a ser o único bloqueio |
+| A3 | Encaixe do trilho comprado | ✗ ABERTO | o CAD usa a seção **nominal** do fabricante. O trilho comprado tem tolerância de laminação; **medir o trilho real** antes de fechar a folga |
 | A4 | Furos fecham na impressão | ✗ ABERTO | FDM contrai/fecha furo. Ø3,4 para M3 e Ø6,35 para 1/4" precisam de compensação (~0,1–0,2 mm) |
 | A5 | Chaveta: 14,6 mm × 6,2 mm × **1 mm de espessura** | ✗ ABERTO | ver D1 |
 | A6 | Sobreposição de fusão de 0,6 mm | ✓ fechado | usada para garantir sólido único (sem ela, a peça saía com 2 sólidos) |
@@ -71,7 +71,7 @@ Todas caem dentro de 220 × 220 × 250 → **viável em uma chapa**, com sobra.
 | # | item | estado | por que importa |
 |---|---|---|---|
 | B1 | **Escolha do filamento** | ✗ ABERTO | PETG é o candidato do projeto. PLA é rígido mas flui e é frágil sob carga; ABS/ASA resiste mais mas exige câmara e empena |
-| B2 | **Fluência (creep) do polímero** | ✗ ABERTO | o pórtico fica com carga **permanente**. PETG flui sob tensão constante — um ajuste apertado pode afrouxar em semanas |
+| B2 | **Fluência (creep) do polímero** | ✗ ABERTO | o pórtico fica com carga **permanente**. PETG flui sob tensão constante; um ajuste apertado pode afrouxar em semanas |
 | B3 | Anisotropia | ✗ ABERTO | a resistência na direção das camadas é uma fração da direção da extrusão. **A orientação de impressão da luva e da chaveta decide se elas quebram** |
 | B4 | Estoque/umidade do filamento | ✗ ABERTO | filamento úmido = bolhas, delaminação, peça inútil |
 
@@ -79,11 +79,11 @@ Todas caem dentro de 220 × 220 × 250 → **viável em uma chapa**, com sobra.
 
 | # | item | estado |
 |---|---|---|
-| C1 | Bico realmente montado (0,4 mm?) | ✗ ABERTO — conferir na máquina |
+| C1 | Bico realmente montado (0,4 mm?) | ✗ ABERTO; conferir na máquina |
 | C2 | Nivelamento / mesh da mesa | ✗ ABERTO |
 | C3 | Calibração de fluxo e temperatura para o filamento escolhido | ✗ ABERTO |
 | C4 | Adesão (PEI? cola?) e primeira camada | ✗ ABERTO |
-| C5 | Tempo total de impressão vs disponibilidade da máquina | ✗ ABERTO — estimar por fatiamento |
+| C5 | Tempo total de impressão vs disponibilidade da máquina | ✗ ABERTO; estimar por fatiamento |
 | C6 | Câmara fechada: temperatura interna para PETG/ABS | ✗ ABERTO |
 
 ### D. Resistência (nada foi calculado)
@@ -93,7 +93,7 @@ Todas caem dentro de 220 × 220 × 250 → **viável em uma chapa**, com sobra.
 | D1 | **Chaveta de 1 mm em cisalhamento** | ✗ ABERTO | **toda a carga vertical do pórtico passa por essa chapa de 1 mm**. Nunca dimensionada |
 | D2 | Peso real das câmeras + Pi + cabos | ✗ ABERTO | nunca pesado; sem massa não há momento |
 | D3 | Momento no pórtico (braços, excentricidade) | ✗ ABERTO | o relatório de decisão cita M = F·e, sem números |
-| D4 | Rigidez do trilho DIN como coluna de 450 mm | ✗ ABERTO | trilho é chapa dobrada de 1 mm — **não foi feito cálculo de flambagem** |
+| D4 | Rigidez do trilho DIN como coluna de 450 mm | ✗ ABERTO | trilho é chapa dobrada de 1 mm; **não foi feito cálculo de flambagem** |
 | D5 | Torção da travessa de 600 mm | ✗ ABERTO | idem |
 
 ### E. Montagem
@@ -104,7 +104,7 @@ Todas caem dentro de 220 × 220 × 250 → **viável em uma chapa**, com sobra.
 | E2 | Parafuso de 1/4": comprimento correto para a peça dupla | ✗ ABERTO |
 | E3 | Sequência de montagem (o que entra primeiro) | ✗ ABERTO |
 | E4 | Ferramentas e acessos (chave allen curta?) | ✗ ABERTO |
-| E5 | **Seção real da esteira** | ✗ ABERTO — **nunca medida**. O clamp agarra um cupom, não a máquina |
+| E5 | **Seção real da esteira** | ✗ ABERTO; **nunca medida**. O clamp agarra um cupom, não a máquina |
 
 ---
 
@@ -112,7 +112,7 @@ Todas caem dentro de 220 × 220 × 250 → **viável em uma chapa**, com sobra.
 
 Como só há uma chance, a ordem importa:
 
-### Fase 1 — CUPOM (antes de qualquer peça final)
+### Fase 1: CUPOM (antes de qualquer peça final)
 Imprimir **1 chapa de cupons** (~30–40 min):
 - luva **com a folga real** (0,2 / 0,25 / 0,3 mm por lado) → **qual desliza e trava**
 - chaveta nos 3 comprimentos (14,6 / 15,6 / 16,6 mm) → medir o engate real na ranhura
@@ -120,11 +120,11 @@ Imprimir **1 chapa de cupons** (~30–40 min):
 
 **Isso torna a folga uma MEDIÇÃO, não um chute.** Sem essa fase, a chance de a peça grande não encaixar é alta.
 
-### Fase 2 — Peças críticas, uma por vez
+### Fase 2: Peças críticas, uma por vez
 1. `JuncaoA` + `ChavetaA` → **testar no trilho comprado** antes de imprimir as outras
 2. só então `PecaDuplaPlataformasOFICIAL`
 
-### Fase 3 — Restante
+### Fase 3: Restante
 G-clamp, sapata, parafuso de aperto, segunda luva e chaveta.
 
 ### Critérios de aceitação (definidos ANTES de imprimir)
@@ -134,7 +134,7 @@ G-clamp, sapata, parafuso de aperto, segunda luva e chaveta.
 
 ### Plano B (se o encaixe falhar)
 - raspar/limar a canaleta é aceitável em PETG
-- se a chaveta quebrar: **plano B é parafuso passante** através da ranhura do trilho (o trilho já tem furos obround de 6,2 × 15 mm medidos) — isso dispensa a peça impressa de trava
+- se a chaveta quebrar: **plano B é parafuso passante** através da ranhura do trilho (o trilho já tem furos obround de 6,2 × 15 mm medidos); isso dispensa a peça impressa de trava
 - se a luva girar: substituir por **cunha** (o trilho tem perfil que aceita)
 
 ---

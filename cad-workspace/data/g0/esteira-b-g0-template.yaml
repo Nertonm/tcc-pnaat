@@ -15,10 +15,6 @@ evidence_state: BLOCKED
 measured: false
 reference_only: false
 fabrication_allowed: false
-rules:
-- Nenhum dado físico foi preenchido. Desconhecido permanece null, nunca zero.
-- reference_only e measured são declarações diferentes. REFERENCE não é MEASURED.
-- REFERENCE é classe de origem do pacote; não substitui os eixos de evidência, gate
   e decisão do workspace policy.
 - Relatórios comerciais, canary e mock-up r03 não entram como medição física.
 - Correia nunca é interface estrutural; datums A/B/C são candidatos sem aprovação.

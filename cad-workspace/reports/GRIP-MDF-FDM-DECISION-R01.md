@@ -1,4 +1,4 @@
-# Decisão preliminar MDF/FDM e grip óptico — R01
+# Decisão preliminar MDF/FDM e grip óptico: R01
 
 ```text
 REFERENCE_ONLY=true
@@ -10,87 +10,87 @@ STATUS: PRELIMINARY_OPEN_PHYSICAL_GATES_BLOCKED. Data: 2026-09-09.
 
 ## 1. Veredito preliminar
 
-SPECULATIVE — A: portal de MDF contraventado + mounts FDM + ferragens é a primeira hipótese de baixo desembolso para laboratório seco. Decisão OPEN. MDF não é escolhido como garantia de precisão e FDM total não é recomendado como estrutura comum sem evidência. A alternativa B pode vencer se já houver perfis adequados ou se a estabilidade requerida superar o MDF.
+SPECULATIVE; A: portal de MDF contraventado + mounts FDM + ferragens é a primeira hipótese de baixo desembolso para laboratório seco. Decisão OPEN. MDF não é escolhido como garantia de precisão e FDM total não é recomendado como estrutura comum sem evidência. A alternativa B pode vencer se já houver perfis adequados ou se a estabilidade requerida superar o MDF.
 
 ## 2. Evidência e restrições
 
-OBSERVED — 12 anexos analisados: oito da grande e quatro da pequena. MEASURED_FROM_PHOTO: nenhum. Nenhuma escala válida e nenhum comprimento inferido da aparência. Os caminhos originais constam abaixo, sem leitura, cópia ou publicação das fotos. SHA-256 de cada original BLOCKED pela proibição de ler github/evidencias. O erro de anexação envolvendo Sem, título.jpg e - não constitui foto analisada; não se presume conteúdo de Sem título.jpg. Não houve operação Git, comando para impressora ou alteração fora do workspace.
+OBSERVED; 12 anexos analisados: oito da grande e quatro da pequena. MEASURED_FROM_PHOTO: nenhum. Nenhuma escala válida e nenhum comprimento inferido da aparência. Os caminhos originais constam abaixo, sem leitura, cópia ou publicação das fotos. SHA-256 de cada original BLOCKED pela proibição de ler github/evidencias. O erro de anexação envolvendo Sem, título.jpg e - não constitui foto analisada; não se presume conteúdo de Sem título.jpg. Não houve operação Git, comando para impressora ou alteração fora do workspace.
 
 ## 3. Identificação
 
-OBSERVED — A/grande e B/pequena são aliases desta análise, coerentes com os relatórios. Grande: equipamento com aparência metálica, faixa preta, guia e acionamento lateral. IN 150 e IN 150 Large são apenas candidatos REFERENCE; etiquetas não permitem identificação inequívoca. Pequena: conjunto didático aparente, placas pretas brilhantes e motorredutor amarelo/cinza. Acrílico e motor TT são hipóteses SPECULATIVE, não identificação de polímero, fabricante ou modelo. Nenhuma câmera instalada é inequivocamente visível. O suporte com dois orifícios não prova duas câmeras.
+OBSERVED; A/grande e B/pequena são aliases desta análise, coerentes com os relatórios. Grande: equipamento com aparência metálica, faixa preta, guia e acionamento lateral. IN 150 e IN 150 Large são apenas candidatos REFERENCE; etiquetas não permitem identificação inequívoca. Pequena: conjunto didático aparente, placas pretas brilhantes e motorredutor amarelo/cinza. Acrílico e motor TT são hipóteses SPECULATIVE, não identificação de polímero, fabricante ou modelo. Nenhuma câmera instalada é inequivocamente visível. O suporte com dois orifícios não prova duas câmeras.
 
 ## 4. Arquitetura principal e caminho de carga
 
-SPECULATIVE — Pórtico comum desmontável com travessa óptica, montantes largos e contraventamentos; Adapter-A e Adapter-B específicos. Caminho pretendido: câmera → mount curto → travessa/montante → base distribuidora → adaptador → estrutura fixa verificada. Na pequena, preferir base que suporte conjuntamente a esteira e o portal se as laterais não suportarem carga. O CAD não resolve o contato final ao chassi nem representa todos os contraventamentos/juntas; sua continuidade visual não valida resistência.
+SPECULATIVE; Pórtico comum desmontável com travessa óptica, montantes largos e contraventamentos; Adapter-A e Adapter-B específicos. Caminho pretendido: câmera → mount curto → travessa/montante → base distribuidora → adaptador → estrutura fixa verificada. Na pequena, preferir base que suporte conjuntamente a esteira e o portal se as laterais não suportarem carga. O CAD não resolve o contato final ao chassi nem representa todos os contraventamentos/juntas; sua continuidade visual não valida resistência.
 
 ## 5. Fallback e alternativa dedicada
 
-SPECULATIVE — B: perfis/metal com mounts FDM se deformação, fluência das juntas, ambiente ou vibração inviabilizarem A. D: dois módulos dedicados quando interfaces/envelopes/óptica divergirem ou remontagem consumir mais tempo que duplicação. D é uma estratégia de duplicação e pode usar A ou B; não é uma quarta classe de material.
+SPECULATIVE; B: perfis/metal com mounts FDM se deformação, fluência das juntas, ambiente ou vibração inviabilizarem A. D: dois módulos dedicados quando interfaces/envelopes/óptica divergirem ou remontagem consumir mais tempo que duplicação. D é uma estratégia de duplicação e pode usar A ou B; não é uma quarta classe de material.
 
 ## 6. Raspberry Pi e quantidade de câmeras
 
-SPECULATIVE — Raspberry Pi em caixa fixa apoiada na base/chassi, fora do balanço óptico e fora de um gabinete elétrico existente não caracterizado. Reservar ventilação, portas e alívio de tração. Modelo, fonte, conectores e limites de cabos BLOCKED. Premissa do usuário: TCC prevê três câmeras; o texto original não foi acessado fora do escopo. O conceito contém três por cena. Duas câmeras não foram confirmadas nas fotos; qualquer redução 3→2 permanece decisão aberta, com revisão de cobertura e sincronismo, nunca escolha implícita.
+SPECULATIVE; Raspberry Pi em caixa fixa apoiada na base/chassi, fora do balanço óptico e fora de um gabinete elétrico existente não caracterizado. Reservar ventilação, portas e alívio de tração. Modelo, fonte, conectores e limites de cabos BLOCKED. Premissa do usuário: TCC prevê três câmeras; o texto original não foi acessado fora do escopo. O conceito contém três por cena. Duas câmeras não foram confirmadas nas fotos; qualquer redução 3→2 permanece decisão aberta, com revisão de cobertura e sincronismo, nunca escolha implícita.
 
 ## 7. MDF
 
-SPECULATIVE — Portal, travessa larga, contraventamento e bases distribuidoras. Selecionar espessura e acabamento somente após inventário e ensaio. Evitar aperto concentrado em bordas, furos repetidamente desmontados e superfícies de datum sem inserto/batente adequado. Slots podem fornecer ajuste grosso, mas exigem trava e referência de retorno. Nenhum slot ou espessura de fabricação foi modelado.
+SPECULATIVE; Portal, travessa larga, contraventamento e bases distribuidoras. Selecionar espessura e acabamento somente após inventário e ensaio. Evitar aperto concentrado em bordas, furos repetidamente desmontados e superfícies de datum sem inserto/batente adequado. Slots podem fornecer ajuste grosso, mas exigem trava e referência de retorno. Nenhum slot ou espessura de fabricação foi modelado.
 
 ## 8. FDM na K1C
 
-SPECULATIVE — PETG candidato para mounts de pequeno braço, guias de cabo, espaçadores e caixa, sujeito a estoque, processo e condições reais. Avaliar anisotropia, fluência, temperatura, orientação, interfaces aparafusadas e tempo de máquina. Não foram usados limites dimensionais da K1C ou perfis externos de impressão. Nenhum G-code, fatiamento, ajuste de impressão ou suporte de câmera real foi criado; os STL são caixas de inspeção digital.
+SPECULATIVE; PETG candidato para mounts de pequeno braço, guias de cabo, espaçadores e caixa, sujeito a estoque, processo e condições reais. Avaliar anisotropia, fluência, temperatura, orientação, interfaces aparafusadas e tempo de máquina. Não foram usados limites dimensionais da K1C ou perfis externos de impressão. Nenhum G-code, fatiamento, ajuste de impressão ou suporte de câmera real foi criado; os STL são caixas de inspeção digital.
 
 ## 9. Ferragens e metal
 
-SPECULATIVE — Reaproveitar ferragens disponíveis após identificar tamanhos/condição: arruelas largas, porcas, parafusos passantes, cantoneiras e batentes. Chapas metálicas somente para distribuição/retorno repetível quando justificadas; perfis primários condicionados ao fallback. Custo/rigidez não inferidos pela aparência metálica. Não especificados torque, mola, clamp, rosca, retenção aprovada ou força admissível.
+SPECULATIVE; Reaproveitar ferragens disponíveis após identificar tamanhos/condição: arruelas largas, porcas, parafusos passantes, cantoneiras e batentes. Chapas metálicas somente para distribuição/retorno repetível quando justificadas; perfis primários condicionados ao fallback. Custo/rigidez não inferidos pela aparência metálica. Não especificados torque, mola, clamp, rosca, retenção aprovada ou força admissível.
 
 ## 10. Interface pequena
 
-OBSERVED — Laterais apresentam rasgos, parafusos e suporte saliente. BLOCKED — material, espessura, rigidez fora do plano, distância de bordas, papel dos fixadores e acesso interno. SPECULATIVE — não descarregar momento do pórtico em uma única placa ou no suporte saliente. Base comum sob apoios fixos é alternativa prioritária se a inspeção não encontrar chassi resistente; cadeira das fotos não é base de ensaio.
+OBSERVED; Laterais apresentam rasgos, parafusos e suporte saliente. BLOCKED; material, espessura, rigidez fora do plano, distância de bordas, papel dos fixadores e acesso interno. SPECULATIVE; não descarregar momento do pórtico em uma única placa ou no suporte saliente. Base comum sob apoios fixos é alternativa prioritária se a inspeção não encontrar chassi resistente; cadeira das fotos não é base de ensaio.
 
 ## 11. Interface grande
 
-OBSERVED — Longarinas/chapas laterais, pernas em perfis, travessa baixa e fixações aparentes. SPECULATIVE — capturar estrutura fixa confirmada com distribuição de carga e acesso para manutenção. Guia/manípulos são ajustes do transporte e não devem servir de referência óptica por padrão. BLOCKED — seções, espessuras, capacidade, parafusos de tensionamento versus estruturais e presença de equipamentos TIJ no uso real.
+OBSERVED; Longarinas/chapas laterais, pernas em perfis, travessa baixa e fixações aparentes. SPECULATIVE; capturar estrutura fixa confirmada com distribuição de carga e acesso para manutenção. Guia/manípulos são ajustes do transporte e não devem servir de referência óptica por padrão. BLOCKED; seções, espessuras, capacidade, parafusos de tensionamento versus estruturais e presença de equipamentos TIJ no uso real.
 
 ## 12. Ajustes e limites
 
-BLOCKED — não há curso físico liberado. Ajuste pretendido: altura Z, afastamento Y e pequeno ajuste angular das câmeras; posição X do trigger e interface de posicionamento longitudinal. No CAD, zonas verdes laterais 100×70×180 mm e superior 100×100×100 mm são ocupações SPECULATIVE, não cursos, tolerâncias ou volumes varridos validados. Fixar mínimos/máximos após FOV, foco, produto, folgas, acesso e ensaio de retorno. Não extrapolar curso de guia de catálogo para curso do grip.
+BLOCKED; não há curso físico liberado. Ajuste pretendido: altura Z, afastamento Y e pequeno ajuste angular das câmeras; posição X do trigger e interface de posicionamento longitudinal. No CAD, zonas verdes laterais 100×70×180 mm e superior 100×100×100 mm são ocupações SPECULATIVE, não cursos, tolerâncias ou volumes varridos validados. Fixar mínimos/máximos após FOV, foco, produto, folgas, acesso e ensaio de retorno. Não extrapolar curso de guia de catálogo para curso do grip.
 
 ## 13. Datums candidatos
 
-SPECULATIVE — coordenadas x=transporte, y=transversal, z=vertical. Propor datum primário em plano de base rígida verificada, secundário em batente longitudinal e terciário em batente transversal/pino para repetição; ainda sem materialização. Em A, inspecionar perfil fixo; em B, considerar base comum em vez de bordas flexíveis. Superfície da correia pode definir plano de processo para medição, nunca apoio estrutural ou datum de montagem rígido. Montagem comum deve separar ajuste óptico de posicionamento dos adaptadores.
+SPECULATIVE; coordenadas x=transporte, y=transversal, z=vertical. Propor datum primário em plano de base rígida verificada, secundário em batente longitudinal e terciário em batente transversal/pino para repetição; ainda sem materialização. Em A, inspecionar perfil fixo; em B, considerar base comum em vez de bordas flexíveis. Superfície da correia pode definir plano de processo para medição, nunca apoio estrutural ou datum de montagem rígido. Montagem comum deve separar ajuste óptico de posicionamento dos adaptadores.
 
 ## 14. Zonas proibidas
 
-SPECULATIVE — excluir correia superior/retorno, roletes, eixos, tensionadores, motor, transmissões, proteções amarelas, controles, alimentação, passagem total do produto e espaço para limpeza/ajustes. Guias e cabos existentes não podem receber carga do grip. CAD contém correia/proibição coincidentes, exclusões simbólicas de roletes/motor e passagem de produto. Distâncias de segurança reais BLOCKED; nenhuma margem regulatória é alegada.
+SPECULATIVE; excluir correia superior/retorno, roletes, eixos, tensionadores, motor, transmissões, proteções amarelas, controles, alimentação, passagem total do produto e espaço para limpeza/ajustes. Guias e cabos existentes não podem receber carga do grip. CAD contém correia/proibição coincidentes, exclusões simbólicas de roletes/motor e passagem de produto. Distâncias de segurança reais BLOCKED; nenhuma margem regulatória é alegada.
 
 ## 15. Riscos mecânicos
 
-SPECULATIVE — tombamento da mini-esteira, flexão das placas laterais, esmagamento do MDF, deformação/fluência de polímeros, folgas, torção da travessa, juntas sem referência de retorno e carga acidental por cabo. Aumentar braços piora momento: DERIVED M=F·e (força vezes excentricidade), sem resultado numérico pois massa/CG ausentes. Rigidez depende de material, seção e vão; não usar cubagem do envelope como massa/BOM real. Ensaiar caminho de carga com massa fictícia controlada somente após plano P0 revisado.
+SPECULATIVE; tombamento da mini-esteira, flexão das placas laterais, esmagamento do MDF, deformação/fluência de polímeros, folgas, torção da travessa, juntas sem referência de retorno e carga acidental por cabo. Aumentar braços piora momento: DERIVED M=F·e (força vezes excentricidade), sem resultado numérico pois massa/CG ausentes. Rigidez depende de material, seção e vão; não usar cubagem do envelope como massa/BOM real. Ensaiar caminho de carga com massa fictícia controlada somente após plano P0 revisado.
 
 ## 16. Vibração e calibração
 
-SPECULATIVE — motor, roletes, emenda da correia, pés e juntas podem produzir movimento relativo. Massa menor no alto é favorável como hipótese, não garantia de frequência natural adequada. Medir deslocamento e desfoque com motor parado/ligado e velocidades de operação; observar deriva após tempo e desmontagens. Evitar isoladores macios escolhidos sem análise, pois podem introduzir movimento relativo entre câmeras e produto. B tem rigidez potencial maior; D elimina uma troca física mas duplica calibrações.
+SPECULATIVE; motor, roletes, emenda da correia, pés e juntas podem produzir movimento relativo. Massa menor no alto é favorável como hipótese, não garantia de frequência natural adequada. Medir deslocamento e desfoque com motor parado/ligado e velocidades de operação; observar deriva após tempo e desmontagens. Evitar isoladores macios escolhidos sem análise, pois podem introduzir movimento relativo entre câmeras e produto. B tem rigidez potencial maior; D elimina uma troca física mas duplica calibrações.
 
 ## 17. Cabos
 
-SPECULATIVE — encaminhar pela estrutura fixa com alívio de tração antes de cada câmera e da caixa; folga controlada nos ajustes, sem laços próximos a faixa/eixos. Separar percursos de potência e sinal conforme interfaces reais. Comprimento, raio mínimo, conectores, sincronismo e interferência BLOCKED. Cabos do CAD são ocupações locais/descontínuas, não rotas completas ou verificação elétrica. Se cabos impuserem Pi próxima às câmeras, reavaliar localização em prateleira fixa antes de carregar a travessa.
+SPECULATIVE; encaminhar pela estrutura fixa com alívio de tração antes de cada câmera e da caixa; folga controlada nos ajustes, sem laços próximos a faixa/eixos. Separar percursos de potência e sinal conforme interfaces reais. Comprimento, raio mínimo, conectores, sincronismo e interferência BLOCKED. Cabos do CAD são ocupações locais/descontínuas, não rotas completas ou verificação elétrica. Se cabos impuserem Pi próxima às câmeras, reavaliar localização em prateleira fixa antes de carregar a travessa.
 
 ## 18. Ambiente e química
 
-SPECULATIVE — MDF exposto pode alterar geometria com umidade/limpeza; polímeros, acabamentos e adesivos dependem de agentes, temperatura e duração de exposição. Não há química compatível aprovada nem confirmação de inox 202 na unidade. BLOCKED — produtos de limpeza/processo, concentração, contato e umidade. Se houver lavagem/respingos incompatíveis com MDF, considerar B e proteção/material qualificados; FDM não é automaticamente solução química.
+SPECULATIVE; MDF exposto pode alterar geometria com umidade/limpeza; polímeros, acabamentos e adesivos dependem de agentes, temperatura e duração de exposição. Não há química compatível aprovada nem confirmação de inox 202 na unidade. BLOCKED; produtos de limpeza/processo, concentração, contato e umidade. Se houver lavagem/respingos incompatíveis com MDF, considerar B e proteção/material qualificados; FDM não é automaticamente solução química.
 
 ## 19. Reutilização externa
 
-REFERENCE — Referências comparadas individualmente abaixo. Aproveitar conceitos de modularidade, mounts pequenos e separação de eletrônica; nenhum arquivo externo foi baixado, copiado ou adaptado. Nada foi qualificado como clamp ou suporte pronto. MakerWorld permanece BLOCKED para conteúdo primário/licença. Catálogos não substituem G0.
+REFERENCE; Referências comparadas individualmente abaixo. Aproveitar conceitos de modularidade, mounts pequenos e separação de eletrônica; nenhum arquivo externo foi baixado, copiado ou adaptado. Nada foi qualificado como clamp ou suporte pronto. MakerWorld permanece BLOCKED para conteúdo primário/licença. Catálogos não substituem G0.
 
 ## 20. Valores de referência e conceito
 
-REFERENCE — YAML A: compacto 1500×190 mm, Large 1470×300 mm; novo CAD usa somente cenário Large para ampliar comparação anterior. YAML B: nominal 450×200 mm, intervalos externos 350–550 mm de comprimento e 100–300 mm de largura não validados. SPECULATIVE — todos os outros números do novo CAD são escolhas de exibição registradas por componente, incluindo bases, caixa Pi 100×65×45 mm, espessuras e posição do motor. Câmeras genéricas: superior 60×60×40 mm, laterais 60×40×40 mm; posição/layout deliberadamente diferentes do envelope anterior, sem representarem câmera real. Geometria original anterior preservada. DERIVED — bounds e volumes em components.json calculados pelo kernel a partir dessas caixas; não medições. Deslocamento B em y=1200 mm é somente apresentação. Não há massa, orçamento, carga, torque ou tolerância mecânica numérica.
+REFERENCE; YAML A: compacto 1500×190 mm, Large 1470×300 mm; novo CAD usa somente cenário Large para ampliar comparação anterior. YAML B: nominal 450×200 mm, intervalos externos 350–550 mm de comprimento e 100–300 mm de largura não validados. SPECULATIVE; todos os outros números do novo CAD são escolhas de exibição registradas por componente, incluindo bases, caixa Pi 100×65×45 mm, espessuras e posição do motor. Câmeras genéricas: superior 60×60×40 mm, laterais 60×40×40 mm; posição/layout deliberadamente diferentes do envelope anterior, sem representarem câmera real. Geometria original anterior preservada. DERIVED; bounds e volumes em components.json calculados pelo kernel a partir dessas caixas; não medições. Deslocamento B em y=1200 mm é somente apresentação. Não há massa, orçamento, carga, torque ou tolerância mecânica numérica.
 
 ## 21. Medições ausentes e documentos
 
-BLOCKED — Não presentes no workspace: AGENTS.md, docs/agent/context.md, docs/agent/workflow.md; tentativas de leitura registradas nesta sessão, busca de nomes limitada ao workspace. Não buscar equivalentes fora do escopo. Seis demais documentos obrigatórios foram lidos. Ausentes: identificação, escala, largura/comprimento reais, plano da faixa/retorno, interfaces, seções, espessuras/material, furos/roscas, condição, apoios, cargas/CG, produto, câmera/lente/FOV/foco, iluminação, trigger, encoder, cabos, química e requisitos de precisão. O README G0 exige dados reais com instrumento/método/repetições/incerteza; nenhum arquivo G0 foi preenchido com estimativas.
+BLOCKED; Não presentes no workspace: AGENTS.md, docs/agent/context.md, docs/agent/workflow.md; tentativas de leitura registradas nesta sessão, busca de nomes limitada ao workspace. Não buscar equivalentes fora do escopo. Seis demais documentos obrigatórios foram lidos. Ausentes: identificação, escala, largura/comprimento reais, plano da faixa/retorno, interfaces, seções, espessuras/material, furos/roscas, condição, apoios, cargas/CG, produto, câmera/lente/FOV/foco, iluminação, trigger, encoder, cabos, química e requisitos de precisão. O README G0 exige dados reais com instrumento/método/repetições/incerteza; nenhum arquivo G0 foi preenchido com estimativas.
 
 ## 22. Próximo P0
 
@@ -98,11 +98,11 @@ BLOCKED para execução física; plano proposto SPECULATIVE: primeiro inventári
 
 ## 23. Critérios para M0
 
-BLOCKED — recuperar documentos obrigatórios; fechar rastreabilidade das fotos por hashes fornecidos ou leitura explicitamente autorizada em tarefa futura; registrar G0 real com sistema XYZ, instrumento, método, repetições e incerteza; confirmar três câmeras ou decisão formal de mudança; congelar produto/FOV/foco/iluminação/trigger; medir massa/CG e cabos; definir tolerâncias de deriva, repetibilidade e vibração a partir da resolução óptica e ensaiar. Verificar suportes fora das partes móveis, retenção, acesso e compatibilidade ambiental. Aprovação geométrica digital não libera M0 físico, fabricação ou segurança. Carga/repetibilidade P1/P2 e revisão humana permanecem gates subsequentes conforme fluxo disponível, sem inventar limiares.
+BLOCKED; recuperar documentos obrigatórios; fechar rastreabilidade das fotos por hashes fornecidos ou leitura explicitamente autorizada em tarefa futura; registrar G0 real com sistema XYZ, instrumento, método, repetições e incerteza; confirmar três câmeras ou decisão formal de mudança; congelar produto/FOV/foco/iluminação/trigger; medir massa/CG e cabos; definir tolerâncias de deriva, repetibilidade e vibração a partir da resolução óptica e ensaiar. Verificar suportes fora das partes móveis, retenção, acesso e compatibilidade ambiental. Aprovação geométrica digital não libera M0 físico, fabricação ou segurança. Carga/repetibilidade P1/P2 e revisão humana permanecem gates subsequentes conforme fluxo disponível, sem inventar limiares.
 
 ## 24. Artefatos e validação
 
-DERIVED — source CadQuery, STEP de conjunto, STEP/STL por envelope, components.json, validation.json e manifest sem circularidade. Releitura STEP/STL em processo separado passou com 60 componentes nas duas cenas, três câmeras e três luzes por cena; volumes positivos/finitos, malhas watertight/orientadas, bounds comparados e montagem STEP conferida por multiplicidade. Caixa Pi apoiada integralmente em base separada abaixo de z=0; nenhum componente funcional usa faixa como suporte e nenhum invade as exclusões representadas na posição nominal. Ajustes completos, FOV, carga, vibração, juntas, cabos completos e contato real ao chassi não validados. Todos os formatos carregam flags: comentários STEP, cabeçalho STL, campos JSON e texto/source. Manifest contém hashes de payloads e script, não de si próprio. MD lista hashes de artefatos; JSON contém hash do MD; índice SHA-256 cobre ambos e não a si próprio. Nenhum hash circular.
+DERIVED; source CadQuery, STEP de conjunto, STEP/STL por envelope, components.json, validation.json e manifest sem circularidade. Releitura STEP/STL em processo separado passou com 60 componentes nas duas cenas, três câmeras e três luzes por cena; volumes positivos/finitos, malhas watertight/orientadas, bounds comparados e montagem STEP conferida por multiplicidade. Caixa Pi apoiada integralmente em base separada abaixo de z=0; nenhum componente funcional usa faixa como suporte e nenhum invade as exclusões representadas na posição nominal. Ajustes completos, FOV, carga, vibração, juntas, cabos completos e contato real ao chassi não validados. Todos os formatos carregam flags: comentários STEP, cabeçalho STL, campos JSON e texto/source. Manifest contém hashes de payloads e script, não de si próprio. MD lista hashes de artefatos; JSON contém hash do MD; índice SHA-256 cobre ambos e não a si próprio. Nenhum hash circular.
 
 ## Comparação das arquiteturas
 
@@ -110,10 +110,10 @@ Todas as avaliações desta tabela são SPECULATIVE. Nenhuma é resultado de ens
 
 | Arquitetura | Custo/tempo | Rigidez | Ajuste | Calibração/decisão |
 |---|---|---|---|---|
-| A — MDF + FDM + ferragens | Provavelmente menor desembolso com estoque e corte disponíveis | Depende de contraventamento, juntas e ambiente | Slots grossos + mount fino; retorno exige batentes | Candidata inicial; estabilidade deve ser ensaiada |
-| B — metal/perfis + FDM | Pode custar mais; estoque metálico pode inverter | Maior potencial; seção/juntas ainda bloqueadas | Canais de perfis, se disponíveis; ferragens extras | Fallback para maior estabilidade ou ambiente incompatível |
-| C — integral FDM | Filamento, tempo K1C, falhas e ferragens podem superar A | Fluência, anisotropia e muitas juntas exigem ensaio | Parametrização fácil, ajuste físico depende de juntas | Somente estudo de vão/carga pequenos; não selecionada |
-| D — dois módulos | Duplicação estrutural, montagem e calibração; menos tempo de troca | Depende de usar A/B/C em cada módulo | Ajuste dedicado por bancada; dispensa adaptar toda troca | Considerar se transferência comprometer requisitos |
+| A; MDF + FDM + ferragens | Provavelmente menor desembolso com estoque e corte disponíveis | Depende de contraventamento, juntas e ambiente | Slots grossos + mount fino; retorno exige batentes | Candidata inicial; estabilidade deve ser ensaiada |
+| B; metal/perfis + FDM | Pode custar mais; estoque metálico pode inverter | Maior potencial; seção/juntas ainda bloqueadas | Canais de perfis, se disponíveis; ferragens extras | Fallback para maior estabilidade ou ambiente incompatível |
+| C; integral FDM | Filamento, tempo K1C, falhas e ferragens podem superar A | Fluência, anisotropia e muitas juntas exigem ensaio | Parametrização fácil, ajuste físico depende de juntas | Somente estudo de vão/carga pequenos; não selecionada |
+| D; dois módulos | Duplicação estrutural, montagem e calibração; menos tempo de troca | Depende de usar A/B/C em cada módulo | Ajuste dedicado por bancada; dispensa adaptar toda troca | Considerar se transferência comprometer requisitos |
 
 desembolso = compras de material + ferragens + consumíveis + usinagem terceirizada; esforço = corte + impressão + montagem + ajuste + calibração + retrabalho. Valores numéricos BLOCKED: inventário, preços, tempos e consumo ausentes.
 
@@ -121,81 +121,81 @@ desembolso = compras de material + ferragens + consumíveis + usinagem terceiriz
 
 ### 1. As duas disposições permitem pórtico acoplado às partes fixas?
 
-**SPECULATIVE** — Sim como hipótese espacial, pois há partes aparentes externas à faixa. Grande oferece candidatos mais claros; pequena pode exigir base comum independente que receba esteira e pórtico. Capacidade e acesso não demonstrados.
+**SPECULATIVE**; Sim como hipótese espacial, pois há partes aparentes externas à faixa. Grande oferece candidatos mais claros; pequena pode exigir base comum independente que receba esteira e pórtico. Capacidade e acesso não demonstrados.
 
 ### 2. Mini-esteira: pontos adequados para MDF/FDM/ferragens?
 
-**OBSERVED** — Há placas, rasgos, parafusos e suporte de dois orifícios. Adequação estrutural BLOCKED; não apertar MDF ou clamp diretamente sobre placa não caracterizada. Preferir distribuir carga e capturar elemento estrutural confirmado ou base independente.
+**OBSERVED**; Há placas, rasgos, parafusos e suporte de dois orifícios. Adequação estrutural BLOCKED; não apertar MDF ou clamp diretamente sobre placa não caracterizada. Preferir distribuir carga e capturar elemento estrutural confirmado ou base independente.
 
 ### 3. Grande: barras/perfis/chapas/fixações?
 
-**OBSERVED** — Perfis nas pernas, travessa inferior, longarinas/chapas laterais e parafusos/aberturas. Guia possui ajustes e não é datum confiável demonstrado. Não usar caixa elétrica ou capas amarelas como suporte.
+**OBSERVED**; Perfis nas pernas, travessa inferior, longarinas/chapas laterais e parafusos/aberturas. Guia possui ajustes e não é datum confiável demonstrado. Não usar caixa elétrica ou capas amarelas como suporte.
 
 ### 4. Estrutura MDF, FDM, metal ou híbrida?
 
-**SPECULATIVE** — Priorizar A híbrida: portal MDF contraventado, mounts FDM pequenos e ferragens metálicas. B metálica se rigidez/ambiente/repetibilidade exigirem ou se já houver perfis disponíveis.
+**SPECULATIVE**; Priorizar A híbrida: portal MDF contraventado, mounts FDM pequenos e ferragens metálicas. B metálica se rigidez/ambiente/repetibilidade exigirem ou se já houver perfis disponíveis.
 
 ### 5. Mais barata?
 
-**SPECULATIVE** — A tem menor desembolso provável se MDF, PETG, ferragens e ferramentas de corte já disponíveis. Inventário, horas de oficina, consumo e retrabalho podem inverter resultado; FDM total não é automaticamente barato.
+**SPECULATIVE**; A tem menor desembolso provável se MDF, PETG, ferragens e ferramentas de corte já disponíveis. Inventário, horas de oficina, consumo e retrabalho podem inverter resultado; FDM total não é automaticamente barato.
 
 ### 6. Melhor rigidez?
 
-**SPECULATIVE** — B tem maior potencial com seções e juntas adequadas. Não existe ranking validado sem vãos, cargas, espessuras e ensaio. Contraventamento e folga das juntas podem dominar o material.
+**SPECULATIVE**; B tem maior potencial com seções e juntas adequadas. Não existe ranking validado sem vãos, cargas, espessuras e ensaio. Contraventamento e folga das juntas podem dominar o material.
 
 ### 7. Mais simples de ajustar?
 
-**SPECULATIVE** — B com perfis de canal pode facilitar reposicionamento, se esse tipo de perfil existir. A com slots de ajuste grosso e mounts curtos de ajuste fino também é simples; slots não definem repetibilidade.
+**SPECULATIVE**; B com perfis de canal pode facilitar reposicionamento, se esse tipo de perfil existir. A com slots de ajuste grosso e mounts curtos de ajuste fino também é simples; slots não definem repetibilidade.
 
 ### 8. Melhor preservação de calibração?
 
-**SPECULATIVE** — Frame óptico comum rígido, batentes/pinos metálicos e ajustes travados. B tem vantagem potencial; D evita remontagem entre máquinas mas exige duas calibrações mantidas. Toda transferência exige verificação.
+**SPECULATIVE**; Frame óptico comum rígido, batentes/pinos metálicos e ajustes travados. B tem vantagem potencial; D evita remontagem entre máquinas mas exige duas calibrações mantidas. Toda transferência exige verificação.
 
 ### 9. Peças MDF?
 
-**SPECULATIVE** — Montantes largos, travessa, contraventamentos, placas-base e distribuição de carga em ambiente seco; não interfaces finas sujeitas a aperto pontual ou referência de precisão por borda nua.
+**SPECULATIVE**; Montantes largos, travessa, contraventamentos, placas-base e distribuição de carga em ambiente seco; não interfaces finas sujeitas a aperto pontual ou referência de precisão por borda nua.
 
 ### 10. Peças FDM?
 
-**SPECULATIVE** — Mounts curtos PETG, espaçadores não críticos, adaptadores geométricos, difusores/anteparos conforme óptica, guias de cabos e caixa eletrônica ventilada. Sem suporte real de câmera até conhecer modelo/furação/massa.
+**SPECULATIVE**; Mounts curtos PETG, espaçadores não críticos, adaptadores geométricos, difusores/anteparos conforme óptica, guias de cabos e caixa eletrônica ventilada. Sem suporte real de câmera até conhecer modelo/furação/massa.
 
 ### 11. Peças metálicas?
 
-**SPECULATIVE** — Parafusos, porcas, arruelas/chapas de distribuição, pinos/batentes e cantoneiras existentes. Perfis primários apenas no fallback ou se estoque/ensaio justificar. Nenhuma rosca ou força de aperto especificada.
+**SPECULATIVE**; Parafusos, porcas, arruelas/chapas de distribuição, pinos/batentes e cantoneiras existentes. Perfis primários apenas no fallback ou se estoque/ensaio justificar. Nenhuma rosca ou força de aperto especificada.
 
 ### 12. Raspberry Pi fora?
 
-**SPECULATIVE** — Sim, caixa fixa na base/chassi, apoiada, acessível e ventilada. Reduz carga, momento, calor e tração de cabos no frame óptico; benefício quantitativo BLOCKED. Exceção apenas se interface/distância de cabos e sincronismo exigirem e houver avaliação mecânica.
+**SPECULATIVE**; Sim, caixa fixa na base/chassi, apoiada, acessível e ventilada. Reduz carga, momento, calor e tração de cabos no frame óptico; benefício quantitativo BLOCKED. Exceção apenas se interface/distância de cabos e sincronismo exigirem e houver avaliação mecânica.
 
 ### 13. Câmeras, iluminação e trigger?
 
-**SPECULATIVE** — Reservar três câmeras: superior e duas laterais como hipótese herdada, não layout óptico validado. Luzes próximas dos campos úteis, evitando reflexos/oclusões. Trigger no mesmo frame, a montante da inspeção conforme sentido real; encoder separado no acionamento/interface própria após medição.
+**SPECULATIVE**; Reservar três câmeras: superior e duas laterais como hipótese herdada, não layout óptico validado. Luzes próximas dos campos úteis, evitando reflexos/oclusões. Trigger no mesmo frame, a montante da inspeção conforme sentido real; encoder separado no acionamento/interface própria após medição.
 
 ### 14. Adaptadores dependentes de medidas?
 
-**BLOCKED** — Adapter-A: seção, paredes, superfícies, acessos, função/furação e carga do chassi. Adapter-B: material/espessura, posição/condição dos rasgos, parafusos e travessas. Ambos: datums, CG/carga, exclusões, ferragens, cabos e repetibilidade.
+**BLOCKED**; Adapter-A: seção, paredes, superfícies, acessos, função/furação e carga do chassi. Adapter-B: material/espessura, posição/condição dos rasgos, parafusos e travessas. Ambos: datums, CG/carga, exclusões, ferragens, cabos e repetibilidade.
 
 ### 15. Um módulo, dois ou pórtico adaptável?
 
-**SPECULATIVE** — Pórtico óptico comum com adaptadores específicos A/B como hipótese principal; manter geometria relativa das três câmeras. D se troca frequente, bases incompatíveis, campo de visão ou vibração impedirem plataforma comum.
+**SPECULATIVE**; Pórtico óptico comum com adaptadores específicos A/B como hipótese principal; manter geometria relativa das três câmeras. D se troca frequente, bases incompatíveis, campo de visão ou vibração impedirem plataforma comum.
 
 ### 16. Modelos reutilizáveis como referência?
 
-**REFERENCE** — Relatórios/YAMLs locais para proveniência e envelopes; GitHub para organização de mounts e controle. Catálogos para variantes e planejamento de levantamento. Nenhum modelo existente qualificado como adaptador pronto.
+**REFERENCE**; Relatórios/YAMLs locais para proveniência e envelopes; GitHub para organização de mounts e controle. Catálogos para variantes e planejamento de levantamento. Nenhum modelo existente qualificado como adaptador pronto.
 
 ### 17. Apenas inspiração, sem copiar?
 
-**REFERENCE** — MakerWorld permanece descoberta com conteúdo/licença bloqueados; esteiras completas não equivalem a grip óptico. Rolos, correia, clamp e mounts externos não devem ser transplantados sem requisitos, licença e verificação dimensional.
+**REFERENCE**; MakerWorld permanece descoberta com conteúdo/licença bloqueados; esteiras completas não equivalem a grip óptico. Rolos, correia, clamp e mounts externos não devem ser transplantados sem requisitos, licença e verificação dimensional.
 
 ## Registro individual das fotos
 
-### Imagem 1 — grande
+### Imagem 1: grande
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-grande/1.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
 
 Vista lateral oblíqua: correia preta, estrutura de aparência metálica, pés, travessa inferior, caixa lateral e controle; etiqueta 220 V aparente, sem identificação inequívoca.
 
@@ -209,13 +209,13 @@ Vista lateral oblíqua: correia preta, estrutura de aparência metálica, pés, 
 
 **Perspectiva:** Guia regulável ao fundo; lateral oposta e underside ocultos; encurtamento longitudinal.
 
-### Imagem 2 — grande
+### Imagem 2: grande
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-grande/2.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
 
 Vista girada e oblíqua: motor sob extremidade, terminais amarelos, pernas e guia com manípulos.
 
@@ -229,13 +229,13 @@ Vista girada e oblíqua: motor sob extremidade, terminais amarelos, pernas e gui
 
 **Perspectiva:** Rotação da câmera e perspectiva acentuada; cabos ocultam regiões; nenhuma dimensão dedutível.
 
-### Imagem 3 — grande
+### Imagem 3: grande
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-grande/3.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
 
 Vista longitudinal pelo acionamento: motor externo, caixa lateral, terminais amarelos, pés e guia.
 
@@ -249,13 +249,13 @@ Vista longitudinal pelo acionamento: motor externo, caixa lateral, terminais ama
 
 **Perspectiva:** Profundidade fortemente comprimida; face traseira e contatos sob a correia não visíveis.
 
-### Imagem 4 — grande
+### Imagem 4: grande
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-grande/4.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
 
 Vista oblíqua oposta: duas estruturas de pernas, travessa baixa, parafusos/aberturas laterais e guia elevada.
 
@@ -269,13 +269,13 @@ Vista oblíqua oposta: duas estruturas de pernas, travessa baixa, parafusos/aber
 
 **Perspectiva:** Perspectiva; parede, piso e cadeira não são escala conhecida.
 
-### Imagem 5 — grande
+### Imagem 5: grande
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-grande/5.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
 
 Vista pela extremidade livre: correia, terminais amarelos, guia com duas hastes, travessa entre pés.
 
@@ -289,13 +289,13 @@ Vista pela extremidade livre: correia, terminais amarelos, guia com duas hastes,
 
 **Perspectiva:** Longarinas em fuga; pontos de fixação ao fundo não resolvidos.
 
-### Imagem 6 — grande
+### Imagem 6: grande
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-grande/6.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
 
 Vista pelo motor: motor sob rolete, chapa lateral com aberturas, guia ajustável, estrutura inferior.
 
@@ -309,13 +309,13 @@ Vista pelo motor: motor sob rolete, chapa lateral com aberturas, guia ajustável
 
 **Perspectiva:** Parte traseira próxima da parede; acesso para ferramenta não demonstrado.
 
-### Imagem 7 — grande
+### Imagem 7: grande
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-grande/7.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
 
 Vista longitudinal próxima da parede: motor, caixa, seta de transporte aparente e guia.
 
@@ -329,13 +329,13 @@ Vista longitudinal próxima da parede: motor, caixa, seta de transporte aparente
 
 **Perspectiva:** Parede limita acesso nesta disposição; não prova instalação definitiva; forte fuga longitudinal.
 
-### Imagem 8 — grande
+### Imagem 8: grande
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-grande/8.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Esteira de bancada com estrutura de aparência metálica; modelo/fabricante BLOCKED
 
 Vista lateral mais abrangente: chapa longitudinal com sequência de aberturas, parafusos, pernas, travessa baixa e guia com manípulos.
 
@@ -349,13 +349,13 @@ Vista lateral mais abrangente: chapa longitudinal com sequência de aberturas, p
 
 **Perspectiva:** Ainda oblíqua, sem régua; etiquetas não resolvem fabricante/modelo; lado oculto desconhecido.
 
-### Imagem 9 — pequena
+### Imagem 9: pequena
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-pequena/1.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Mini-esteira didática aparente; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Mini-esteira didática aparente; modelo/fabricante BLOCKED
 
 Vista inclinada: placas pretas brilhantes com rasgos e parafusos, correia clara, motorredutor amarelo/cinza e fonte externa; peça pequena solta sobre região central.
 
@@ -369,13 +369,13 @@ Vista inclinada: placas pretas brilhantes com rasgos e parafusos, correia clara,
 
 **Perspectiva:** Esteira está apoiada sobre cadeira; orientação não define posição operacional ou base estável.
 
-### Imagem 10 — pequena
+### Imagem 10: pequena
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-pequena/2.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Mini-esteira didática aparente; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Mini-esteira didática aparente; modelo/fabricante BLOCKED
 
 Vista lateral: placas recortadas/rasgadas, fixadores e suporte saliente com dois orifícios circulares, além da fonte e cabos.
 
@@ -389,13 +389,13 @@ Vista lateral: placas recortadas/rasgadas, fixadores e suporte saliente com dois
 
 **Perspectiva:** Ocultação interna e reflexos; suporte não comprova sensor instalado nem capacidade de carga.
 
-### Imagem 11 — pequena
+### Imagem 11: pequena
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-pequena/3.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Mini-esteira didática aparente; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Mini-esteira didática aparente; modelo/fabricante BLOCKED
 
 Vista voltada para faixa clara: placas laterais com parafusos/rasgos, suporte com dois orifícios; parte amarela do acionamento visível.
 
@@ -409,13 +409,13 @@ Vista voltada para faixa clara: placas laterais com parafusos/rasgos, suporte co
 
 **Perspectiva:** Equipamento inclinado; largura e espessura física não recuperáveis sem escala.
 
-### Imagem 12 — pequena
+### Imagem 12: pequena
 
 Caminho original (não acessado): `/home/<usuario>/tcc-pnaat/github/evidencias/fotos/esteira-pequena/4.jpg`
 
 **SHA-256: BLOCKED (null).** Usuário proíbe ler github/evidencias; analisada somente imagem anexada. Hash exige bytes originais, não pixels exibidos.
 
-**OBSERVED — identificação:** Mini-esteira didática aparente; modelo/fabricante BLOCKED
+**OBSERVED; identificação:** Mini-esteira didática aparente; modelo/fabricante BLOCKED
 
 Vista superior oblíqua: faixa clara contínua, laterais pretas com rasgos, motorredutor lateral e suporte de dois orifícios ao fundo.
 
@@ -431,15 +431,15 @@ Vista superior oblíqua: faixa clara contínua, laterais pretas com rasgos, moto
 
 ## Referências de descoberta e limites
 
-- [github](https://github.com/simonlansing/conveyor-belt) — REFERENCE. Consultado em 2026-09-09 Projeto didático documenta perfil de alumínio, peças impressas, mounts de câmera/sensores e controle Raspberry Pi. Reutilizar organização modular e separação das funções como referência; nenhuma peça foi importada. Não comprova interface da mini-esteira nem rigidez óptica. Repositório indica MIT; conferir licença do arquivo específico e atribuição antes de reutilização literal.
+- [github](https://github.com/simonlansing/conveyor-belt); REFERENCE. Consultado em 2026-09-09 Projeto didático documenta perfil de alumínio, peças impressas, mounts de câmera/sensores e controle Raspberry Pi. Reutilizar organização modular e separação das funções como referência; nenhuma peça foi importada. Não comprova interface da mini-esteira nem rigidez óptica. Repositório indica MIT; conferir licença do arquivo específico e atribuição antes de reutilização literal.
 
-- [makerworld_modular](https://makerworld.com/en/models/1980909-modular-conveyor-wi-fi-servo-tt-motor-manual) — BLOCKED. Abertura retornou HTTP 402; pesquisa não confirmou conteúdo primário desta página. Título fornecido sugere modularidade e alternativas de acionamento; apenas descoberta/inspiração. Não validar geometria, licença, compatibilidade K1C ou parâmetros de impressão a partir do título. Não copiar arquivos.
+- [makerworld_modular](https://makerworld.com/en/models/1980909-modular-conveyor-wi-fi-servo-tt-motor-manual); BLOCKED. Abertura retornou HTTP 402; pesquisa não confirmou conteúdo primário desta página. Título fornecido sugere modularidade e alternativas de acionamento; apenas descoberta/inspiração. Não validar geometria, licença, compatibilidade K1C ou parâmetros de impressão a partir do título. Não copiar arquivos.
 
-- [makerworld_generator](https://makerworld.com/en/models/2188718-conveyor-generator-poop-conveyor) — BLOCKED. Abertura retornou HTTP 402; conteúdo primário não confirmado. Título fornecido sugere gerador de esteira para resíduos de impressão; finalidade distinta da metrologia óptica. Somente pista de parametrização, sem geometria ou licença verificadas. Não copiar arquivos.
+- [makerworld_generator](https://makerworld.com/en/models/2188718-conveyor-generator-poop-conveyor); BLOCKED. Abertura retornou HTTP 402; conteúdo primário não confirmado. Título fornecido sugere gerador de esteira para resíduos de impressão; finalidade distinta da metrologia óptica. Somente pista de parametrização, sem geometria ou licença verificadas. Não copiar arquivos.
 
-- [in150](https://www.casadodatador.com/datadores-ink-jet/esteira-transportadora-em-inox-para-datadores-inkjet-modelo-in-150) — REFERENCE. Abertura falhou por decodificação; valores provenientes exclusivamente do relatório local obrigatório. 1500 mm de comprimento e 190 mm de lona no relatório de fornecedor. Candidato comercial, nunca identificação da máquina ou furação real. Não usado no novo cenário A Large.
+- [in150](https://www.casadodatador.com/datadores-ink-jet/esteira-transportadora-em-inox-para-datadores-inkjet-modelo-in-150); REFERENCE. Abertura falhou por decodificação; valores provenientes exclusivamente do relatório local obrigatório. 1500 mm de comprimento e 190 mm de lona no relatório de fornecedor. Candidato comercial, nunca identificação da máquina ou furação real. Não usado no novo cenário A Large.
 
-- [large](https://www.casadodatador.com/datadores-ink-jet/esteira-transportadora-em-inox-202-para-datadores-inkjet-modelo-in-150-large-220v) — REFERENCE. Página comercial consultada em 2026-09-09; valores geométricos do cenário rastreados ao YAML local. Catálogo apresenta IN 150 Large, 30 cm de largura e altura de 75 cm. Usado apenas como descoberta e comparação. Envelope 1470 x 300 mm vem do YAML de referência, não das fotos. Não identifica liga metálica, modelo ou capacidade da fixação da unidade real.
+- [large](https://www.casadodatador.com/datadores-ink-jet/esteira-transportadora-em-inox-202-para-datadores-inkjet-modelo-in-150-large-220v); REFERENCE. Página comercial consultada em 2026-09-09; valores geométricos do cenário rastreados ao YAML local. Catálogo apresenta IN 150 Large, 30 cm de largura e altura de 75 cm. Usado apenas como descoberta e comparação. Envelope 1470 x 300 mm vem do YAML de referência, não das fotos. Não identifica liga metálica, modelo ou capacidade da fixação da unidade real.
 
 ## Próximas medições, em ordem
 

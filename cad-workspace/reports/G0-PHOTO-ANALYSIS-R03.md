@@ -1,4 +1,4 @@
-# G0 — análise fotográfica R03
+# G0: análise fotográfica R03
 
 Revisão parcial em 2026-09-09. Grande = candidata A industrial; pequena = candidata B didática. Ambas: `IDENTIFICATION_BLOCKED`. G0 incompleto; `measured: false`, `reference_only: false`, `fabrication_allowed: false`. Não há autorização de fabricação nem conclusão de compatibilidade, capacidade, rigidez ou segurança.
 
@@ -32,25 +32,25 @@ Análise visual histórica: `OBSERVED` em 13 registros, correspondentes a 12 vis
 
 ## 2. Identificação possível de cada esteira
 
-**Grande — OBSERVED:** correia preta, estrutura prateada com pés, motor sob uma extremidade, caixa lateral, controle rotativo, seta e etiqueta com QR. Em IMG-001 e IMG-008, transcrição segura: “220 V”. É texto de etiqueta, não tensão medida nem especificação elétrica validada. Outros caracteres, fabricante, modelo e série: BLOCKED. O acabamento não identifica inox, liga ou revestimento. Associação a A industrial: SPECULATIVE; `IDENTIFICATION_BLOCKED`. Não confirmar IN 150 nem IN 150 Large.
+**Grande; OBSERVED:** correia preta, estrutura prateada com pés, motor sob uma extremidade, caixa lateral, controle rotativo, seta e etiqueta com QR. Em IMG-001 e IMG-008, transcrição segura: “220 V”. É texto de etiqueta, não tensão medida nem especificação elétrica validada. Outros caracteres, fabricante, modelo e série: BLOCKED. O acabamento não identifica inox, liga ou revestimento. Associação a A industrial: SPECULATIVE; `IDENTIFICATION_BLOCKED`. Não confirmar IN 150 nem IN 150 Large.
 
-**Pequena — OBSERVED:** correia clara, placas pretas brilhantes, fixadores, rasgos, motorredutor aparente amarelo/escuro e fonte externa. Nenhuma marca/modelo/série legível. Acrílico e motor tipo TT são SPECULATIVE; material, rotação, tensão, redução e fabricante: BLOCKED. Associação a B didática: SPECULATIVE; `IDENTIFICATION_BLOCKED`. O suporte com duas aberturas não identifica um sensor.
+**Pequena; OBSERVED:** correia clara, placas pretas brilhantes, fixadores, rasgos, motorredutor aparente amarelo/escuro e fonte externa. Nenhuma marca/modelo/série legível. Acrílico e motor tipo TT são SPECULATIVE; material, rotação, tensão, redução e fabricante: BLOCKED. Associação a B didática: SPECULATIVE; `IDENTIFICATION_BLOCKED`. O suporte com duas aberturas não identifica um sensor.
 
 ## 3. Observações por foto
 
-- **IMG-001 — OBSERVED:** Vista geral: correia preta, laterais prateadas, estrutura de pés e travessas, guia elevada com hastes e manípulos, caixa lateral e controle rotativo. Texto legível: 220 V. Etiqueta com grafismos e QR, demais caracteres sem leitura confiável. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-002 — OBSERVED:** Vista oblíqua girada: lateral perfurada, guia com suportes, pés e travessa inferior; motor escuro sob a extremidade, cabo e plugue soltos; extremidades amarelas e ajuste aparente em rasgo. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-003 — OBSERVED:** Vista pela extremidade motorizada: correia envolve região de rolete, motor escuro inferior, caixa lateral com seta, proteções amarelas, pés e guia no extremo oposto. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-004 — OBSERVED:** Vista pelo extremo oposto: laterais, guia com duas hastes transversais de seção circular aparente e manípulos, montantes, travessas e caixa na outra extremidade. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-005 — OBSERVED:** Vista longitudinal: correia sem produto de ensaio, guia de um lado, extremidade curva da correia, montantes e pés. Cabos no ambiente ao fundo não têm vínculo confirmado com a unidade. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-006 — OBSERVED:** Vista oblíqua junto à parede: motor sob a correia, cabo enrolado, caixa lateral, peças amarelas e ajuste aparente; guia ocupa parte do espaço lateral superior. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-007 — OBSERVED:** Vista longitudinal junto à parede: correia e motor na extremidade próxima, caixa com seta, guia na extremidade distante; parede limita visualmente um lado. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-008 — OBSERVED:** Vista lateral geral: chassi prateado com furos e fixadores, pés ligados por travessa inferior, correia preta, guia elevada, caixa e controle. Texto legível: 220 V; fabricante/modelo/série não legíveis com confiança. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-009 — OBSERVED:** Vista da mini-esteira sobre cadeira: placas pretas brilhantes com rasgos e fixadores, faixa clara de correia, conjunto amarelo com corpo escuro e cabo; fonte externa. Pequeno adesivo sem identificação legível. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-010 — OBSERVED:** Vista da mini-esteira inclinada: placas laterais recortadas e rasgadas, fixadores e suporte saliente com duas aberturas circulares. Parte do circuito da correia e regiões internas ficam ocultas. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-011 — OBSERVED:** Vista da face clara da correia: placas pretas nas bordas e suporte com duas aberturas circulares; fixadores visíveis. Posição sobre cadeira não estabelece orientação de operação nem datum. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-012 — OBSERVED:** Vista superior oblíqua: faixa clara entre placas pretas, motorredutor aparente amarelo/escuro numa extremidade, ponta branca saliente, parafusos e rasgos; fonte e cabos soltos. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
-- **IMG-013 — OBSERVED:** Vista da mini-esteira inclinada: placas laterais recortadas e rasgadas, fixadores e suporte saliente com duas aberturas circulares. Parte do circuito da correia e regiões internas ficam ocultas. Uso: Inventário e recuperação de caminho; conteúdo idêntico a IMG-010, sem evidência independente adicional. Duplicada de IMG-010.
+- **IMG-001; OBSERVED:** Vista geral: correia preta, laterais prateadas, estrutura de pés e travessas, guia elevada com hastes e manípulos, caixa lateral e controle rotativo. Texto legível: 220 V. Etiqueta com grafismos e QR, demais caracteres sem leitura confiável. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-002; OBSERVED:** Vista oblíqua girada: lateral perfurada, guia com suportes, pés e travessa inferior; motor escuro sob a extremidade, cabo e plugue soltos; extremidades amarelas e ajuste aparente em rasgo. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-003; OBSERVED:** Vista pela extremidade motorizada: correia envolve região de rolete, motor escuro inferior, caixa lateral com seta, proteções amarelas, pés e guia no extremo oposto. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-004; OBSERVED:** Vista pelo extremo oposto: laterais, guia com duas hastes transversais de seção circular aparente e manípulos, montantes, travessas e caixa na outra extremidade. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-005; OBSERVED:** Vista longitudinal: correia sem produto de ensaio, guia de um lado, extremidade curva da correia, montantes e pés. Cabos no ambiente ao fundo não têm vínculo confirmado com a unidade. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-006; OBSERVED:** Vista oblíqua junto à parede: motor sob a correia, cabo enrolado, caixa lateral, peças amarelas e ajuste aparente; guia ocupa parte do espaço lateral superior. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-007; OBSERVED:** Vista longitudinal junto à parede: correia e motor na extremidade próxima, caixa com seta, guia na extremidade distante; parede limita visualmente um lado. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-008; OBSERVED:** Vista lateral geral: chassi prateado com furos e fixadores, pés ligados por travessa inferior, correia preta, guia elevada, caixa e controle. Texto legível: 220 V; fabricante/modelo/série não legíveis com confiança. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-009; OBSERVED:** Vista da mini-esteira sobre cadeira: placas pretas brilhantes com rasgos e fixadores, faixa clara de correia, conjunto amarelo com corpo escuro e cabo; fonte externa. Pequeno adesivo sem identificação legível. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-010; OBSERVED:** Vista da mini-esteira inclinada: placas laterais recortadas e rasgadas, fixadores e suporte saliente com duas aberturas circulares. Parte do circuito da correia e regiões internas ficam ocultas. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-011; OBSERVED:** Vista da face clara da correia: placas pretas nas bordas e suporte com duas aberturas circulares; fixadores visíveis. Posição sobre cadeira não estabelece orientação de operação nem datum. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-012; OBSERVED:** Vista superior oblíqua: faixa clara entre placas pretas, motorredutor aparente amarelo/escuro numa extremidade, ponta branca saliente, parafusos e rasgos; fonte e cabos soltos. Uso: Seções 2–8: identificação, observações, interfaces, exclusões e espaço óptico.
+- **IMG-013; OBSERVED:** Vista da mini-esteira inclinada: placas laterais recortadas e rasgadas, fixadores e suporte saliente com duas aberturas circulares. Parte do circuito da correia e regiões internas ficam ocultas. Uso: Inventário e recuperação de caminho; conteúdo idêntico a IMG-010, sem evidência independente adicional. Duplicada de IMG-010.
 
 ## 4. Medidas confiáveis extraídas das fotos
 
@@ -58,9 +58,9 @@ Nenhuma: `MEASURED_FROM_PHOTO = 0`; `DERIVED = 0`. Não há régua, paquímetro,
 
 ## 5. Observações sem escala
 
-Grande: OBSERVED — laterais longitudinais com furos e parafusos, montantes de faces planas, travessas de pés e travessa longitudinal inferior; guia superior sobre hastes de seção circular aparente com manípulos; terminações amarelas e ajustes aparentes junto às pontas. Geometria interna de perfis/chapas, composição, espessura e soldas não caracterizadas. Largura da correia: BLOCKED, sem número visual estimado. Os roletes estão parcialmente cobertos pela correia/proteções. Função e curso dos tensores: BLOCKED.
+Grande: OBSERVED; laterais longitudinais com furos e parafusos, montantes de faces planas, travessas de pés e travessa longitudinal inferior; guia superior sobre hastes de seção circular aparente com manípulos; terminações amarelas e ajustes aparentes junto às pontas. Geometria interna de perfis/chapas, composição, espessura e soldas não caracterizadas. Largura da correia: BLOCKED, sem número visual estimado. Os roletes estão parcialmente cobertos pela correia/proteções. Função e curso dos tensores: BLOCKED.
 
-Pequena: OBSERVED — placas recortadas, rasgos, fixadores e suporte saliente. Acrílico não confirmado; espessura, diâmetros, passo e classe de rosca, inclusive M3: BLOCKED. Regiões de eixos/roletes parcialmente ocultas; ponta branca saliente no conjunto amarelo não determina acoplamento, diâmetro ou seção do eixo. Nenhuma avaliação estrutural resulta destas observações.
+Pequena: OBSERVED; placas recortadas, rasgos, fixadores e suporte saliente. Acrílico não confirmado; espessura, diâmetros, passo e classe de rosca, inclusive M3: BLOCKED. Regiões de eixos/roletes parcialmente ocultas; ponta branca saliente no conjunto amarelo não determina acoplamento, diâmetro ou seção do eixo. Nenhuma avaliação estrutural resulta destas observações.
 
 ## 6. Interfaces candidatas
 
@@ -78,7 +78,7 @@ Todas sem escala. Fixa/móvel abaixo descreve apenas aparência ou hipótese cin
 
 A-IF-03 pode ser guia ou parte de suporte de acessórios/datador (SPECULATIVE); nenhum datador foi identificado. Caixa e painel não são superfície estrutural aprovada. Nenhuma interface desta lista está selecionada para receber carga.
 
-**Candidatos a datums — SPECULATIVE, sem coordenadas:**
+**Candidatos a datums; SPECULATIVE, sem coordenadas:**
 
 - Grande: DATUM-A-CANDIDATE = face externa de lateral; DATUM-B-CANDIDATE = borda longitudinal dessa lateral; DATUM-C-CANDIDATE = face de extremidade do chassi (IMG-004/008).
 - Pequena: DATUM-A-CANDIDATE = face externa de placa preta; DATUM-B-CANDIDATE = borda longitudinal da mesma placa; DATUM-C-CANDIDATE = face de extremidade do chassi (IMG-010/012).
@@ -150,9 +150,9 @@ REFERENCE (comparação histórica preservada de r02, sem nova consulta nesta re
 
 ## 14. Arquivos r03 e verificação
 
-- `data/g0/esteira-b-g0-photo-r03.yaml` — SHA-256: `fdf03d7d5df8825410d9b32bd5ffc74e4eb8f409c3232142bfe3a7ca30ccbc0f`.
-- `data/g0/photo-inventory-r03.json` — SHA-256: `2633fa2050d0f37586fe38b6b870cb39d53b1f572dce3de478a0f752cc96c3fe`.
-- `reports/G0-PHOTO-ANALYSIS-R03.md` — relatório; hash integral conferido externamente após sua escrita, sem autorreferência.
+- `data/g0/esteira-b-g0-photo-r03.yaml`; SHA-256: `fdf03d7d5df8825410d9b32bd5ffc74e4eb8f409c3232142bfe3a7ca30ccbc0f`.
+- `data/g0/photo-inventory-r03.json`; SHA-256: `2633fa2050d0f37586fe38b6b870cb39d53b1f572dce3de478a0f752cc96c3fe`.
+- `reports/G0-PHOTO-ANALYSIS-R03.md`; relatório; hash integral conferido externamente após sua escrita, sem autorreferência.
 
 Comandos executados com o interpretador solicitado:
 
@@ -171,6 +171,6 @@ YAML e JSON parseados; caminhos, IDs e SHA-256 conferidos. O conteúdo de measur
 
 ## 15. Preservação do escopo
 
-A auditoria comparou SHA-256, tamanho e mtime dos 169 arquivos preexistentes acessíveis no workspace, excluindo .git, .agents, .codex, .venv, latex-workspace e links simbólicos: nenhuma alteração ou remoção; somente os três arquivos r03 são resultados persistentes. Os três arquivos r02 e o validador permanecem intactos.
+A auditoria comparou SHA-256, tamanho e mtime dos 169 arquivos preexistentes acessíveis no workspace, excluindo .git, .venv, latex-workspace e links simbólicos: nenhuma alteração ou remoção; somente os três arquivos r03 são resultados persistentes. Os três arquivos r02 e o validador permanecem intactos.
 
 As 13 fotos foram abertas somente para leitura com O_NOATIME; hashes, tamanhos, mtime, ctime e atime foram conferidos antes/depois e permaneceram iguais. Nenhuma imagem foi copiada, movida, editada, publicada ou versionada. Nenhuma escrita em github/docs, latex-workspace ou fora de cad-workspace; nenhum comando de impressora ou Git de alteração foi executado. A auditoria não afirma monitoramento global de outros processos ou diretórios excluídos.

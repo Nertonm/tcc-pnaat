@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "<string>", line 2, in <module>
-  File "<string>", line 23, in <module>
-KeyError: 'b'
