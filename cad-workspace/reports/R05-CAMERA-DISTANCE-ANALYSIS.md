@@ -1,4 +1,4 @@
-# R05 — Distancia de câmera para captura da garrafa (foco <= 2L)
+# R05: Distancia de câmera para captura da garrafa (foco <= 2L)
 
 STATUS: analise optica formal, dados oficiais + contratto R05.
 
@@ -42,13 +42,13 @@ Wide (V 67deg):      2L -> 287mm / 1.5L 274 / 1L 249 / 600 199 / 200 116
 
 ---
 
-# REVISAO 2026-09-10 — 2 cameras em angulo obtuso (baixa-esquerda + alta-direita)
+# REVISAO 2026-09-10: 2 cameras em angulo obtuso (baixa-esquerda + alta-direita)
 
 Proposta: 2 cameras, cada uma cobre MEIA garrafa, eixos obtusos opostos.
 Revisado com formula d = S_proj / (2*tan(theta/2)), S_proj = S*cos(E),
 restricao cabo: d_eixo * 1.10 (dobra) <= 190mm (cabo Standard-Mini 200).
 
-## Cenario A — cada camera cobre meia garrafa (S = H/2)
+## Cenario A: cada camera cobre meia garrafa (S = H/2)
 2L (H345 D105):
   E=30  Standard 200mm >CABO | Wide 113mm OK
   E=45  Standard 163mm OK    | Wide 92mm  OK
@@ -59,8 +59,8 @@ restricao cabo: d_eixo * 1.10 (dobra) <= 190mm (cabo Standard-Mini 200).
 Resolucao (2L, E=45): Standard 163mm -> 20.4 px/mm; Wide 92 -> 20.9 px/mm.
 3mm de inclinacao de tampa -> ~43 px. Detectavel com folga.
 
-## Cenario B — camera ALTA dedicada a tampa (S=55mm)
-2L Standard 81mm / Wide 43mm — folga ABSURDA; cabo 200mm tranquilo.
+## Cenario B: camera ALTA dedicada a tampa (S=55mm)
+2L Standard 81mm / Wide 43mm; folga ABSURDA; cabo 200mm tranquilo.
 A distancia da tampa e dominada pelo FOV horizontal (D), nao pela elevacao.
 
 ## Conclusao da revisao
@@ -80,7 +80,7 @@ A distancia da tampa e dominada pelo FOV horizontal (D), nao pela elevacao.
 
 ---
 
-# CORRECAO 2026-09-10 — lados distintos: cada camera ve a LATERAL INTEIRA
+# CORRECAO 2026-09-10: lados distintos: cada camera ve a LATERAL INTEIRA
 
 A premissa "meia garrafa por camera" estava ERRADA: como sao lados
 distintos (esq-baixo + dir-alto), CADA camera precisa cobrir a altura
@@ -99,7 +99,7 @@ vol | cam | E_min | deixo | lat | resV (px/mm) | 3mm tampa -> px
 
 Pior caso 2L: Standard precisa E>=69deg (quase vertical, 21deg da
 vertical); Wide E>=49deg. Distancia de eixo ~165-172mm em ambos ->
-DENTRO do cabo 200mm (folga ~12%).
+dentro do cabo 200mm (folga ~12%).
 
 ## O que a correcao muda (revisao critica)
 1. A elevacao minima sobe MUITO para garrafa alta: 2L Standard = 69deg.

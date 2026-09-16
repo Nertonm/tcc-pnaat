@@ -74,7 +74,7 @@ def build(p):
         items[name]['collision_shape']=box((bb.xlen,bb.ylen,bb.zlen),bb.center.toTuple())
         depth=b.zlen
         plate=cq.Workplane('XY').box(36,36,4).faces('>Z').workplane().pushPoints([(-14,-10),(14,-10),(-14,10),(14,10)]).hole(3.4).val().translate((0,0,depth+5))
-        add('support_camera_module_3_'+name,place(plate),'mount',True,attachment='M3 hardware outside PCB envelope; PCB retention/insulating spacers pending bench fit')
+        add('support_camera_module_3_'+name,place(plate),'mount',True,attachment='M3 hardware outside PCB envelope, PCB retention/insulating spacers pending bench fit')
         if sign==0:
             mount=box((80,24,8),(25,0,top+depth+11)).fuse(box((8,24,frame_z-(top+depth+15)),(61,0,(frame_z+top+depth+15)/2)))
         else:
@@ -85,7 +85,7 @@ def build(p):
             arm=arm.rotate((0,0,0),(0,0,1),angle)
             mount=mount.cut(arm)
             add('metal_arm_'+name,arm,'structure')
-        add('mount_'+name,mount,'mount',True,requires='metal insert/captive hardware; unverified attachment')
+        add('mount_'+name,mount,'mount',True,requires='metal insert/captive hardware, unverified attachment')
         lc=(45,0,top-30) if not sign else (45,sign*(spacing/2-30),h/2)
         add('light_'+name,box((20,65,15),lc),'lighting',component='unselected envelope')
     # Pi on a tray attached to MDF, four isolated stand-offs under official mounting pattern.
@@ -159,7 +159,7 @@ def preview(items,out):
             ax.add_patch(Rectangle((b[i],b[j]),b[i+3]-b[i],b[j+3]-b[j],fill=False,edgecolor=color,lw=.8))
             if c['role'] in ('camera','pi','trigger','encoder','dock'): ax.text((b[i]+b[i+3])/2,(b[j]+b[j+3])/2,n,fontsize=7)
         ax.autoscale(); ax.set_aspect('equal'); ax.grid(alpha=.15); ax.set_title(title)
-    fig.suptitle('PNAAT 3 views — REFERENCE_ONLY — not for fabrication\nConservative bounding envelopes; all bench dimensions ASSUMPTIONS')
+    fig.suptitle('PNAAT 3 views; REFERENCE_ONLY; not for fabrication\nConservative bounding envelopes; all bench dimensions ASSUMPTIONS')
     fig.tight_layout(); fig.savefig(out/'overview.pdf'); fig.savefig(out/'overview.png',dpi=130); plt.close(fig)
 
 def generate(config=CONFIG,out=OUT):

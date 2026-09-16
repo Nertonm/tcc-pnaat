@@ -56,13 +56,13 @@ def build(p):
     put('receiver',receiver,'receiver',dockpos,positive_retention=['undercut rails','end stop','M5 cross-lock through tongue'],mounting_xy=mounting)
     tongue=box((62,w-16-2*clearance,5),(-8,0,9))
     tongue=tongue.fuse(box((6,20,15),(20,0,19)))
-    # Two M5 holes attach a metal bridge to the optical frame; locking screw is separate.
+    # Two M5 holes attach a metal bridge to the optical frame, locking screw is separate.
     for x,y in [(-22,0),(-8,-30),(-8,30)]: tongue=hole(tongue,x,y)
     put('tongue',tongue,'tongue',dockpos,frame_attachment='2 M5 at (-8,+/-30), metal bridge to 30 mm frame/base',lock_hole_xy=[-22,0])
     cam=cq.Workplane('XY').center(-2,0).circle(10).extrude(6).val()
     cam=cam.fuse(box((12,45,6),(0,22.5,3)))
     cam=hole(cam,0,0)
-    put('cam_lever',cam,'cam',(dockpos[0]+35,0,dockpos[2]+21),pivot='M5 shoulder bolt/metal sleeve; washers; locknut; eccentricity 2 mm',contact='tongue end lug; snug only; M5 cross-lock required',infill='100% local contact trial or metal contact washer; no load rating')
+    put('cam_lever',cam,'cam',(dockpos[0]+35,0,dockpos[2]+21),pivot='M5 shoulder bolt/metal sleeve, washers; locknut; eccentricity 2 mm',contact='tongue end lug; snug only; M5 cross-lock required',infill='100% local contact trial or metal contact washer; no load rating')
     # Separate keeper traps screw head with commercial captive washer under a removable bridge.
     keeper=box((20,20,9),(0,0,4.5)).cut(box((13,22,6),(0,0,3)))
     keeper=hole(keeper,0,0)
@@ -131,9 +131,9 @@ def build(p):
     # Sensor plates accept straps and slots, dimensions explicitly assumed.
     for n,size,pos in [('trigger_mount',(65,34,5),(-150,-115,77.5)),('diagnostic_mount',(40,30,5),(-70,-120,92)),('ky040_mount',(50,40,6),(-260,-143,-60))]:
         s=box(size,(0,0,size[2]/2)); s=slots(s,[(-size[0]/2+10,0),(size[0]/2-10,0)],12)
-        put(n,s,'sensor_mount',pos,dimensions='ASSUMED envelope; adjustable straps; no real sensor hole pattern')
+        put(n,s,'sensor_mount',pos,dimensions='ASSUMED envelope, adjustable straps; no real sensor hole pattern')
     coupling=box((50,35,8),(0,0,4)); coupling=slots(coupling,[(-15,0),(15,0)],14); coupling=hole(coupling,0,0,4)
-    put('encoder_coupling_plate',coupling,'sensor_mount',(-260,-160,-45),note='8 mm assumed clearance; commercial flexible shaft coupler to roller required, diameter unselected')
+    put('encoder_coupling_plate',coupling,'sensor_mount',(-260,-160,-45),note='8 mm assumed clearance, commercial flexible shaft coupler to roller required, diameter unselected')
     # Channels are fixed on profiles by M5 ears, with soft straps for strain relief.
     guide=box((48,28,4),(0,0,2))
     for y in (-12,12): guide=guide.fuse(box((28,4,12),(0,y,8)))
@@ -164,7 +164,7 @@ def build(p):
     for n,c in items.items():
         if c['role']=='cable':
             c['frame_anchors']=['cable_guide_%02d'%i for i in range(9)]
-            c['anchor_note']='M5 metal stand-offs connect actual corridor guide stations to frame; soft terminal restraint'
+            c['anchor_note']='M5 metal stand-offs connect actual corridor guide stations to frame, soft terminal restraint'
     # Lighting strap carriers, no invented light supplier.
     for name in ('C_TOP','C_LEFT','C_RIGHT'):
         center=items['light_'+name]['shape'].Center().toTuple()
@@ -205,7 +205,7 @@ def preview(items,out):
         ax.add_patch(Rectangle((b[0],y),b[3]-b[0],max(6,b[5]-b[2]),fill=False,edgecolor='steelblue'))
         ax.text(0,y+30,n,fontsize=9)
     ax.set_xlim(-10,160); ax.set_ylim(-10,290); ax.set_aspect('equal'); ax.set_title('DOCK exploded schematic X/Z\nM5 pin through tongue / receiver / adapter',fontsize=10)
-    fig.suptitle('R02 ASSUMPTION_DRIVEN / PROTOTYPE_CONCEPT — mm assumed; projection of envelopes, not a cutting template\nA: hooked clamp | B: captured saddle | C: bolted bench — same receiver; vendor bodies reference only')
+    fig.suptitle('R02 ASSUMPTION_DRIVEN / PROTOTYPE_CONCEPT; mm assumed; projection of envelopes, not a cutting template\nA: hooked clamp | B: captured saddle | C: bolted bench; same receiver; vendor bodies reference only')
     fig.tight_layout(); fig.savefig(out/'overview.pdf'); fig.savefig(out/'overview.png',dpi=140); plt.close(fig)
 
 def generate(config=CONFIG,out=OUT):

@@ -1,4 +1,4 @@
-# R05 v7 — três câmeras para IN 150 nominal
+# R05 v7: três câmeras para IN 150 nominal
 
 Status: `CONTRACT_UPDATED / GEOMETRY_REFERENCE_ONLY`. Esta revisão restaura o
 arranjo do TCC com três vistas: `C_TOP` e `C_LEFT` usam câmeras Raspberry Pi

@@ -1,11 +1,11 @@
-# R05 — Design da Coluna Modular "Pi=Haste" (conjectura travada)
+# R05: Design da Coluna Modular "Pi=Haste" (conjectura travada)
 
 Status: DESIGN_REFERENCE / LIKELY. Não é validação estrutural nem liberação de fabricação.
 
 ## Arquitetura (decidida com Nerton)
 
 A Pi 5 é a HASTE: a sua case impressa é uma coluna modular que envolve a Pi na base e sobe
-em módulos encaixáveis até a C_TOP. Nada de torre metálica externa. O cabo flat desce POR DENTRO
+em módulos encaixáveis até a C_TOP. Nada de torre metálica externa. O cabo flat desce POR dentro
 da coluna (canal impresso). Backlight fica atrás da garrafa, coluna fica na lateral (não ocluir o
 corredor óptico traseiro).
 
@@ -27,7 +27,7 @@ Cada módulo ≤ 220×220×250mm (cabe K1C). Encaixe recursivo: 1 interface infe
 - Apenas garrafas PET de refil. Envelope: H máx 370mm, H mín 130mm, D máx 120mm, D mín 50mm.
 - C_TOP acima da maior garrafa: ponto óptico ~Z 520-560mm. Altura vinda dos módulos, não peça única.
 
-## Optica — decisões
+## Optica: decisões
 
 - C_TOP = CM3 WIDE (DFOV 120°/102°H/67°V, f=2.75mm, Z=12.4mm) => menor altura massiva.
 - Histórico v5: C_LEFT/C_RIGHT = CM3 STANDARD (DFOV 75°/66°H/41°V, f=4.74mm)

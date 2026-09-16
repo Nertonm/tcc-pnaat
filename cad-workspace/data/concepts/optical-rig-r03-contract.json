@@ -1,15 +1,80 @@
 {
   "status": "CONCEPT_CONTRACT",
   "release_class": "OPTICAL_PORTAL_R03",
-  "coordinate_system": {"+X": "transport downstream", "+Y": "transverse", "+Z": "up"},
+  "coordinate_system": {
+    "+X": "transport downstream",
+    "+Y": "transverse",
+    "+Z": "up"
+  },
   "belt_plane_z": 0,
   "inspection_plane_x": 0,
-  "product_envelope_mm": {"x": 80, "y": 80, "z": 240},
+  "product_envelope_mm": {
+    "x": 80,
+    "y": 80,
+    "z": 240
+  },
   "product_center_y": 0,
-  "camera_views": {"C_TOP": {"role": "cap", "position": [0,0,420], "axis": [0,0,-1], "fov_deg": 55}, "C_LEFT": {"role": "body", "position": [0,-230,150], "axis": [0,1,0], "fov_deg": 55}, "C_RIGHT": {"role": "body", "position": [0,230,150], "axis": [0,-1,0], "fov_deg": 55}},
-  "frame": {"base_mm": [600,520,18], "post_y": [-180,180], "post_height": 430, "open_x_corridor": true},
-  "sensors": {"trigger": "E18-D80NK upstream", "diagnostic": "VL53L0X", "encoder": "KY-040 roller upstream"},
-  "retention": "receiver datum + tongue + positive cam lock + captive M5",
-  "mcp_reference": "references/vendor/qwen-mm-plugins",
-  "assumptions": true
+  "camera_views": {
+    "C_TOP": {
+      "role": "cap",
+      "position": [
+        0,
+        0,
+        420
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "fov_deg": 55
+    },
+    "C_LEFT": {
+      "role": "body",
+      "position": [
+        0,
+        -230,
+        150
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "fov_deg": 55
+    },
+    "C_RIGHT": {
+      "role": "body",
+      "position": [
+        0,
+        230,
+        150
+      ],
+      "axis": [
+        0,
+        -1,
+        0
+      ],
+      "fov_deg": 55
+    }
+  },
+  "frame": {
+    "base_mm": [
+      600,
+      520,
+      18
+    ],
+    "post_y": [
+      -180,
+      180
+    ],
+    "post_height": 430,
+    "open_x_corridor": true
+  },
+  "sensors": {
+    "trigger": "E18-D80NK upstream",
+    "diagnostic": "VL53L0X",
+    "encoder": "KY-040 roller upstream"
+  },
+  "retention": "receiver datum + tongue + positive cam lock + captive M5"
 }

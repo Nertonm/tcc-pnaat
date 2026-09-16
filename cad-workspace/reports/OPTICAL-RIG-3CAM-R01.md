@@ -1,4 +1,4 @@
-# PNAAT — esboço paramétrico de três vistas
+# PNAAT: esboço paramétrico de três vistas
 
 Status: **REFERENCE_ONLY**. measured=false; fabrication_allowed=false. Decisão: conceito para inspeção digital e planejamento de montagem; compatibilidade real A/B OPEN/BLOCKED_G0. Nenhuma fabricação, publicação ou liberação mecânica.
 

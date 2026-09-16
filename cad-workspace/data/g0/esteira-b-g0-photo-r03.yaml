@@ -5,12 +5,6 @@ evidence_state: partial_photo_review
 measured: false
 reference_only: false
 fabrication_allowed: false
-rules:
-- Revisão parcial por observação de fotos; identidade da candidata B não confirmada.
-- Nenhuma escala física conhecida; nenhum valor dimensional extraído.
-- Dados comerciais não são dados da unidade; não foram transferidos para measurements.
-- Datums são candidatos; nenhuma compatibilidade ou capacidade estrutural demonstrada.
-- Estados de evidência desta tarefa não equivalem à aprovação dos gates.
 units:
   state: BLOCKED
   length: null

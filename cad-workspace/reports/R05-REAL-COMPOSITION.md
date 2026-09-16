@@ -1,4 +1,4 @@
-# R05 — Composição com modelos reais (progresso)
+# R05: Composição com modelos reais (progresso)
 
 Status: REAL_MODELS_COMPOSED. Arquitetura Pi=haste, coluna modular, usando modelos existentes (não caixas).
 
@@ -20,7 +20,7 @@ Status: REAL_MODELS_COMPOSED. Arquitetura Pi=haste, coluna modular, usando model
 - C_LEFT/C_RIGHT: mounts laterais (Z~150) mirando ±Y.
 - Case na base; grip por baixo na esteira.
 
-## Pendências (refino via Astra p/ crédito restaurado)
+## Pendências
 1. Backplate CM3 em cada mount: substituir backplate GS/HQ do pi-camera-mounts pelo STEP oficial do CM3.
 2. Janela óptica por variante (Wide p/ C_TOP, Standard p/ laterais).
 3. Módulos superior da coluna com encaixe macho/fêmea + M4 + canal FPC.
