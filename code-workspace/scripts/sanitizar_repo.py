@@ -7,7 +7,7 @@
 
 Regras (documentadas em docs/SANITIZACAO.md):
   1. midia/binario versionado (foto, video, STL, STEP, ckpt...)
-  2. segredo com valor (chave de API, token, chave privada) — heuristica de VALOR, nao de palavra
+  2. segredo com valor (chave de API, token, chave privada); heuristica de VALOR, nao de palavra
   3. infraestrutura: IP privado, hostname do homelab, caminho pessoal, usuario de SO
   4. notebook com saida embutida (imagem base64 / outputs preenchidos)
   5. arquivo grande rastreado
@@ -25,10 +25,14 @@ import re
 import subprocess
 import sys
 import tempfile
+import sys as _sys
 from pathlib import Path
 
-EXT_MIDIA = (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".heic", ".gif", ".mp4", ".mov", ".avi",
-             ".stl", ".step", ".stp", ".3mf", ".fcstd", ".obj", ".glb", ".ckpt", ".h5")
+# politica unica de midia: o import precisa vir antes de EXT_BINARIO usar EXT_MIDIA
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from politica_midia import EXT_MIDIA  # noqa: E402
+
+# EXT_MIDIA vem da politica unica (import abaixo).
 EXT_CODIGO = (".py", ".sh", ".mk", ".toml", ".cfg")
 EXT_TEXTO = (".md", ".json", ".yaml", ".yml", ".txt", ".tex", ".csv")
 # Varredura por exclusao: tudo que nao for binario/midia entra no scan de texto.
@@ -40,8 +44,10 @@ EXT_BINARIO = EXT_MIDIA + (".pyc", ".so", ".o", ".a", ".zip", ".gz", ".tar", ".p
 # importada tambem por commit_gate.sh e doctor.py (antes as tres divergiam sobre dataset/).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from politica_midia import (  # noqa: E402
+    EXT_MIDIA,
     LIMITE_GRANDE_BYTES,
     MIDIA_PERMITIDA,
+    TETO_CAD_BYTES,
     TETO_PERMITIDO_BYTES,
     motivo_achado,
 )
@@ -57,6 +63,14 @@ RE_SEGREDO = re.compile(
 RE_IP_PRIVADO = re.compile(r"\b(?:10\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b")
 RE_CAMINHO_PESSOAL = re.compile(r"(?<![\w./-])/home/(?!<)[a-z][a-z0-9_-]{2,}|[A-Z]:\\\\?Users\\\\?[A-Za-z0-9._-]+")
 RE_HOST = re.compile(r"\b(?:gaspar|abacate|acerola|moranguinho)\b", re.I)
+#: Sufixo que marca hostname usado como ROTULO DE CAMERA, isto e, nome de dado
+#: ("acerola-csi.jpg", "Acerola USB"). Convencao de nomeacao das cameras, nao
+#: vazamento de infraestrutura; por isso nao conta como achado.
+RE_SUFIXO_ROTULO_CAMERA = r"[- ](?:csi|usb|esp)\b"
+RE_HOST_INFRA = re.compile(
+    r"\b(?:gaspar|abacate|acerola|moranguinho)\b(?!{})".format(RE_SUFIXO_ROTULO_CAMERA),
+    re.I,
+)
 # Usuario de sistema em uso operacional (runuser -u X, find -user X, GF_USER=X).
 # Nao casa nome proprio em prosa (ex.: identificacao do entregavel), nem contas genericas
 # (root/usuario/user), nem `systemctl --user` (o `-user` precisa nao ser precedido de hifen).
@@ -145,9 +159,9 @@ def detectar(caminhos: list[str], raiz: Path = Path(".")) -> dict[str, list[str]
         if not p.is_file():
             continue
         baixo = rel.lower()
-        if baixo.endswith(EXT_MIDIA):
-            if not MIDIA_PERMITIDA.match(rel):
-                achados["midia"].append(rel)
+        # A decisao de midia e de tamanho sai de motivo_achado (politica unica).
+        # Havia aqui um segundo teste com MIDIA_PERMITIDA cravada em dataset/, que
+        # ignorava a excecao de cad-produto/** e duplicava a regra.
         try:
             tamanho = p.stat().st_size
         except OSError:
@@ -176,7 +190,7 @@ def detectar(caminhos: list[str], raiz: Path = Path(".")) -> dict[str, list[str]
             if RE_SEGREDO.search(texto):
                 achados["segredo"].append(rel)
             if (RE_IP_PRIVADO.search(texto) or RE_CAMINHO_PESSOAL.search(texto)
-                    or RE_HOST.search(texto) or RE_USUARIO_SO.search(texto)):
+                    or RE_HOST_INFRA.search(texto) or RE_USUARIO_SO.search(texto)):
                 achados["infra"].append(rel)
             if RE_CAMADA_FERRAMENTA.search(texto):
                 achados["ferramenta"].append(rel)
@@ -189,7 +203,7 @@ def detectar(caminhos: list[str], raiz: Path = Path(".")) -> dict[str, list[str]
         if RE_SEGREDO.search(texto):
             achados["segredo"].append(rel)
         if (RE_IP_PRIVADO.search(texto) or RE_CAMINHO_PESSOAL.search(texto)
-                or RE_HOST.search(texto) or RE_USUARIO_SO.search(texto)):
+                or RE_HOST_INFRA.search(texto) or RE_USUARIO_SO.search(texto)):
             achados["infra"].append(rel)
         if RE_CAMADA_FERRAMENTA.search(texto):
             achados["ferramenta"].append(rel)
@@ -203,25 +217,25 @@ def aplicar(achados: dict[str, list[str]], raiz: Path = Path("."), arquivos: lis
     for rel in achados.get("ferramenta", []):
         p = raiz / rel
         if rel in prot or rel in IGNORAR_ESCRITA or rel.lower().endswith(EXT_CODIGO) or not p.is_file():
-            continue
+            continue  # receipt, arquivo de politica ou codigo: reportado, nao reescrito
         texto = p.read_text(errors="replace")
         novo = RE_CAMADA_FERRAMENTA.sub("(fora do repo)", texto)
         if novo != texto:
             p.write_text(novo)
             mudados += 1
-    for rel in achados["infra"]:
+    for rel in achados.get("infra", []):
         p = raiz / rel
         if rel in prot or rel in IGNORAR_ESCRITA or rel.lower().endswith(EXT_CODIGO) or not p.is_file():
             continue  # receipt, arquivo de politica ou codigo: reportado, nao reescrito
         texto = p.read_text(errors="replace")
         novo = RE_IP_PRIVADO.sub("(host interno)", texto)
         novo = RE_CAMINHO_PESSOAL.sub("/home/<usuario>", novo)
-        novo = RE_HOST.sub("<host>", novo)
+        novo = RE_HOST_INFRA.sub("<host>", novo)  # nao renomeia rotulo de camera
         novo = re.sub(*SUB_USUARIO, string=novo)
         if novo != texto:
             p.write_text(novo)
             mudados += 1
-    for rel in achados["notebook"]:
+    for rel in achados.get("notebook", []):
         p = raiz / rel.split(" ")[0]
         if not p.is_file():
             continue
@@ -267,6 +281,32 @@ def _selftest() -> int:
         assert any(x.startswith("dataset/gigante.jpg") for x in exc2["grande"]), \
             "imagem de dataset acima do teto deveria ser achado"
         assert "fora.jpg" in exc2["midia"], "imagem fora de dataset deveria continuar sendo achado"
+        # contraprovas da excecao de cad-produto/** (regra unica em politica_midia.py)
+        (raiz / "cad-produto").mkdir(exist_ok=True)
+        (raiz / "cad-produto" / "peca.stl").write_bytes(b"solid peca\n" * 100)
+        (raiz / "cad-produto" / "README.md").write_text("documentacao do entregavel\n")
+        (raiz / "outra-pasta").mkdir(exist_ok=True)
+        (raiz / "outra-pasta" / "peca.stl").write_bytes(b"solid peca\n" * 100)
+        exc3 = detectar(["cad-produto/peca.stl", "cad-produto/README.md", "outra-pasta/peca.stl"], raiz)
+        assert "cad-produto/peca.stl" not in exc3["midia"], "CAD do entregavel deveria ser permitido"
+        assert "outra-pasta/peca.stl" in exc3["midia"], "CAD fora de cad-produto deve continuar achado"
+        assert "cad-produto/README.md" not in exc3["midia"], "texto nao e midia"
+        # teto proprio: peca de cad-produto acima do teto e achado; abaixo nao cai na regra de grande
+        (raiz / "cad-produto" / "gigante.stl").write_bytes(b"x" * (TETO_CAD_BYTES + 1))
+        exc4 = detectar(["cad-produto/gigante.stl", "cad-produto/peca.stl"], raiz)
+        assert any(x.startswith("cad-produto/gigante.stl") for x in exc4["grande"]), \
+            "CAD de cad-produto acima do teto deveria ser achado"
+        assert "cad-produto/peca.stl" not in exc4["grande"], \
+            "CAD dentro do teto nao pode cair na regra de arquivo grande"
+        # contraprova do rotulo de camera: nome do host como etiqueta de dado NAO e
+        # infraestrutura; hostname solto continua sendo
+        (raiz / "rot.md").write_text("arquivos acerola-csi.jpg, acerola-usb.jpg e Acerola USB\n")
+        (raiz / "host.md").write_text("a ponte roda no acerola e no gaspar\n")
+        ach_rot = detectar(["rot.md", "host.md", "limpo.md"], raiz)
+        assert "rot.md" not in ach_rot["infra"], "rotulo de camera virou falso positivo"
+        assert "host.md" in ach_rot["infra"], "hostname solto deve continuar sendo achado"
+        aplicar(ach_rot, raiz, ["rot.md", "host.md", "limpo.md"])
+        assert "acerola-csi.jpg" in (raiz / "rot.md").read_text(), "apply renomeou rotulo de camera"
         # contraprova: documento limpo nao gera achado
         (raiz / "limpo.md").write_text("caminho relativo e (host interno) apenas\n")
         assert not detectar(["limpo.md"], raiz)["infra"], "falso positivo em documento limpo"
@@ -312,11 +352,12 @@ def _selftest() -> int:
         (raiz / "ops2.md").write_text("find . -user root -print\nsystemctl --user status pnaat\n")
         assert not detectar(["ops2.md"], raiz)["infra"], "falso positivo em conta generica"
 
-        # arquivo de politica (.gitignore) e reportado, nunca reescrito
+        # arquivo de politica (.gitignore) nunca e reescrito pelo apply.
+        # NAO testar a deteccao aqui: detectar() le o conteudo do INDICE do repo atual
+        # (_conteudo_indexado) e o cwd do selftest e o repo real, que tem .gitignore proprio.
         (raiz / ".gitignore").write_text("**/(fora do repo)\n10.0.0.1\n")
-        ach_gi = detectar([".gitignore"], raiz)
-        assert ".gitignore" in ach_gi["infra"], ach_gi
-        aplicar(ach_gi, raiz, [".gitignore"])
+        aplicar({"midia": [], "segredo": [], "infra": [".gitignore"], "notebook": [], "grande": [],
+                 "ferramenta": []}, raiz, [".gitignore"])
         assert "10.0.0.1" in (raiz / ".gitignore").read_text(), "reescreveu arquivo de politica"
     print("selftest OK: detecta midia, segredo, infra, camada de ferramenta, saida de notebook e arquivo grande; apply funciona")
     return 0
@@ -359,11 +400,11 @@ def main() -> int:
                           ("infra", "infraestrutura (IP/host/caminho)"),
                           ("notebook", "notebook com saida"), ("grande", "arquivo grande"),
                           ("ferramenta", "camada de ferramenta (vault/agente)")):
-        print(f"\n{chave} ({len(achados[chave])}) — {rotulo}:")
+        print(f"\n{chave} ({len(achados[chave])}); {rotulo}:")
         for x in achados[chave][:15]:
             print("   -", x)
     if cobertos:
-        print(f"\nreceipt ({len(cobertos)}) — NAO sanear: o hash cobre o arquivo, regenerar com o produtor:")
+        print(f"\nreceipt ({len(cobertos)}); NAO sanear: o hash cobre o arquivo, regenerar com o produtor:")
         for x in cobertos[:15]:
             print("   -", x)
     print(f"\nRESULTADO: {total} achado(s) | arquivos rastreados: {len(caminhos)}")

@@ -30,11 +30,9 @@ echo "[gate] (3/4) sanitizador de higiene"
 "$PY" "$CW/scripts/sanitizar_repo.py" || { echo "[gate] FALHA na sanitizacao"; falhas=1; }
 
 echo "[gate] (4/4) midia no staging"
-MIDIA_PAT='\.(jpg|jpeg|png|bmp|webp|mp4|mov|stl|step|FCStd|3mf)$'
-# Excecao: TODAS as imagens dentro de dataset/ sao versionadas de proposito.
-# Video, CAD e qualquer midia fora de dataset/ continuam bloqueados.
-MIDIA_PERMITIDA='^dataset/.*\.(jpg|jpeg|png|bmp|webp|heic|gif)$'
-midia_lista=$(git diff --cached --name-only --diff-filter=ACM | grep -iE "$MIDIA_PAT" | grep -vE "$MIDIA_PERMITIDA" || true)
+# Regra unica em code-workspace/scripts/politica_midia.py. NAO repetir regex aqui:
+# duplicar a expressao foi o que fez os tres guardas divergirem no passado.
+midia_lista=$(git diff --cached --name-only --diff-filter=ACM | "$PY" "$CW/scripts/politica_midia.py" --bloqueados || true)
 midia=$(printf '%s\n' "$midia_lista" | grep -c . || true)
 if [ "${midia:-0}" -gt 0 ]; then
   echo "[gate] FALHA: $midia arquivo(s) de midia no staging (midia fora do git)"
