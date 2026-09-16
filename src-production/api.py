@@ -33,6 +33,7 @@ import os
 import re
 import socket
 import sqlite3
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -1681,14 +1682,19 @@ def main(argv: list[str] | None = None) -> int:
         help="bearer token para POSTs; tambem pode vir de PNAAT_API_TOKEN",
     )
     a = ap.parse_args(argv)
-    servidor = criar_servidor(
-        Path(a.db),
-        Path(a.site),
-        a.porta,
-        Path(a.evidencias) if a.evidencias else None,
-        host=a.host,
-        token=a.token,
-    )
+    try:
+        servidor = criar_servidor(
+            Path(a.db),
+            Path(a.site),
+            a.porta,
+            Path(a.evidencias) if a.evidencias else None,
+            host=a.host,
+            token=a.token,
+        )
+    except (ValueError, FileNotFoundError) as erro:
+        # erro de configuracao do operador nao pode virar traceback: a API nem chegou a servir
+        print(f"erro de configuracao: {erro}", file=sys.stderr)
+        return 2
     print(
         f"{VERSAO_API}: http://{a.host}:{servidor.server_address[1]}/  (site em {a.site})"
     )

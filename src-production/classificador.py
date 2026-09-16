@@ -61,13 +61,18 @@ if TYPE_CHECKING:  # anotacao apenas: numpy nao entra no import do modulo
 #: repo, em dataset/nosso/tampa; reorganizado em 2026-09-13: o rig virou bloco separado
 #: (dataset/nosso/rig, 81 frames normais, nunca treinado) e os publicos ficaram fora do git.
 #: Caminho declarado e nao procurado; conjunto ausente e ERRO, nao "treina com o que tem".
-CONJUNTO_PADRAO = Path(os.environ.get("PNAAT_CONJUNTO_TAMPA") or Path.home() / "tcc-pnaat/github/dataset/nosso/tampa")
+CONJUNTO_PADRAO = Path(
+    os.environ.get("PNAAT_CONJUNTO_TAMPA")
+    or Path.home() / "tcc-pnaat/github/dataset/nosso/tampa"
+)
 
 #: pesos da deteccao. O arquivo vive na raiz do clone; NAO ha download automatico: baixar peso em
 #: silencio seria efeito de rede escondido dentro da decisao (falha explicita se faltar).
 #: NAO derivar de CONJUNTO_PADRAO: o conjunto proprio mudou de lugar (dataset/nosso/tampa) e o peso
 #: continua na raiz do clone.
-RAIZ_DO_CLONE = Path(os.environ.get("PNAAT_RAIZ_DO_CLONE") or Path.home() / "tcc-pnaat/github")
+RAIZ_DO_CLONE = Path(
+    os.environ.get("PNAAT_RAIZ_DO_CLONE") or Path.home() / "tcc-pnaat/github"
+)
 PESOS_DA_DETECCAO = str(RAIZ_DO_CLONE / "yolov8n.pt")
 CLASSE_DA_CAIXA = "bottle"
 CONFIANCA_DA_DETECCAO = 0.15

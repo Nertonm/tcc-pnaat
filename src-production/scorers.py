@@ -18,7 +18,10 @@ from pathlib import Path
 
 PESOS = os.environ.get(
     "PNAAT_PESOS",
-    str(Path(os.environ.get("PNAAT_MODELOS_DIR") or Path.home() / "pnaat-modelos") / "v0-lateral-detector/runs/v0-lateral-yolov8n/weights/best.pt"),
+    str(
+        Path(os.environ.get("PNAAT_MODELOS_DIR") or Path.home() / "pnaat-modelos")
+        / "v0-lateral-detector/runs/v0-lateral-yolov8n/weights/best.pt"
+    ),
 )
 CONF = float(os.environ.get("PNAAT_CONF", "0.05"))
 IMGSZ = int(os.environ.get("PNAAT_IMGSZ", "320"))
