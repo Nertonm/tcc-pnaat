@@ -316,6 +316,16 @@ def _captura_para_site(c, raiz: Path) -> dict:
 
 
 def _rota_health(ctx: dict) -> dict:
+    # Abre pelo caminho CANONICO (registro.py) antes de contar: o esquema precisa existir. Sem isso,
+    # banco novo derrubava /api/health com 503 `banco_indisponivel` -- e a causa ("esquema ausente")
+    # ficava escondida atras do mesmo erro de um banco corrompido.
+    esquema: dict[str, object] = {"aberto": False, "erro": None}
+    try:
+        registro = Registro.abrir(ctx["db"])
+        registro.fechar()
+        esquema["aberto"] = True
+    except (sqlite3.Error, OSError) as erro:
+        esquema["erro"] = f"{type(erro).__name__}: {str(erro)[:120]}"
     painel = Painel.abrir(ctx["db"])
     try:
         itens = int(painel.conexao.execute("SELECT COUNT(*) FROM item").fetchone()[0])
@@ -327,6 +337,7 @@ def _rota_health(ctx: dict) -> dict:
         "existe": ctx["db"].exists(),
         "bytes": ctx["db"].stat().st_size if ctx["db"].exists() else 0,
         "itens": itens,
+        "esquema": esquema,
     }
     camera = _sonda_camera()
     servicos = [
@@ -338,7 +349,7 @@ def _rota_health(ctx: dict) -> dict:
         {
             "nome": "Banco do registro",
             "detalhe": str(ctx["db"]),
-            "estado": "ok" if banco["existe"] else "sem banco",
+            "estado": "ok" if esquema["aberto"] else f"esquema indisponivel: {esquema['erro']}",
         },
         {
             "nome": "Classificador de vista (adaptador)",
