@@ -62,3 +62,6 @@ integração acima é sintática e por dependência declarada, não compilada.
 
 Nenhuma branch foi apagada, renomeada ou reescrita; nenhum ref remoto foi alterado; nada foi
 empurrado para o `origin` nesta rodada. Os refs acima continuam disponíveis para consulta item a item.
+
+> Nota de namespace (2026-09-16): o diretorio mecanico se chamava `cad-workspace` na
+> data deste documento; hoje e `cad-produto`. O texto abaixo foi preservado como registro.

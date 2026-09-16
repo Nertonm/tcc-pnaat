@@ -170,13 +170,17 @@ _backup-*/
 *.backup-*/
 
 # cad-produto e o entregavel do CAD e vai versionado COM os binarios.
-# Excecao estreita, alinhada a politica unica em code-workspace/scripts/politica_midia.py:
-# vale so dentro de cad-produto, e o CAD de terceiro continua fora.
+# Excecao ESTREITA de verdade: so os diretorios do entregavel. Glob de extensao em toda a arvore
+# (`!cad-produto/**/*.stl`) liberava tambem exports/, stage*, vendor/ -- area de trabalho e
+# referencia de terceiro entravam junto por descuido.
 !cad-produto/
-!cad-produto/**/*.stl
-!cad-produto/**/*.step
-!cad-produto/**/*.png
-!cad-produto/**/*.pdf
+!cad-produto/00-produto/**
+!cad-produto/01-estrutura/**
+!cad-produto/02-montagem/**
+!cad-produto/03-referencias/freecad/**
+
+# Referencias de terceiro: area externa, tambem fora do historico.
+cad-produto/03-referencias/vendor
 
 # Area de workspaces sujos: fica no disco, nao entra no historico
 dirty-workspaces/

@@ -18,7 +18,7 @@ não como requisito do núcleo.
 | `docs/pocs/03-sincronizacao-fisica/` | F0 | sincronização física com a esteira | expansão |
 | `docs/pocs/07-atuacao-confirmada/` | F0 | atuação confirmada (o núcleo usa `07` = dashboard) | expansão |
 | `docs/pocs/01-classificador-topo/`, `04-correlacao-multi-no/` | F0 | recorte de PoC diferente do entregue | ver `docs/pocs/MAPA.md` |
-| `cad-workspace/reports/OPTICAL-RIG-3CAM-*`, `R05-V7-3CAM-NOMINAL.md` | F0/F2 | preveem **3 câmeras**; a decisão vigente é 2 câmeras em ângulo obtuso | histórico + revisar decisão |
+| `cad-produto/reports/OPTICAL-RIG-3CAM-*`, `R05-V7-3CAM-NOMINAL.md` | F0/F2 | preveem **3 câmeras**; a decisão vigente é 2 câmeras em ângulo obtuso | histórico + revisar decisão |
 | D-11 / D-12 (detector evolutivo de anomalia) | F0 | escritos antes da evidência de *domain gap* (MVTec ≠ rig) | revisar |
 | `docs/design/grip-extensivel.md` | F2 | extensão mecânica de bancada | expansão |
 
