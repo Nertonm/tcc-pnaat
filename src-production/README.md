@@ -27,7 +27,24 @@ historico congelado (nada daqui importa de la; nada de la sobe para ca sem reesc
 | `mapeamento_rig.py` | Mapa declarado camera -> vista (sem ele a ingestao para) |
 | `apresentacao.py` | Relatorio HTML estatico a partir das consultas do painel (o elo 'apresenta') |
 | `api.py` | API HTTP do hub; serve o site estatico na mesma origem |
+| `preprocessamento.py` | Padrao de pre-processamento do projeto (recorte, rotacao, flat-field, CLAHE, elipse); consumido pela cadeia do detector via `preparo_detector.py` |
+| `scorers.py` | Scorers do harness OOD; carregado por `avaliacao_ood.py --scorer <arquivo>:<funcao>` (import por caminho, nao por nome de modulo) |
+| `avaliacao_ood.py` | Harness de avaliacao fora de distribuicao (CLI), com baseline e scorer externo |
 | `esquema.sql` | Esquema do hub, com as invariantes no banco (o topo nunca decide; decidir exige dominio) |
+
+## Fiacao: quem consome o que
+
+Modulo sem consumidor nao e bug por si; consumidor NAO DECLARADO e. Esta tabela e o contrato de
+fiacao de cada modulo que ja foi lido como "orfao" numa auditoria:
+
+| modulo | quem chama | como |
+|---|---|---|
+| `preprocessamento.py` | `preparo_detector.py`, `classificador_yolo.py`, `orquestracao.py`, `pacote_detector.py` | import direto |
+| `scorers.py` | `avaliacao_ood.py` | import por caminho (`--scorer src-production/scorers.py:funcao`); grep estatico nao enxerga |
+| `fonte_gatilho.py` | operador/CLI da bancada (RF-01.1) | ingestao do CSV do gatilho; nao e chamado pela API |
+| `captura.py` | `orquestracao.py` | import direto (fonte de bancada; camera ao vivo quando o rig existir) |
+| `/api/rig-serie/` | operador, sem cliente no site | endpoint de operador: `curl -H "X-Token: $TOKEN" <origem>/api/rig-serie/<serie>/<arquivo>` |
+| contrato v0 | nada | geracao v0 substituida; fora do produto e sem teste no repo |
 
 ## Frontend do site
 
@@ -80,6 +97,21 @@ Campos que o contrato precisa declarar, e por que cada um e guarda:
 | `classes` | por NOME; a ordem do indice no `.pt` e a identidade da classe |
 | `modelo.sha256` | contrato de um peso nao vale para outro |
 | `fingerprint` | hash canonico dos campos que mudam a predicao; arquivo editado a mao nao abre |
+
+## Mapa de classes: corpus x dominio
+
+O corpus e rotulado com quatro palavras; o dominio da tampa tem tres classes. O mapeamento e
+DELIBERADO e vale a pena declarar em texto, porque o numero de capa depende dele:
+
+| rotulo do corpus | classe no dominio da tampa | por que |
+|---|---|---|
+| `normal` | `normal` | tampa boa |
+| `tampa_ausente` | `tampa_ausente` | falta a tampa |
+| `tampa_mal_rosqueada` | `defeito_tampa` | tampa presente e mal posicionada |
+| `deformidade` | `normal` | a deformidade e do CORPO: a tampa daquela garrafa esta boa. Rotular deformidade no dominio da tampa seria o confundimento classe x dominio que a D-28 proibe |
+
+Consequencia: o numero do classificador da tampa conta as imagens de `deformidade` como `normal`.
+Quem le o numero precisa saber disso; o codigo ja declara o mapeamento em `classificador.py`.
 
 ## Regras de decisao que a cadeia faz valer
 
@@ -194,6 +226,44 @@ bloqueia versionar isso. O arquivo de 2026-09-16 vive FORA do repositorio, no di
 `_fora-do-repo/runtime-rig-20260916/` (com `RECIBO.txt` e `SHA256SUMS`). E
 historico: nao e servido, nao e implantado e nao e autoridade para promocao -- o runtime ativo exige o
 proprio canario e rollback.
+
+### Reproduzir o numero de capa
+
+O numero nao se sustenta por afirmacao: os quatro passos abaixo o recomputam. Peso, contrato e
+artefato do classificador sao DADOS e vivem fora do git (o indice em `models/INDEX.csv` guarda o
+sha256 de cada peso treinado):
+
+```bash
+# 1. o artefato do classificador (dado, fora do git): sha256 e caminho declarados
+sha256sum dataset/modelo-inferencia.npz dataset/modelo-inferencia.json
+# 2. o canario recomputa recall por classe e taxa de inconclusivo do json declarado
+.venv/bin/python src-production/canario_modelo_artefato.py --json /tmp/canario.json
+# 3. o contrato do detector: ROI, limiares e impressao digital do peso
+.venv/bin/python src-production/treino/gera_contrato_preproc.py --conferir
+# 4. o pacote do detector, conferido dos dois lados
+.venv/bin/python src-production/treino/pacote_entrega.py --pacote models/ENTREGA/v9b-lateral-calibrado
+```
+
+Sem o artefato do passo 1 o canario nao roda -- e diz isso, em vez de dar numero menor em silencio.
+
+## O pacote: o que entra no wheel
+
+O wheel leva os modulos de runtime listados em `py-modules` (conferido por `tests/test_packaging.py`)
+e NAO leva `site/`, `firmware/` nem `dataset/`. E desenho, nao esquecimento: o site e servido do
+diretorio do clone (`api.py --site`, default a propria `site/`), e midia/dado nao viaja em wheel. Quem
+instala o pacote para servir o site aponta `--site` para a copia dele; o `sdist` vai completo, para
+quem quer reconstruir a arvore.
+
+## Divida declarada de estilo
+
+`make lint` roda o ruff com a config do `pyproject.toml` (regras de correcao + B). O gate de commit
+roda so as regras F -- as que pegam nome indefinido e codigo morto, que foi como um `NameError` de
+teste passou verde uma vez. O residuo ATUAL, medido, nao escondido:
+
+- `F401`/`E401` (import morto): corrigido;
+- `E741` (nome ambiguo): declarado no ignore com motivo;
+- `E702`, `E731`, `B905`, `B007`, `F841`, `B023`, `B904`: pendente, sem efeito de comportamento
+  conhecido. Nao ha "0 achados" aqui: ha achado com dono.
 
 ## O que NAO esta verificado
 
