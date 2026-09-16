@@ -4,7 +4,7 @@
 
 - `docs/` e a fonte normativa de requisitos, escopo, arquitetura, decisoes e PoCs.
 - `latex-workspace/` e a fonte de publicacao do PDF. Divergencias com `docs/` devem ser resolvidas antes do PDF ser aceito.
-- `cad-workspace/` e o namespace do pipeline mecanico: fontes CAD, canarios G0, scripts, design especifico e relatorios de referencia. Ele nao duplica a documentacao normativa.
+- `cad-produto/` e o namespace do pipeline mecanico: fontes CAD, canarios G0, scripts, design especifico e relatorios de referencia. Ele nao duplica a documentacao normativa.
 - `evidencias/` versiona somente READMEs, templates, metadados e hashes. Fotos, videos, PDFs de instrumento, dumps e dados brutos ficam fora do Git por padrao.
 
 ## Estados

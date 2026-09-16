@@ -207,7 +207,7 @@ def gatilhos_recentes(painel: Painel, limite: int = 50) -> tuple[dict, ...]:
     """Ultimos eventos de gatilho, mais recente primeiro.
 
     O registro guarda o disparo que NAO virou item (falso, duplicado, invalido); e o unico jeito de
-    isso ser observavel. `teste` marca o ensaio de bancada (motivo), para nao se confundir com o
+    isso ser observavel. `teste` marca a execucao de bancada (motivo), para nao se confundir com o
     disparo do sensor em producao.
     """
     linhas = painel.conexao.execute(

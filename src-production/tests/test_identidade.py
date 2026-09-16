@@ -131,7 +131,7 @@ def test_falha_dentro_da_reserva_nao_grava_e_libera_o_numero(tmp_path):
     seq = SequenciaDeItens(reg._cx)
     with pytest.raises(RuntimeError), seq.reservar("L1") as item_id:
         assert item_id == "L1-000001"
-        raise RuntimeError("falhou no meio do ensaio")
+        raise RuntimeError("falhou no meio da execucao")
     assert reg.contar() == 0
     with seq.reservar("L1") as item_id:  # o numero pode ser reusado: nada foi gravado
         assert item_id == "L1-000001"

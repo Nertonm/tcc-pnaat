@@ -67,7 +67,7 @@ As duas vistas laterais decidem o domínio da tampa e o do corpo; a vista de top
 | NumPy | 2.3.5 | Operações numéricas e métricas | `pyproject.toml` (dependência) |
 | OpenCV (`opencv-python`) | 5.0.0.93 | Captura, ROI e processamento de imagem | `pyproject.toml` (dependência) |
 | SciPy | 1.17.1 | Ajuste de elipse e intervalos de confiança | `pyproject.toml` (dependência) |
-| Pillow | 12.3.0 | Manipulação de imagens em testes | `pyproject.toml` (dependência) |
+| Pillow | 12.3.0 | Manipulação de imagens em testes | `pyproject.toml` (extra `leitura`) |
 | pyserial | 3.5 | Comunicação serial com o ESP32 | `pyproject.toml` (dependência) |
 | pytest | 9.1.1 | Suíte de testes | `pyproject.toml` (extra `dev`) |
 | anomalib | 2.6.1 | Detector one-class, camada de expansão | `pyproject.toml` (extra `anomalib`) |
@@ -160,7 +160,7 @@ Cada passo corresponde a uma dependência listada acima. Comandos executados a p
 git clone <url-do-repositorio> tcc-pnaat && cd tcc-pnaat
 ```
 
-2. Ambiente Python (NumPy, OpenCV, SciPy, Pillow, pyserial; extra `dev` com pytest). O venv é único, na raiz do clone, e o projeto roda em Python 3.11 (o `python3` do host pode ser mais novo e quebrar o extra `anomalib`):
+2. Ambiente Python (NumPy, OpenCV e pyserial (dependencias); SciPy e Pillow no extra `leitura`; extra `dev` com pytest e ruff). O venv é único, na raiz do clone, e o projeto roda em Python 3.11 (o `python3` do host pode ser mais novo e quebrar o extra `anomalib`):
 
 ```bash
 python3.11 -m venv .venv
@@ -226,7 +226,7 @@ make -C code-workspace hooks     # instala o gate neste clone
 make -C code-workspace sanitizar # checagem de higiene (sai != 0 se houver achado)
 ```
 
-Bypass consciente: `PNAAT_HOOK_BYPASS='<motivo>'`, com o motivo também no trailer `Bypass: <motivo>` da mensagem do commit.
+Bypass consciente: `PNAAT_HOOK_BYPASS=1` **e** o trailer `Bypass: <motivo>` na mensagem do commit — o gate confere o trailer e recusa o escape sem motivo declarado.
 
 ## Convenções
 

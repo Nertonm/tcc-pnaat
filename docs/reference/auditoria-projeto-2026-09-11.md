@@ -75,3 +75,6 @@ Base: estado real do repo em `cd54d98` (12 commits à frente do origin, nada pus
 2. Reconciliar docs (P1-1, P1-2) — 1 commit por frente.
 3. Unificar venv + mover `preproc.py` (P2-6, P2-8) — com revisão.
 4. Retomar o esqueleto do dataset (rig-v0 → manifest → split) e o fluxo dos patches.
+
+> Nota de namespace (2026-09-16): o diretorio mecanico se chamava `cad-workspace` na
+> data deste documento; hoje e `cad-produto`. O texto abaixo foi preservado como registro.

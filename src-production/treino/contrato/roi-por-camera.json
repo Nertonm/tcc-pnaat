@@ -1,0 +1,105 @@
+{
+ "quando": "2026-09-15T12:29:24+00:00",
+ "margem": 0.12,
+ "fonte": "dataset/TRABALHO/anotacoes-ls.csv",
+ "cameras": {
+  "csi": {
+   "caixas": 39,
+   "cobertura": 1.0,
+   "roi_normalizada": {
+    "x": 0.0,
+    "y": 0.0,
+    "w": 0.5727,
+    "h": 0.5118
+   },
+   "roi_pixel": {
+    "x": 0,
+    "y": 0,
+    "w": 742,
+    "h": 497,
+    "resolucao_origem": [
+     1296,
+     972
+    ]
+   },
+   "ganho_escala_em_320": 1.85,
+   "fracao_da_imagem": 0.2931
+  },
+  "desconhecida": {
+   "caixas": 44,
+   "cobertura": 1.0,
+   "roi_normalizada": {
+    "x": 0.166,
+    "y": 0.0867,
+    "w": 0.7509,
+    "h": 0.7526
+   }
+  },
+  "espcam": {
+   "caixas": 56,
+   "cobertura": 1.0,
+   "roi_normalizada": {
+    "x": 0.1091,
+    "y": 0.0,
+    "w": 0.8337,
+    "h": 1.0
+   },
+   "roi_pixel": {
+    "x": 70,
+    "y": 0,
+    "w": 534,
+    "h": 480,
+    "resolucao_origem": [
+     640,
+     480
+    ]
+   },
+   "ganho_escala_em_320": 1.1,
+   "fracao_da_imagem": 0.8337
+  },
+  "rig": {
+   "caixas": 37,
+   "cobertura": 1.0,
+   "roi_normalizada": {
+    "x": 0.2783,
+    "y": 0.0,
+    "w": 0.5551,
+    "h": 0.3163
+   },
+   "roi_pixel": {
+    "x": 361,
+    "y": 0,
+    "w": 719,
+    "h": 307,
+    "resolucao_origem": [
+     1296,
+     972
+    ]
+   },
+   "ganho_escala_em_320": 2.39,
+   "fracao_da_imagem": 0.1756
+  },
+  "usb": {
+   "caixas": 11,
+   "cobertura": 1.0,
+   "roi_normalizada": {
+    "x": 0.2445,
+    "y": 0.0,
+    "w": 0.7555,
+    "h": 0.4549
+   },
+   "roi_pixel": {
+    "x": 176,
+    "y": 0,
+    "w": 544,
+    "h": 582,
+    "resolucao_origem": [
+     720,
+     1280
+    ]
+   },
+   "ganho_escala_em_320": 1.71,
+   "fracao_da_imagem": 0.3437
+  }
+ }
+}

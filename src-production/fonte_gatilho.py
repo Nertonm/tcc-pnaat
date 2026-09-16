@@ -1,4 +1,4 @@
-"""Fonte de eventos de gatilho do release: le o CSV do ensaio e o persiste no registro.
+"""Fonte de eventos de gatilho do release: le o CSV da execucao e o persiste no registro.
 
 Por que esta fonte existe: RF-01.1 (`docs/requisitos/01-funcionais.md:25`) exige UM evento de
 gatilho por passagem, com timestamp, debounce e identificacao da origem, e o criterio de
@@ -7,9 +7,9 @@ invalido. O gatilho e gravado SEPARADO do item (`esquema.sql`, tabela `evento_ga
 justamente porque o disparo que nao virou item precisa entrar: e o unico jeito de falso disparo,
 duplicata e sinal invalido ficarem observaveis (`painel.gatilho_por_fonte`).
 
-O CSV e a ENTRADA. O arquivo e o que a bancada/ensaio gravou; este modulo nao gera evento
+O CSV e a ENTRADA. O arquivo e o que a bancada gravou; este modulo nao gera evento
 sintetico, nao preenche linha faltante, nao inventa `item_id`, nao cria item e nao conserta token
-fora do vocabulario. Ler um ensaio e transcrever, nao produzir.
+fora do vocabulario. Ler uma execucao e transcrever, nao produzir.
 
 Estado fora de `aceito|duplicado|falso|invalido` derruba o ARQUIVO INTEIRO
 (`EstadoForaDoVocabulario`): se o estado da linha nao pertence ao vocabulario, nao se sabe o que a
@@ -28,8 +28,8 @@ O que esta fonte NAO verifica, e por que nao:
     absoluto (com fuso, senao nao e rastreavel); a ordem do arquivo e preservada como ordem de
     gravacao, sem reordenar nem deduzir o que veio antes;
   - REINGESTAO: processar o mesmo arquivo duas vezes grava duas vezes. `evento_gatilho` nao tem
-    chave natural e inventar uma (hash da linha) seria inventar identidade. Ingerir o mesmo ensaio
-    duas vezes e erro de operacao do ensaio, e aparece somado em `painel.gatilho_por_fonte()`.
+    chave natural e inventar uma (hash da linha) seria inventar identidade. Ingerir a mesma execucao
+    duas vezes e erro de operacao da execucao, e aparece somado em `painel.gatilho_por_fonte()`.
 
 Sem `dict[str, Any]`: a entrada e `EventoDeGatilho`, a saida e `ResumoDaFonte`.
 """
@@ -57,7 +57,7 @@ COLUNA_ITEM = "item_id"
 COLUNA_DEBOUNCE = "debounce_ms"
 
 COLUNAS_OBRIGATORIAS: tuple[str, ...] = (COLUNA_TIMESTAMP, COLUNA_ESTADO, COLUNA_FONTE)
-#: Uma coluna que este leitor nao conhece seria dado do ensaio jogado fora em silencio (o caso real
+#: Uma coluna que este leitor nao conhece seria dado da execucao jogado fora em silencio (o caso real
 #: e a coluna escrita como `item` no lugar de `item_id`, que perderia todo vinculo do arquivo).
 #: Coluna desconhecida recusa o cabecalho inteiro; a ordem das colunas, por outro lado, nao importa:
 #: a leitura e por NOME.
@@ -241,7 +241,7 @@ class ResumoDaFonte:
 
 
 class FonteDeCsvDeGatilho:
-    """Le o CSV de eventos de gatilho ja gravado no ensaio (bancada) e o persiste no registro.
+    """Le o CSV de eventos de gatilho ja gravado na execucao (bancada) e o persiste no registro.
 
     Duas etapas, nesta ordem: `ler()` valida o arquivo inteiro (cabecalho, vocabulario de estado,
     timestamps) e so depois `processar(registro)` grava. Essa ordem e o que faz "estado fora do
@@ -272,7 +272,7 @@ class FonteDeCsvDeGatilho:
 
     def _ler_de(self, arquivo: IO[str]) -> LeituraDoArquivo:
         """Cada linha de dados ou vira `EventoDeGatilho`, ou vira `Recusa`; nunca as duas, e nunca
-        nenhuma das duas. `csv` (e nao `split`) porque o motivo do ensaio pode ter virgula, e o
+        nenhuma das duas. `csv` (e nao `split`) porque o motivo da execucao pode ter virgula, e o
         numero de campos e conferido contra o cabecalho: virgula nao escapada desloca as colunas, e
         reinterpretar a linha deslocada seria trocar evidencia por palpite."""
         leitor = csv.reader(arquivo)
@@ -380,7 +380,7 @@ def _validar_cabecalho(cabecalho: Sequence[str], caminho: Path) -> None:
     if desconhecidas:
         raise CabecalhoInvalido(
             f"{caminho}: coluna desconhecida no cabecalho: {desconhecidas}; aceitas: "
-            f"{list(COLUNAS_ACEITAS)}; uma coluna que este leitor nao conhece seria dado do ensaio "
+            f"{list(COLUNAS_ACEITAS)}; uma coluna que este leitor nao conhece seria dado da execucao "
             "jogado fora"
         )
 

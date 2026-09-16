@@ -12,7 +12,11 @@ dependencies = ["numpy", "opencv-python"]
 [project.optional-dependencies]
 # inferencia na borda: extrator congelado + classificador raso (D-30)
 inferencia = ["torch", "torchvision", "ultralytics", "scikit-learn"]
-dev = ["pytest", "pytest-timeout"]
+# Leitura de imagem (PIL) e estatistica (scipy) sao import TARDIO em modulos de runtime
+# (avaliacao_ood.py, classificador_artefato.py, preprocessamento.py). Declarados aqui porque
+# dependencia que so existe na maquina de quem escreveu nao esta declarada -- esta emprestada.
+leitura = ["Pillow", "scipy"]
+dev = ["pytest", "pytest-timeout", "ruff"]
 
 [tool.setuptools]
 # Modulos soltos na raiz da arvore (layout escolhido: sem subpacote src/).
@@ -26,6 +30,7 @@ py-modules = [
   "captura",
   "classificador",
   "classificador_artefato",
+  "classificador_yolo",
   "conformidade",
   "consultas_site",
   "decisao",
@@ -35,12 +40,35 @@ py-modules = [
   "ingerir_serie",
   "mapeamento_rig",
   "orquestracao",
+  "pacote_detector",
   "painel",
+  "preparo_detector",
   "preprocessamento",
   "registro",
   "scorers",
   "semear_demo",
 ]
+
+[tool.ruff]
+# Regras de correcao primeiro (F: nomes indefinidos, imports mortos, codigo inalcancavel) e o
+# basico de estilo do projeto. O que e ruido declarado aqui tem motivo, nao conveniencia:
+#  - E501: ha linhas longas de prosa tecnica em docstring;
+#  - B008/E402: padrao do projeto (default em assinatura, import tardio deliberado).
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B", "W6"]
+ignore = [
+  "E501",  # prosa tecnica em docstring passa de 100 colunas
+  "B008",  # default em assinatura e padrao declarado do projeto
+  "E402",  # import tardio depois de ajustar sys.path, deliberado
+  "E741",  # `l` em varredura curta: renomear em massa mexe em codigo estavel sem ganhar correcao
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts de bancada importam antes de ajustar sys.path de proposito.
+"treino/*.py" = ["E402"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

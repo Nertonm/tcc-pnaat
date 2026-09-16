@@ -20,3 +20,6 @@ Convenção a partir de agora: um commit = uma intenção; mensagem descreve o c
 
 Documentos relacionados: `docs/reference/auditoria-projeto-2026-09-11.md`,
 `docs/reference/analise-cronologica-2026-09-11.md`, `docs/reference/runbook-erros-e-guardas.md`.
+
+> Nota de namespace (2026-09-16): o diretorio mecanico se chamava `cad-workspace` na
+> data deste documento; hoje e `cad-produto`. O texto abaixo foi preservado como registro.

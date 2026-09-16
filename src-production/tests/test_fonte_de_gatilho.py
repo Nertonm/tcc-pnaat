@@ -103,10 +103,10 @@ def reg(tmp_path):
     r.fechar()
 
 
-# ---------------------------------------------------------------- arquivo de ensaio completo
+# ---------------------------------------------------------------- arquivo de execucao completo
 
 
-def test_arquivo_de_ensaio_entra_no_registro_e_o_resumo_fecha(tmp_path, reg):
+def test_arquivo_da_execucao_entra_no_registro_e_o_resumo_fecha(tmp_path, reg):
     """5 linhas boas: 2 aceitos, 1 duplicado, 1 falso, 1 invalido, 2 em branco ao final."""
     assert (
         reg.registrar(_evento_do_item()) == "inserido"
@@ -224,7 +224,7 @@ def test_a_leitura_e_por_nome_e_nao_por_posicao(tmp_path, reg):
 
 
 def test_arquivo_sem_eventos_devolve_resumo_zerado(tmp_path, reg):
-    """Ensaio sem passagem e resposta legitima: zero aqui e medido, nao inventado."""
+    """Execucao sem passagem e resposta legitima: zero aqui e medido, nao inventado."""
     resumo = _csv(tmp_path, CABECALHO + "\n").processar(reg)
     assert (
         resumo.lidas,
@@ -569,8 +569,8 @@ def test_cabecalho_fora_do_contrato_falha_sem_gravar(tmp_path, reg, texto, esper
 
 def test_arquivo_inexistente_falha_explicitamente(tmp_path, reg):
     with pytest.raises(ArquivoDeGatilhoIlegivel) as erro:
-        FonteDeCsvDeGatilho(tmp_path / "ensaio-de-hoje.csv").processar(reg)
-    assert "ensaio-de-hoje.csv" in str(erro.value)
+        FonteDeCsvDeGatilho(tmp_path / "eventos-de-hoje.csv").processar(reg)
+    assert "eventos-de-hoje.csv" in str(erro.value)
 
 
 # ---------------------------------------------------------------- limites declarados

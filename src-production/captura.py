@@ -13,7 +13,7 @@ O que este modulo faz valer:
     omissao (D-04);
   - vista ausente nao e erro: e estado. O registro converte ausencia em `inconclusivo`.
 
-Sem camera aqui: a fonte le do disco (bancada/ensaio). A fonte de camera entra quando o rig existir,
+Sem camera aqui: a fonte le do disco (captura de bancada). A fonte de camera entra quando o rig existir,
 atras do mesmo Protocol.
 """
 
@@ -174,8 +174,22 @@ class VerificadorPorTemplate:
         return (Alinhamento.OK if ok else Alinhamento.FORA_DA_TOLERANCIA), deslocamento
 
 
+class AlinhamentoDeclarado:
+    """Atesta o posicionamento SEM gabarito medido (bancada e serie ja capturada).
+
+    Existe porque a `FonteDeDiretorio` sem verificador marca `NAO_VERIFICADO`, e vista nao verificada
+    nao e utilizavel (fail-closed): sem uma declaracao explicita o item sai `inconclusivo` e nada e
+    decidido. Com ela, o registro diz que o alinhamento foi DECLARADO, nunca que foi medido.
+    """
+
+    nome = "declarado"
+
+    def verificar(self, imagem: np.ndarray) -> tuple[Alinhamento, float]:
+        return Alinhamento.OK, 0.0
+
+
 class FonteDeDiretorio:
-    """Le `<raiz>/<item_id>/<vista>.jpg`. Bancada e ensaio gravado; nao e camera ao vivo.
+    """Le `<raiz>/<item_id>/<vista>.jpg`. Bancada e captura gravada; nao e camera ao vivo.
 
     `janela_s` e a janela temporal declarada do rig: vista capturada fora dela nao entra como
     evidencia. Sem `janela_s`, a associacao temporal nao esta verificada e o item fica inconclusivo;
