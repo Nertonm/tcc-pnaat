@@ -61,18 +61,33 @@ if TYPE_CHECKING:  # anotacao apenas: numpy nao entra no import do modulo
 #: repo, em dataset/nosso/tampa; reorganizado em 2026-09-13: o rig virou bloco separado
 #: (dataset/nosso/rig, 81 frames normais, nunca treinado) e os publicos ficaram fora do git.
 #: Caminho declarado e nao procurado; conjunto ausente e ERRO, nao "treina com o que tem".
+def raiz_do_clone(inicio: Path | None = None) -> Path:
+    """Raiz do clone descoberta pelo conteudo (docs/ + dataset/), nao pelo $HOME de quem roda.
+
+    O ambiente declarado vence: `PNAAT_RAIZ_DO_CLONE`. Sem ele, sobe a partir deste arquivo ate
+    achar a raiz; caminho de usuario fixo quebrava em clone de outro lugar e passava despercebido
+    numa maquina so.
+    """
+    declarada = os.environ.get("PNAAT_RAIZ_DO_CLONE")
+    if declarada:
+        return Path(declarada)
+    origem = (inicio or Path(__file__).resolve().parent.parent).resolve()
+    for candidato in (origem, *origem.parents):
+        if (candidato / "docs").is_dir() and (candidato / "dataset").is_dir():
+            return candidato
+    raise RuntimeError(f"raiz do clone nao encontrada a partir de {origem} (docs/ + dataset/)")
+
+
 CONJUNTO_PADRAO = Path(
     os.environ.get("PNAAT_CONJUNTO_TAMPA")
-    or Path.home() / "tcc-pnaat/github/dataset/nosso/tampa"
+    or raiz_do_clone() / "dataset/nosso/tampa"
 )
 
 #: pesos da deteccao. O arquivo vive na raiz do clone; NAO ha download automatico: baixar peso em
 #: silencio seria efeito de rede escondido dentro da decisao (falha explicita se faltar).
 #: NAO derivar de CONJUNTO_PADRAO: o conjunto proprio mudou de lugar (dataset/nosso/tampa) e o peso
 #: continua na raiz do clone.
-RAIZ_DO_CLONE = Path(
-    os.environ.get("PNAAT_RAIZ_DO_CLONE") or Path.home() / "tcc-pnaat/github"
-)
+RAIZ_DO_CLONE = raiz_do_clone()
 PESOS_DA_DETECCAO = str(RAIZ_DO_CLONE / "yolov8n.pt")
 CLASSE_DA_CAIXA = "bottle"
 CONFIANCA_DA_DETECCAO = 0.15
