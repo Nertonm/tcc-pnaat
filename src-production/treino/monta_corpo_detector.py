@@ -12,9 +12,9 @@ Uso: monta_corpo_detector.py [--dry-run]
 """
 from __future__ import annotations
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_MODELOS, CONTRATO
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_MODELOS, CONTRATO
 
 import argparse
 import csv
@@ -22,7 +22,7 @@ import hashlib
 import json
 import shutil
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 

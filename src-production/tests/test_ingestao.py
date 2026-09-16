@@ -419,7 +419,6 @@ def test_serie_homonima_nao_sobrescreve_evidencia_de_item_anterior(serie, tmp_pa
 
 def test_reingestao_do_mesmo_conteudo_e_idempotente(serie, tmp_path):
     """Mesmos bytes no mesmo destino: reaproveita em vez de recusar (replay nao vira erro)."""
-    banco = _banco(tmp_path)
     evidencias = tmp_path / "ev"
     alvo = (evidencias / "series" / serie.name / "camera-1.jpg").resolve()
     alvo.parent.mkdir(parents=True, exist_ok=True)

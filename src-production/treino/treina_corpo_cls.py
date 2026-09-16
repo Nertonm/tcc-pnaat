@@ -14,12 +14,10 @@ import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-import os as _os
-from pathlib import Path as _Path
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import PNAAT_MODELOS
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import PNAAT_MODELOS
 
 M = PNAAT_MODELOS
 DS = M / 'corpo-cls/dataset'

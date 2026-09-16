@@ -1,12 +1,11 @@
 """Le o resultado do smoke do detector de corpo nas imagens proprias."""
 import json
-import pathlib
 import os as _os
 from pathlib import Path as _Path
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import PNAAT_MODELOS
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import PNAAT_MODELOS
 
 # o smoke e gravado pelo treino junto dos runs do modelo, nao na arvore de dado externo
 p = _Path(_os.environ.get("PNAAT_CORPO_SMOKE")

@@ -4,9 +4,9 @@ import numpy as np
 import os as _os
 from pathlib import Path as _Path
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_MODELOS
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_MODELOS
 
 BASE = str(_RAIZ_REPO / "dataset/nosso/tampa")
 cels = []

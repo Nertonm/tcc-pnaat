@@ -14,13 +14,11 @@ import hashlib
 import json
 import pathlib
 import shutil
-import sys
 import os as _os
-from pathlib import Path as _Path
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_MODELOS
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_MODELOS
 
 RAIZ = _RAIZ_REPO / "dataset/externo"
 # Saida do dataset derivado: NUNCA em /tmp (tmpfs compartilhado ja perdeu dataset neste projeto).

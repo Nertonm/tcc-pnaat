@@ -187,7 +187,6 @@ def main(argv: list[str] | None = None) -> int:
         a.saida.unlink()
         print(f'BLOQUEADO: contrato gerado nao passa no consumidor: {erro}', file=sys.stderr)
         return 2
-    calibrado = aberto.calibrado_no_imgsz_de_treino()
     print('contrato:', a.saida)
     print('fingerprint:', contrato['fingerprint'][:32], '…')
     print('modelo sha256:', contrato['modelo']['sha256'][:32], '…')

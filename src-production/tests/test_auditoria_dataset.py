@@ -155,7 +155,8 @@ def test_manifesto_ausente_e_entrada_invalida(tmp_path):
 
 
 def test_cli_sai_um_quando_acha_problema(tmp_path):
-    import subprocess, sys
+    import subprocess
+    import sys
     base = _dataset(tmp_path, vazamento=True)
     r = subprocess.run([sys.executable, str(AUDITOR), '--dataset', str(base)],
                        capture_output=True, text=True)
@@ -164,7 +165,8 @@ def test_cli_sai_um_quando_acha_problema(tmp_path):
 
 
 def test_cli_sai_zero_no_dataset_limpo(tmp_path):
-    import subprocess, sys
+    import subprocess
+    import sys
     base = _dataset(tmp_path)
     r = subprocess.run([sys.executable, str(AUDITOR), '--dataset', str(base)],
                        capture_output=True, text=True)

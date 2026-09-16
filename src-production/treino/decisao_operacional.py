@@ -21,7 +21,6 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from PIL import Image
 from ultralytics import YOLO
 
 
@@ -79,7 +78,6 @@ def main() -> int:
         confusao[verdade[nome]][d] += 1
     acertos = sum(1 for n in decisao if decisao[n] == verdade[n])
     revisar = sum(1 for n in decisao if decisao[n] == 'REVISAR')
-    ignorados = sum(1 for n in decisao if verdade[n] == 'REVISAR')
 
     res = {'peso': a.peso, 'dataset': str(base), 'split': a.split, 'limiares': limiares,
            'conf_baixa': a.conf_baixa, 'quando': datetime.now(timezone.utc).isoformat(timespec='seconds'),

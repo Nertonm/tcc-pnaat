@@ -15,12 +15,10 @@ import json
 import sqlite3
 import sys
 from pathlib import Path
-import os as _os
-from pathlib import Path as _Path
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import RAIZ_REPO as _RAIZ_REPO
 
 DB_PADRAO = '/srv/label-studio/data/label_studio.sqlite3'
 RECIBOS = _RAIZ_REPO / 'dataset/TRABALHO/_exportacoes'

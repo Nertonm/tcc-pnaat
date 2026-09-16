@@ -11,11 +11,10 @@ import pathlib
 import sys
 from pathlib import Path
 import os as _os
-from pathlib import Path as _Path
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_MODELOS
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_MODELOS
 
 # o default tem de ser a saida de `monta_corpo_detector.py`; a variante de 2 classes
 # (`monta_corpo.py`, saida `corpo-dataset/`) entra com --data explicito.

@@ -8,7 +8,6 @@ csi/usb/espcam. Este teste fixa as duas coisas: o filtro de vista e o gate de sa
 from __future__ import annotations
 
 import csv
-import importlib.util
 import json
 import subprocess
 import sys

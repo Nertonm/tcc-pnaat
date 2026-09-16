@@ -29,14 +29,13 @@ import argparse
 import csv
 import hashlib
 import json
-import os
 import re
 import shutil
 import sys
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from caminhos import RAIZ_REPO, PIPELINE, CONTRATO, PNAAT_DADOS, PNAAT_MODELOS
+from caminhos import RAIZ_REPO, PIPELINE, CONTRATO, PNAAT_MODELOS
 
 G = RAIZ_REPO
 DS = G / 'dataset'

@@ -17,15 +17,14 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-from collections import Counter, defaultdict
+from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 import os as _os
-from pathlib import Path as _Path
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, CONTRATO
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import RAIZ_REPO as _RAIZ_REPO, CONTRATO
 
 CSV = _RAIZ_REPO / 'dataset/TRABALHO/anotacoes-ls.csv'
 SAIDA = CONTRATO / 'roi-por-camera.json'
@@ -118,7 +117,6 @@ def main() -> int:
                                     'resolucao_origem': [largura, altura]}
             # ganho de resolução efetiva se a entrada do modelo for 320
             area_roi = (x2 - x1) * (y2 - y1)
-            fator = (largura * area_roi) / max(largura * altura, 1)
             entrada['ganho_escala_em_320'] = round(1 / max(area_roi, 1e-6) ** 0.5, 2)
             entrada['fracao_da_imagem'] = round(area_roi, 4)
         relatorio['cameras'][cam] = entrada

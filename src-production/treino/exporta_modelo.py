@@ -7,19 +7,16 @@ Grava `modelo-inferencia.npz` + um `modelo-inferencia.json` com a identificacao 
 """
 from __future__ import annotations
 
-import collections
 import csv
 import json
 import pathlib
 import sys
 
 import numpy as np
-import os as _os
-from pathlib import Path as _Path
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import RAIZ_REPO as _RAIZ_REPO
 
 G = _RAIZ_REPO
 D = G / "dataset"
@@ -54,7 +51,8 @@ def carrega():
 
 
 def embedding(caminhos):
-    import torch, torchvision
+    import torch
+    import torchvision
     from torchvision import transforms
     from PIL import Image
     dev = "cuda" if torch.cuda.is_available() else "cpu"

@@ -14,15 +14,14 @@ Validacoes (reprovam a linha, com motivo registrado):
 """
 from __future__ import annotations
 try:
-    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from treino.caminhos import RAIZ_REPO as _RAIZ_REPO
 except ModuleNotFoundError:
-    from caminhos import RAIZ_REPO as _RAIZ_REPO, PNAAT_DADOS, PNAAT_MODELOS, PIPELINE, CONTRATO
+    from caminhos import RAIZ_REPO as _RAIZ_REPO
 
 import csv
 import hashlib
 import json
 import os
-import pathlib
 import sys
 import urllib.error
 import urllib.request
