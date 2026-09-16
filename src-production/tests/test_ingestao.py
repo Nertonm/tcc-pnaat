@@ -371,6 +371,7 @@ def test_serie_homonima_nao_sobrescreve_evidencia_de_item_anterior(serie, tmp_pa
     O banco guarda o sha256 do arquivo, nao uma copia: sobrescrever os bytes faria o item ja
     registrado apontar para conteudo que nao e o dele.
     """
+    banco = _banco(tmp_path)
     evidencias = tmp_path / "ev"
     primeiro = ingerir(
         serie,
