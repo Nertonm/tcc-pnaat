@@ -593,14 +593,14 @@ def _chamar_ponte(
     )
 
 
-def _registrar_ensaio_de_bancada(
+def _registrar_execucao_de_bancada(
     ctx: dict, motivo: str, item_id: str | None = None
 ) -> dict:
-    """Grava o ensaio de bancada como evento de gatilho.
+    """Grava a execucao de bancada como evento de gatilho.
 
     A bancada nao pode ser invisivel no registro: sem isto, o teste manual nao aparece na contagem e o
     operador conclui que o gatilho nunca disparou. A fonte fica 'nao_declarada' (o vocabulario do
-    esquema nao tem 'manual') e o motivo diz que e ensaio; quem agrega filtra por motivo.
+    esquema nao tem 'manual') e o motivo diz que e execucao de bancada; quem agrega filtra por motivo.
     """
     if item_id is not None and not _ITEM_ID_VALIDO(item_id):
         raise ErroDeApi(400, "item_invalido", f"item_id fora do padrao: {item_id!r}")
@@ -616,7 +616,7 @@ def _registrar_ensaio_de_bancada(
                 motivo=motivo,
             )
         except EventoInvalido as exc:
-            raise ErroDeApi(400, "ensaio_recusado_pelo_registro", str(exc)) from exc
+            raise ErroDeApi(400, "execucao_recusada_pelo_registro", str(exc)) from exc
     finally:
         registro.fechar()
     return {"gatilho_id": evento_id, "motivo": motivo}
@@ -1212,7 +1212,7 @@ def _rota_rig_delay(ctx: dict, corpo: dict) -> dict:
 
 
 def _rota_rig_teste_trigger(ctx: dict, corpo: dict) -> dict:
-    """Ensaio de bancada: pede ao rig o trigger de teste nas 3 cameras e registra o evento."""
+    """Execucao de bancada: pede ao rig o trigger de teste nas 3 cameras e registra o evento."""
     resposta = _chamar_rig("/teste-trigger-3-cameras", timeout=15.0)
 
     if not resposta.get("ok"):
@@ -1225,7 +1225,7 @@ def _rota_rig_teste_trigger(ctx: dict, corpo: dict) -> dict:
         )
 
     item_id = corpo.get("item_id") or None
-    evento = _registrar_ensaio_de_bancada(
+    evento = _registrar_execucao_de_bancada(
         ctx,
         f"teste de gatilho na bancada (debug){'; item ' + item_id if item_id else ''}",
         item_id=item_id,
@@ -1280,7 +1280,7 @@ def _rota_rig_captura(ctx: dict, corpo: dict) -> dict:
             "evento": {"gatilho_id": evento_id, "motivo": motivo[:200]},
         }
 
-    evento = _registrar_ensaio_de_bancada(
+    evento = _registrar_execucao_de_bancada(
         ctx,
         f"captura manual na bancada (debug){'; serie ' + str(serie) if serie else ''}",
     )

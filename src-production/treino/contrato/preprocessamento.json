@@ -1,0 +1,65 @@
+{
+ "nome": "pnaat-preprocessamento",
+ "versao": 1,
+ "gerado_utc": "2026-09-16T20:39:53+00:00",
+ "roi_por_camera": {
+  "csi": {
+   "x": 0.0,
+   "y": 0.0,
+   "w": 0.5727,
+   "h": 0.5118
+  },
+  "usb": {
+   "x": 0.2445,
+   "y": 0.0,
+   "w": 0.7555,
+   "h": 0.4549
+  },
+  "espcam": {
+   "x": 0.1091,
+   "y": 0.0,
+   "w": 0.8337,
+   "h": 1.0
+  }
+ },
+ "rotacao_graus": {
+  "csi": 0,
+  "usb": 90,
+  "espcam": 180
+ },
+ "orientacao_entrada": "quadro_ja_orientado",
+ "imgsz_treino": 480,
+ "letterbox": true,
+ "classes": [
+  "normal",
+  "tampa_ausente",
+  "defeito_tampa"
+ ],
+ "limiares_por_imgsz": {
+  "480": {
+   "normal": 0.4,
+   "tampa_ausente": 0.2,
+   "defeito_tampa": 0.4,
+   "calibrado": true,
+   "fonte": "calibracao-v9b-val.json#limiares_escolhidos_na_val",
+   "f1_val_por_classe": {
+    "normal": 0.842,
+    "tampa_ausente": 1.0,
+    "defeito_tampa": 0.909
+   }
+  }
+ },
+ "modelo": {
+  "arquivo": "v9b-lateral.pt",
+  "sha256": "ab05f35a63f680986c0edf679d9e44b9fe6b03a984b098c5bdcb07fad03ab4d6",
+  "tamanho_bytes": 6224106
+ },
+ "vista_por_camera": {
+  "csi": "lateral1",
+  "usb": "lateral2",
+  "espcam": "topo"
+ },
+ "regra_decisao": "limiar por classe; sem caixa acima do limiar -> REVISAR; \"sem peca\" e estado separado",
+ "observacao": "gerado por treino/gera_contrato_preproc.py; o fingerprint cobre os campos que mudam a predicao e e conferido pelo consumidor antes de decidir",
+ "fingerprint": "7f0a24339a26f9ca55de74e320191049053dd0101ef27d62eec153bb6d894874"
+}

@@ -3,7 +3,7 @@
 Nao e teste unitario; e canario de bancada, e existe por um motivo especifico: o classificador
 desta cadeia (`classificador_artefato.py`) e um PORT da receita medida. Port que divergiu da receita
 ainda "funciona" (devolve classe e confianca) e mesmo assim mente. Este canario fecha isso: ele usa
-o mesmo `carrega()` do produtor (`dataset/TRABALHO/compara_extratores.py`) para montar exatamente o
+o mesmo `carrega()` do produtor (`treino/compara_extratores.py`) para montar exatamente o
 conjunto declarado; dominio `nosso`, split val+test; e recomputa, com o classificador da cadeia, as
 mesmas metricas do json:
 
@@ -29,8 +29,15 @@ import numpy as np
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "src-production"))
 #: reuso deliberado do produtor: o conjunto do canario tem de ser o MESMO que o json declara. Se
-#: cada lado montasse a sua lista, a comparacao nao provaria nada sobre o port.
-sys.path.insert(0, str(RAIZ / "dataset" / "TRABALHO"))
+#: cada lado montasse a sua lista, a comparacao nao provaria nada sobre o port. O produtor vive
+#: nesta arvore (`treino/compara_extratores.py`); antes vivia em `dataset/TRABALHO/`, fora do git.
+PIPELINE = Path(__file__).resolve().parent / "treino"
+if not (PIPELINE / "compara_extratores.py").is_file():
+    raise RuntimeError(
+        f"produtor do artefato ausente: {PIPELINE / 'compara_extratores.py'}; este canario reusa "
+        f"o `carrega()` do produtor de proposito: sem ele a comparacao nao prova nada sobre o port"
+    )
+sys.path.insert(0, str(PIPELINE))
 
 from classificador_artefato import (
     ARTEFATO_PADRAO,
@@ -200,7 +207,7 @@ def _pela_cadeia(cls) -> int:
 
     O item e sintetico (um recorte do conjunto copiado para as tres vistas) e o alinhamento e
     DECLARADO OK: sem isso a vista nao entra como evidencia (fail-closed de `captura.utilizavel`) e o
-    ensaio nao exercita o caminho do modelo. O que este trecho prova e o que interessa: a medida do
+    esta verificacao nao exercita o caminho do modelo. O que este trecho prova e o que interessa: a medida do
     artefato chega ao `Decisor`, e o registro guarda a evidencia com a procedencia do artefato.
     """
     import sqlite3

@@ -1,7 +1,7 @@
 # ESP32-CAM: draft de integração com o Pi
 
 Este diretório contém o firmware da visão embarcada do TCC, validado na bancada: **uma foto por
-trigger** (IRQ do sensor de presença ou comando de ensaio), com a câmera em standby entre fotos e
+trigger** (IRQ do sensor de presença ou comando de bancada), com a câmera em standby entre fotos e
 transporte binário enquadrado. Não é um release de produção: o trigger físico ainda não foi
 medido com o sensor real e a integração com o pipeline do Pi não está feita.
 
@@ -161,7 +161,7 @@ Reações fail-closed:
 - JPEG inválido/CRC incorreto: descartar como evidência, registrar `frame_invalido`;
 - timeout: registrar `timeout_captura` com `event_id`;
 - evento duplicado: não gerar segundo item; registrar duplicata;
-- origem `usb_command`: aceitar somente em modo de ensaio explicitamente habilitado;
+- origem `usb_command`: aceitar somente em modo de bancada explicitamente habilitado;
 - timestamp fora da janela: preservar a imagem, mas marcar `timestamp_divergente`;
 - qualidade insuficiente: não enviar para decisão como se fosse evidência adequada;
 - falha do modelo ou do registro: manter o evento e retornar `inconclusivo`.
@@ -175,7 +175,7 @@ Não ligar diretamente uma saída de sensor alimentada em tensão superior ao li
 do hardware real, confirmar se a saída é open-collector/NPN, usar a referência de 3,3 V adequada,
 GND comum e proteção de nível quando necessário.
 
-GPIO4 foi usado somente em um ensaio de bancada e não faz parte do trigger de produção. Não
+GPIO4 foi usado somente em uma execucao de bancada e não faz parte do trigger de produção. Não
 reativar gerador de sinal ou LED de teste na versão integrada.
 
 ## Critérios de aceite da integração
@@ -192,9 +192,9 @@ Verificados nesta bancada:
 
 Pendentes:
 
-- [ ] níveis elétricos do sensor de presença real e trigger físico medido (hoje só comando de ensaio);
+- [ ] níveis elétricos do sensor de presença real e trigger físico medido (hoje só comando de bancada);
 - [ ] debounce (50 ms) e cooldown (250 ms) medidos com o E18-D80NK;
-- [ ] origem não autorizada: o firmware aceita o comando de ensaio sempre; falta gate de modo;
+- [ ] origem não autorizada: o firmware aceita o comando de bancada sempre; falta gate de modo;
 - [ ] corrente e temperatura em idle, wake e captura (não medidos; exige instrumentação);
 - [ ] o Pi registrar evento sem captura e captura sem decisão (integração com o pipeline);
 - [ ] idempotência de item duplicado no registro canônico;

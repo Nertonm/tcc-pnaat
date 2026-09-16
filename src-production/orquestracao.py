@@ -16,11 +16,12 @@ Travas que este modulo faz valer:
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from captura import ItemCapturado, VistaCapturada
+from captura import AlinhamentoDeclarado, ErroDeCaptura, ItemCapturado, VistaCapturada
 from conformidade import (
     DOMINIOS_ESPERADOS,
     ConfiguracaoDoRig,
@@ -36,6 +37,8 @@ Roi = tuple[float, float, float, float]
 DEFAULT_CONFIG = ConfiguracaoDoRig()
 #: o check dimensional devolve (escalonou, motivo). Ele NAO devolve classe (D-23/D-30).
 VerificadorDoCheck = Callable[[VistaCapturada], "tuple[bool, str | None]"]
+#: preparo da imagem de UMA vista (recorte canonico do contrato); ver `preparo_detector`.
+PreparoDeVista = Callable[[VistaCapturada], "object"]
 
 
 class ErroDeOrquestracao(Exception):
@@ -56,7 +59,7 @@ class IdentidadeDoRig:
 
 
 @dataclass(frozen=True)
-class ResultadoDoEnsaio:
+class ResultadoDaExecucao:
     item_id: str
     status: str
     gravacao: str
@@ -150,12 +153,19 @@ def executar(
     config: ConfiguracaoDoRig = DEFAULT_CONFIG,
     medidor: MedidorGeometrico | None = None,
     check: VerificadorDoCheck | None = None,
-) -> ResultadoDoEnsaio:
-    """Roda a cadeia uma vez para um item. Devolve o resultado e grava o evento."""
-    if roi is None:
+    preparo: PreparoDeVista | None = None,
+) -> ResultadoDaExecucao:
+    """Roda a cadeia uma vez para um item. Devolve o resultado e grava o evento.
+
+    O recorte da vista vem de UMA das duas rotas, nunca de nenhuma: `preparo` (o contrato do
+    pacote de detector, que recorta a ROI declarada por camera) ou `roi` (regiao declarada na
+    linha de comando, rota legada do artefato `.npz`). Sem nenhuma das duas a decisao mediria a
+    area errada e o resultado teria cara de valido.
+    """
+    if preparo is None and roi is None:
         raise ErroDeOrquestracao(
-            "regiao de recorte (roi) nao declarada: sem ela a decisao mediria a area errada e o "
-            "resultado teria cara de valido"
+            "regiao de recorte nao declarada: use `preparo` (ROI do contrato do pacote) ou "
+            "`roi` (fracao do quadro declarada na linha de comando)"
         )
     decisor = Decisor(classificador, medidor)
 
@@ -163,7 +173,9 @@ def executar(
     for vistacap in item.vistas_utilizaveis:
         if vistacap.vista not in config.vistas_decisorias:
             continue  # o check nunca classifica (D-23/D-30)
-        recorte = recorte_da_vista(vistacap.imagem, roi)
+        recorte = (
+            preparo(vistacap) if preparo is not None else recorte_da_vista(vistacap.imagem, roi)
+        )
         # a geometria mede a VISTA: uma vez por vista, reaproveitada nos dois dominios
         medicoes = tuple(medidor.medir(recorte)) if medidor is not None else ()
         for dominio in DOMINIOS_ESPERADOS:
@@ -210,7 +222,7 @@ def executar(
         referencias=_referencias_das_vistas(item),
         motivos_conformidade=tuple(conformidade.motivos),
     )
-    return ResultadoDoEnsaio(
+    return ResultadoDaExecucao(
         item_id=item.item_id,
         status=conformidade.status,
         gravacao=gravacao,
@@ -258,6 +270,39 @@ def criar_classificador(
     return classificador, classificador.procedencia.linha()
 
 
+def abrir_pacote_de_visao(diretorio, *, carregador=None):
+    """Abre o pacote de detector e devolve `(classificador, motivo, preparo_por_vista)`.
+
+    O recorte deixa de ser numero solto na linha de comando: vem do contrato do pacote, a MESMA
+    regra que o treino usou (ROI por camera, rotacao declarada). Pacote invalido e erro declarado
+    -- nunca um classificador vazio decidindo em silencio.
+    """
+    from classificador_yolo import (
+        ClassificadorDoPacote,
+        ErroDeClassificacao,
+        camera_da_vista,
+    )
+    from preparo_detector import ler_bgr
+
+    try:
+        classificador = ClassificadorDoPacote.abrir(
+            diretorio, carregador=carregador
+        )
+    except ErroDeClassificacao as erro:
+        raise ErroDeOrquestracao(f"pacote {diretorio} nao serve: {erro}") from erro
+    cameras = camera_da_vista(classificador.contrato)
+
+    def preparo(vistacap: VistaCapturada):
+        camera = cameras.get(vistacap.vista)
+        if camera is None:
+            raise ErroDeOrquestracao(
+                f"contrato do pacote nao declara camera para a vista {vistacap.vista.value}"
+            )
+        return classificador.contrato.preparar(ler_bgr(vistacap.imagem), camera).recorte
+
+    return classificador, classificador.identificacao, preparo
+
+
 def main(argv: list[str] | None = None) -> int:
     """Entry point da cadeia (captura -> decisao -> conformidade -> registro).
 
@@ -269,7 +314,7 @@ def main(argv: list[str] | None = None) -> int:
     from captura import FonteDeDiretorio
 
     ap = argparse.ArgumentParser(
-        description="Ensaio da cadeia (captura -> decisao -> conformidade -> registro)"
+        description="Execucao da cadeia (captura -> decisao -> conformidade -> registro)"
     )
     ap.add_argument(
         "--captura", required=True, help="diretorio com <item_id>/<vista>.jpg"
@@ -277,11 +322,25 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--item", required=True)
     ap.add_argument(
         "--roi",
-        required=True,
+        default=None,
         nargs=4,
         type=float,
         metavar=("X1", "Y1", "X2", "Y2"),
-        help="regiao de recorte em fracao do quadro (declarada pelo rig)",
+        help="regiao de recorte em fracao do quadro (rota legada; com --pacote-modelo a ROI vem "
+        "do contrato do pacote)",
+    )
+    ap.add_argument(
+        "--pacote-modelo",
+        default=None,
+        help="diretorio do pacote do detector (peso + preprocessamento.json + metadados-treino.json "
+        "+ modelo.json + SHA256SUMS); decide pela cadeia",
+    )
+    ap.add_argument(
+        "--alinhamento",
+        choices=("declarado", "nao_verificado"),
+        default="nao_verificado",
+        help="'declarado' apenas quando o rig atestou o posicionamento; o padrao NAO verifica, e "
+        "vista nao verificada nao decide (fail-closed)",
     )
     ap.add_argument("--db", default="hub.db")
     ap.add_argument(
@@ -297,7 +356,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--sem-modelo",
         action="store_true",
-        help="forca `SemModelo` (sem visao): usado no ensaio de contrato",
+        help="forca `SemModelo` (sem visao): usado na verificacao de contrato",
     )
     ap.add_argument("--equipamento", default="rig-bancada")
     ap.add_argument("--localizacao", default="bancada-b")
@@ -309,21 +368,50 @@ def main(argv: list[str] | None = None) -> int:
     )
     a = ap.parse_args(argv)
 
-    item = FonteDeDiretorio(a.captura, janela_s=a.janela).capturar(
-        a.item, datetime.now(UTC)
-    )
+    if a.pacote_modelo and (a.modelo or a.sem_modelo):
+        ap.error(
+            "--pacote-modelo nao combina com --modelo/--sem-modelo: escolha UM modelo; fonte unica "
+            "de decisao, nunca duas"
+        )
+    if a.pacote_modelo and a.roi:
+        ap.error(
+            "--roi nao combina com --pacote-modelo: a ROI da cadeia e a do contrato do pacote, que "
+            "e a MESMA do treino"
+        )
+    if not a.pacote_modelo and a.roi is None:
+        ap.error("informe --roi (rota legada) ou --pacote-modelo (ROI do contrato)")
+
+    try:
+        verificador = AlinhamentoDeclarado() if a.alinhamento == "declarado" else None
+        item = FonteDeDiretorio(a.captura, verificador=verificador, janela_s=a.janela).capturar(
+            a.item, datetime.now(UTC)
+        )
+    except ErroDeCaptura as erro:
+        print(f"captura recusada: {erro}", file=sys.stderr)
+        return 2
     registro = Registro.abrir(a.db)
     try:
-        classificador, motivo_do_modelo = criar_classificador(
-            None if a.sem_modelo else a.modelo, fonte=a.fonte
-        )
+        preparo = None
+        if a.pacote_modelo:
+            try:
+                classificador, motivo_do_modelo, preparo = abrir_pacote_de_visao(
+                    a.pacote_modelo,
+                )
+            except ErroDeOrquestracao as erro:
+                print(f"pacote recusado: {erro}", file=sys.stderr)
+                return 2
+        else:
+            classificador, motivo_do_modelo = criar_classificador(
+                None if a.sem_modelo else a.modelo, fonte=a.fonte
+            )
         print(f"  modelo: {motivo_do_modelo}")
         resultado = executar(
             item,
             classificador,
             registro,
             IdentidadeDoRig(a.equipamento, a.localizacao),
-            roi=tuple(a.roi),
+            roi=tuple(a.roi) if a.roi else None,
+            preparo=preparo,
         )
         print(f"item {resultado.item_id}: {resultado.status} ({resultado.gravacao})")
         print("  motivos:", ", ".join(resultado.conformidade.motivos) or "(nenhum)")

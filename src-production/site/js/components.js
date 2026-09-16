@@ -2682,7 +2682,7 @@ const renderDebug = () => {
 
                 <p class="mt-2 max-w-3xl text-sm leading-6 text-gray-500 dark:text-gray-400">
                     Estado do gatilho e da camera, delay de captura, captura manual e teste do gatilho.
-                    Cada ensaio de bancada entra no registro como evento de gatilho (marcado como teste),
+                    Cada execucao de bancada entra no registro como evento de gatilho (marcado como teste),
                     para o disparo nao ficar invisivel. Leitura de
                     <span class="font-mono text-xs">${escDoDebug(d.atualizado_em || '—')}</span>.
                 </p>
@@ -2732,7 +2732,7 @@ const renderDebug = () => {
                             const u = (est && est.ultimo) ? est.ultimo : null;
                             const amostras = est ? (est.n || 0) : 0;
                             if (!u || !amostras) {
-                                return linha('latencia medida', 'sem ensaio medido ainda') ;
+                                return linha('latencia medida', 'sem medicao ainda') ;
                             }
                             const ms = v => (v === undefined || v === null) ? '&mdash;' : v + ' ms';
                             return linha('latencia medida (ultima)',

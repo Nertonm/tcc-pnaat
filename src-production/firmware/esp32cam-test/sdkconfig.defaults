@@ -1,3 +1,7 @@
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_ESP_CONSOLE_UART_BAUDRATE=921600
 CONFIG_SPIRAM=y
+# Toda a saida do no passa por log_printf (mutex unico). Logs de componentes do IDF e
+# do driver da camera escrevem direto no FIFO por fora desse mutex e ja corromperam
+# frame (ets_printf do cam_hal / console VFS): silencia na origem.
+CONFIG_LOG_DEFAULT_LEVEL_NONE=y
