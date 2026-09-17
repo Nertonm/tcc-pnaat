@@ -1,6 +1,6 @@
 # Dados, interfaces e rastreabilidade
 
-Estas fichas detalham DAT-01..08 e IF-01..07 de `../requisitos.md`. Nenhum contrato está implementado no repositório.
+Estas fichas definem e detalham os contratos DAT-01..08 e IF-01..07, referenciados pelos RF/RNF de `../requisitos.md`. Parte dos contratos já está implementada no produto em `src-production/`; a ficha continua normativa e não substitui a prova do código. O estado implementado e as fronteiras externas estão resumidos em `../dados-telemetria.md`.
 
 ## Dados
 
@@ -64,7 +64,7 @@ Estas fichas detalham DAT-01..08 e IF-01..07 de `../requisitos.md`. Nenhum contr
 
 ### IF-01: Trigger para captura
 
-- Entrada:  sinal do E18-D80NK (barreira por oclusão retrorrefletiva), com VL53L0X como validação/fallback correlacionado.
+- Entrada:  sinal do E18-D80NK (sensor IR difuso, active-low), com VL53L0X como validação/fallback correlacionado.
 - Contrato: uma borda do trigger inicia a janela das três vistas.
 - Critério de reprovação: uma câmera fora da janela deve ser identificada como faltante.
 - Verificação: osciloscópio/log e três timestamps. Dependências:  RF-01, RF-01.1, HW-01.

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspecao da garrafa - camera do Pi</title>
+<style>
+  :root{--azul:#163A5F;--verde:#3C7A57;--vermelho:#8C3B2E;--cinza:#54595F;
+        --texto:#1C1C1E;--fundo:#F2F4F5;--papel:#fff;--regra:rgba(22,58,95,.25);--zebra:#FAFBFB}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fundo);color:var(--texto);font-size:15px;line-height:1.5;
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;font-weight:350}
+  .topo{background:var(--papel);border-bottom:2px solid var(--azul);padding:14px 22px;
+        display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .topo h1{font-size:19px;font-weight:400;color:var(--azul);margin:0;letter-spacing:.02em}
+  .ponto{width:9px;height:9px;border-radius:50%;background:var(--verde);display:inline-block;margin-right:6px}
+  .ponto.off{background:var(--vermelho)}
+  .estado{font-size:12px;color:var(--cinza)}
+  main{max-width:1180px;margin:0 auto;padding:22px}
+  .grade{display:grid;grid-template-columns:1.35fr 1fr;gap:20px}
+  @media(max-width:900px){.grade{grid-template-columns:1fr}}
+  section{background:var(--papel);border:1px solid var(--regra);border-radius:3px;padding:16px 18px}
+  h2{font-size:11px;font-weight:600;color:var(--azul);text-transform:uppercase;letter-spacing:.09em;margin:0 0 12px}
+  img.video{width:100%;border-radius:2px;background:#111;display:block;aspect-ratio:4/3;object-fit:contain}
+  .veredito{border-left:4px solid var(--azul);padding:12px 14px;background:var(--zebra);border-radius:2px}
+  .veredito .rot{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--cinza)}
+  .veredito .val{font-size:26px;font-weight:400;color:var(--azul);margin:2px 0 4px}
+  .veredito.ok{border-color:var(--verde)} .veredito.ok .val{color:var(--verde)}
+  .veredito.defeito{border-color:var(--vermelho)} .veredito.defeito .val{color:var(--vermelho)}
+  .veredito.sem_garrafa .val,.veredito.sem_referencia .val{font-size:21px}
+  .veredito.cena_mudou{border-color:var(--vermelho)} .veredito.cena_mudou .val{color:var(--vermelho);font-size:20px}
+  ul.motivos{margin:8px 0 0;padding-left:18px;color:var(--cinza);font-size:13px}
+  button{font:inherit;border:1px solid var(--azul);background:var(--papel);color:var(--azul);
+         padding:10px 14px;border-radius:2px;cursor:pointer;font-size:14px}
+  button:hover{background:rgba(22,58,95,.06)}
+  button.principal{background:var(--azul);color:#fff}
+  button.principal:hover{background:#12304e}
+  button.limpar{border-color:var(--cinza);color:var(--cinza)}
+  .botoes{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .passos{font-size:12px;color:var(--cinza);margin:10px 0 0}
+  table{width:100%;border-collapse:collapse;margin-top:6px}
+  th{background:rgba(22,58,95,.10);color:var(--azul);font-size:10.5px;font-weight:600;
+     text-transform:uppercase;letter-spacing:.07em;text-align:left;padding:6px 8px;
+     border-bottom:1px solid var(--regra)}
+  td{padding:6px 8px;border-bottom:1px solid rgba(22,58,95,.10);font-size:13px}
+  tr:nth-child(even) td{background:var(--zebra)}
+  td.num{font-family:ui-monospace,Menlo,monospace;font-size:12px;text-align:right}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+  label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;
+        color:var(--cinza);padding:4px 0;border-bottom:1px dotted rgba(22,58,95,.18)}
+  label input{width:88px;font:inherit;font-size:12.5px;text-align:right;padding:4px 6px;
+        border:1px solid var(--regra);border-radius:2px;background:var(--papel)}
+  .nota{font-size:12.5px;color:var(--cinza)}
+  .aviso{background:#F7F2F1;border:1px solid rgba(140,59,46,.35);border-radius:3px;
+         padding:11px 13px;font-size:12.5px}
+  .aviso b{color:var(--vermelho)}
+  .okmsg{color:var(--verde)}
+  .errmsg{color:var(--vermelho)}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style id="melhora-visibilidade">
+  .grade{grid-template-columns:1.9fr 1fr}
+  .videobox{position:relative;background:#0b0c0e;border-radius:3px;overflow:hidden}
+  img.video{filter:brightness(1.30) contrast(1.10) saturate(1.05);aspect-ratio:auto;min-height:260px}
+  .guia{position:absolute;left:27%;top:12%;width:46%;height:80%;border:2px dashed rgba(255,255,255,.85);
+        border-radius:4px;pointer-events:none;box-shadow:0 0 0 2000px rgba(0,0,0,.06) inset}
+  .guia span{position:absolute;top:-24px;left:0;background:rgba(0,0,0,.55);color:#fff;font-size:12px;
+             padding:2px 7px;border-radius:3px;white-space:nowrap}
+  #bbx{position:absolute;border:3px solid #46d17a;border-radius:4px;pointer-events:none;display:none;
+       box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+  #lbl-bbx{position:absolute;background:#46d17a;color:#04220f;font-size:13px;font-weight:600;
+           padding:2px 7px;border-radius:3px;pointer-events:none;display:none}
+  .veredito .val{font-size:46px;line-height:1.05;font-weight:600}
+  .veredito.defeito .val{color:#B4231A} .veredito.ok .val{color:#1F7A45}
+  .veredito{border-left-width:8px}
+  ul.motivos{font-size:15px;color:#33383d;margin-top:10px}
+  td{font-size:14.5px} td.num{font-size:14px} h2{font-size:12px}
+  #anotada{border:2px solid var(--azul)}
+  .legenda{font-size:12px;color:var(--cinza);margin-top:6px}
+  button{font-size:15px;padding:12px 16px}
+  button.principal{font-size:17px;padding:15px 20px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="topo">
+  <h1>Inspeção da garrafa &middot; câmera do Pi</h1>
+  <span class="estado"><span class="ponto" id="ponto"></span><span id="txt-cam">conectando…</span></span>
+  <span class="estado" id="txt-contadores"></span>
+</div>
+<main>
+  <div class="grade">
+    <section>
+      <h2>Imagem ao vivo</h2>
+      <div class="videobox"><img class="video" id="video" alt="imagem da camera do Pi"><div class="guia"><span>coloque a garrafa aqui (mesma posicao da referencia)</span></div><div id="bbx"></div><div id="lbl-bbx"></div></div><div class="legenda">Brilho/contraste do preview sao ajuste de tela: a analise usa o quadro original. O retangulo colorido mostra o que o sistema esta vendo.</div>
+      <div class="botoes">
+        <button id="b-fundo">1 &middot; Capturar fundo (sem garrafa)</button>
+        <button id="b-ref">2 &middot; Capturar garrafa boa (referência)</button>
+        <button class="principal" id="b-analise">3 &middot; Analisar garrafa</button>
+        <button class="principal" id="b-modelo">4 &middot; Analisar com modelo neural</button>
+        <label style="display:inline-flex;align-items:center;gap:8px">Delay do trigger (ms)
+          <input id="delay-trigger" type="number" min="0" max="30000" step="100" value="1000" style="width:100px">
+        </label>
+        <button id="b-salvar-delay">Salvar delay</button>
+        <button id="b-testar-delay">Testar delay (sem capturar)</button>
+        <div id="delay-meta" class="nota">nenhum teste de delay realizado</div>
+        <button class="principal" id="b-preview-dataset">Capturar e mostrar 3 câmeras</button>
+        <button id="b-salvar-dataset" disabled>Salvar estas 3 imagens no dataset</button>
+        <div class="nota">Trigger: uma foto da ESP-CAM para medir delay. Dataset: uma foto independente de CSI, USB e ESP-CAM.</div>
+        <button class="limpar" id="b-zerar">Zerar calibração</button>
+      </div>
+      <div class="passos" id="passos"></div>
+      <div class="nota" id="padroes" style="margin-top:6px"></div>
+      <div style="display:flex;gap:14px;margin-top:14px">
+        <div><div class="nota" style="margin-bottom:4px">fundo salvo</div>
+          <img id="mini-fundo" alt="fundo salvo" style="width:190px;border:1px solid var(--regra);display:none"></div>
+        <div><div class="nota" style="margin-bottom:4px">referência (garrafa boa)</div>
+          <img id="mini-ref" alt="referencia" style="width:190px;border:1px solid var(--regra);display:none"></div>
+      </div>
+      <div id="msg" style="margin-top:10px"></div>
+    </section>
+
+    <section>
+      <section class="modelo-neural" style="margin:14px 0;padding:12px;border:1px solid var(--regra);background:var(--zebra)">
+        <h2>Modelo neural v0</h2>
+        <p class="nota">Escolha a vista correspondente à posição física da câmera. O modelo do topo é separado.</p>
+        <label>Vista do modelo
+          <select id="modelo-vista"><option value="lateral">lateral</option><option value="topo">topo</option></select>
+          <button id="modelo-aplicar">Aplicar vista</button>
+        </label>
+        <img id="modelo-img" alt="frame visto pelo modelo neural" style="width:100%;border-radius:2px;display:none">
+        <div id="modelo-status" class="nota">carregando modelo…</div>
+      </section>
+      <h2>Veredito</h2>
+      <div class="veredito" id="card">
+        <div class="rot">aguardando análise</div>
+        <div class="val" id="valor">&mdash;</div>
+        <div class="nota" id="quando"></div>
+      </div>
+      <ul class="motivos" id="motivos"></ul>
+
+      <h2 style="margin-top:18px">O que foi medido</h2>
+      <table>
+        <tbody id="medidas"><tr><td class="nota" colspan="2">sem análise ainda</td></tr></tbody>
+      </table>
+      <div style="margin-top:12px">
+        <img id="anotada" alt="ultima captura anotada" style="width:100%;border-radius:2px;display:none">
+      </div>
+    </section>
+  </div>
+
+  <section style="margin-top:20px">
+    <h2>Janela de medição (ROI do rig)</h2>
+    <div class="grade">
+      <div id="painel-roi"></div>
+      <div>
+        <div class="botoes"><button id="b-salvar-roi">Salvar ROI</button></div>
+        <div class="nota" style="margin-top:10px">
+          A garrafa fica sempre na mesma posição do quadro; a ROI é essa janela. Medir só dentro dela
+          ignora parede, cabos e sombra. Ela é derivada sozinha quando você captura a referência e pode
+          ser ajustada aqui: aumente se a garrafa sair pela borda, reduza se entrar fundo demais.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-top:20px">
+    <h2>Ajuste de limiares (o que decide OK x defeito)</h2>
+    <div class="grade">
+      <div id="painel-limiares"></div>
+      <div>
+        <div class="botoes"><button id="b-salvar">Salvar limiares</button></div>
+        <div class="aviso" style="margin-top:14px">
+          <b>Como este site decide.</b> Ele mede a geometria da garrafa na imagem e compara com a
+          referência que <b>você</b> capturou neste mesmo enquadramento: altura do topo (tampa ausente),
+          inclinação do topo (tampa torta) e perfil de largura do corpo (deformidade). Não é um modelo
+          treinado; é regra geométrica determinística. Os dois limiares de inclinação são
+          <b>provisórios</b>: só valem calibrados neste setup (garrafa boa vs garrafa torta medidas por você).
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-top:20px">
+    <h2>Últimas análises</h2>
+    <table>
+      <thead><tr><th>quando</th><th>veredito</th><th>classe</th><th>motivo</th></tr></thead>
+      <tbody id="hist"><tr><td colspan="4" class="nota">nenhuma análise ainda</td></tr></tbody>
+    </table>
+  </section>
+<section style="margin-top:20px">
+  <h2>Última foto do trigger</h2>
+  <img id="trigger-foto" style="max-width:520px;width:100%;display:none;border:1px solid var(--regra)">
+  <div id="trigger-meta" class="nota" style="margin-top:8px">nenhum trigger capturado</div>
+</section>
+<section style="margin-top:20px">
+  <h2>Última captura das três câmeras</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+    <div><div class="nota">Acerola CSI</div><img id="tripla-csi" style="width:100%;display:none;border:1px solid var(--regra)"></div>
+    <div><div class="nota">Acerola USB</div><img id="tripla-usb" style="width:100%;display:none;border:1px solid var(--regra)"></div>
+    <div><div class="nota">ESP-CAM</div><img id="tripla-esp" style="width:100%;display:none;border:1px solid var(--regra)"></div>
+  </div>
+  <div id="tripla-meta" class="nota" style="margin-top:8px">nenhuma série capturada</div>
+</section>
+<section style="margin-top:20px">
+  <h2>Imagens salvas no dataset</h2>
+  <div id="dataset-galeria" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px">
+    <div class="nota">carregando séries salvas…</div>
+  </div>
+</section>
+</main>
+
+<div id="preview-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.82);padding:4vh 4vw;overflow:auto">
+  <div style="max-width:1500px;margin:auto;background:#fff;padding:20px;border-radius:6px">
+    <h2 style="margin-top:0">Valide as 3 imagens antes de salvar</h2>
+    <div id="preview-modal-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
+    <div id="preview-modal-meta" class="nota" style="margin:12px 0"></div>
+    <button id="preview-modal-save" class="principal">Salvar estas 3 imagens no dataset</button>
+    <button id="preview-modal-close">Fechar sem salvar</button>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const video = $('video');
+
+video.src = '/stream.mjpg';
+
+const ROTULO = {ok:'GARRAFA OK', defeito:'DEFEITO', inconclusivo:'INCONCLUSIVO',
+                sem_referencia:'SEM REFERÊNCIA', sem_garrafa:'SEM GARRAFA NO QUADRO',
+                cena_mudou:'CENA MUDOU; RECAPTURE O FUNDO', referencia:'REFERÊNCIA GRAVADA'};
+const NOME_CLASSE = {normal:'sem defeito', tampa_ausente:'tampa ausente',
+                     tampa_mal_rosqueada:'tampa mal rosqueada', deformidade:'deformidade no corpo',
+                     inconclusivo:'não decidido', sem_referencia:'-', sem_garrafa:'-'};
+
+function mostra(dados) {
+  const v = dados.veredito || {};
+  const card = $('card');
+  card.className = 'veredito ' + (v.veredito || '');
+  $('valor').textContent = ROTULO[v.veredito] || (v.veredito || '-');
+  $('quando').textContent = v.classe && v.classe !== 'normal' && v.classe !== 'inconclusivo'
+      ? 'classe: ' + (NOME_CLASSE[v.classe] || v.classe) : (v.veredito === 'ok' ? 'nenhum defeito detectado' : '');
+  const ul = $('motivos'); ul.innerHTML = '';
+  (v.motivos || []).forEach(m => { const li = document.createElement('li'); li.textContent = m; ul.appendChild(li); });
+
+  const med = dados.medidas;
+  const tb = $('medidas');
+  if (med && med.ok) {
+    const linhas = [
+      ['altura relativa (altura/largura)', med.altura_rel, 4],
+      ['largura do topo (relativa)', med.largura_topo_rel, 4],
+      ['inclinação do topo', med.tilt_tampa_graus, 'graus'],
+      ['nitidez (foco)', med.nitidez, 1],
+      ['brilho médio', med.brilho, 1],
+      ['pixels estourados', (med.saturado * 100).toFixed(2) + '%', ''],
+    ];
+    tb.innerHTML = linhas.map(([k, val, u]) =>
+      `<tr><td>${k}</td><td class="num">${val}${u === 'graus' ? '°' : ''}</td></tr>`).join('');
+  } else {
+    tb.innerHTML = '<tr><td class="nota" colspan="2">' + (med && med.motivo ? med.motivo : 'sem análise') + '</td></tr>';
+  }
+  if (dados.acao === 'analise') { const a = $('anotada'); a.src = '/ultima_anotada.jpg?t=' + Date.now(); a.style.display = 'block'; }
+  if (dados.acao === 'analise neural') { const a = $('modelo-img'); a.src = '/modelo.jpg?t=' + Date.now(); a.style.display = 'block'; }
+}
+
+async function chamar(url, alvo) {
+  const msg = $('msg');
+  msg.innerHTML = '<span class="nota">executando…</span>';
+  try {
+    const r = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+    const j = await r.json();
+    if (j.ok === false) { msg.innerHTML = '<span class="errmsg">' + (j.erro || 'falhou') + (j.detalhe ? '; ' + j.detalhe : '') + '</span>'; }
+    else { msg.innerHTML = '<span class="okmsg">' + (j.acao || 'ok') + '</span>'; mostra(j); estado(); historico(); }
+  } catch (e) { msg.innerHTML = '<span class="errmsg">erro de rede: ' + e + '</span>'; }
+}
+
+$('b-fundo').onclick = () => chamar('/capturar?alvo=fundo');
+$('b-ref').onclick = () => chamar('/capturar?alvo=referencia');
+$('b-analise').onclick = () => chamar('/capturar?alvo=analise');
+$('b-modelo').onclick = () => chamar('/modelo/analisar');
+$('modelo-aplicar').onclick = async () => {
+  const vista = $('modelo-vista').value;
+  const r = await fetch('/modelo?vista=' + encodeURIComponent(vista) + '&t=' + Date.now());
+  const j = await r.json();
+  $('msg').innerHTML = j.ok ? '<span class="okmsg">modelo ' + j.modelo + ' selecionado; confirme a posição física da câmera</span>' : '<span class="errmsg">' + (j.erro || 'falhou') + '</span>';
+  estado();
+};
+async function carregarGaleriaDataset() {
+  try {
+    const r = await fetch('/dataset-series?t=' + Date.now()); const j = await r.json();
+    const gal = $('dataset-galeria');
+    if (!j.series || !j.series.length) { gal.innerHTML = '<div class="nota">nenhuma série salva</div>'; return; }
+    gal.innerHTML = j.series.map(s => '<article style="border:1px solid var(--regra);padding:10px;background:var(--papel)">' +
+      '<div class="nota" style="margin-bottom:7px">série ' + s.serie + ' · ' + (s.capturado_em || '') +
+      (s.trigger_n ? ' · trigger ' + s.trigger_n : ' · dataset manual') + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">' + s.fotos.map(f =>
+        '<a href="' + f.url + '"><img src="' + f.url + '?t=' + Date.now() + '" alt="' + f.camera +
+        '" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block"></a>').join('') + '</div></article>').join('');
+  } catch (e) { $('dataset-galeria').innerHTML = '<div class="errmsg">erro ao carregar dataset: ' + e + '</div>'; }
+}
+
+function abrirModalPreview(j) {
+  if (!j || !j.fotos || j.fotos.length !== 3) return;
+  const grid = $('preview-modal-grid');
+  grid.innerHTML = j.fotos.map(f => '<figure style="margin:0"><figcaption style="font-weight:600;margin-bottom:6px">'+f.camera+'</figcaption><img src="'+f.url+'?t='+Date.now()+'" style="width:100%;display:block;border:1px solid #aaa"></figure>').join('');
+  $('preview-modal-meta').textContent = 'Prévia '+j.serie+'; estas imagens ainda NÃO foram salvas no dataset.';
+  $('preview-modal').style.display='block';
+}
+
+function mostraTripla(j) {
+  if (!j || !j.fotos || j.fotos.length !== 3) return;
+  const mapa = {'acerola-csi':'tripla-csi', 'acerola-usb':'tripla-usb', 'espcam':'tripla-esp'};
+  j.fotos.forEach(f => { const im=$(mapa[f.camera]); if (im) { im.src=f.url+'?t='+Date.now(); im.style.display='block'; } });
+  $('tripla-meta').textContent = (j.persistida ? 'SALVA no dataset · ' : 'PRÉVIA em validação · ') + 'série '+j.serie;
+  $('b-salvar-dataset').disabled = !!j.persistida;
+}
+
+$('b-testar-delay').onclick = async () => {
+  const msg = $('msg'); msg.innerHTML = '<span class="nota">medindo apenas a espera…</span>';
+  try { const r = await fetch('/testar-delay?t=' + Date.now()); const j = await r.json();
+    msg.innerHTML = j.ok ? '<span class="okmsg">' + j.acao + '; ' + j.resposta + '</span>' : '<span class="errmsg">' + j.erro + '</span>';
+    if (j.ok) $('delay-meta').textContent = 'teste salvo em ' + j.testado_em + ' · ' + j.resposta;
+  } catch(e) { msg.innerHTML = '<span class="errmsg">erro de rede: '+e+'</span>'; }
+};
+
+$('b-salvar-delay').onclick = async () => {
+  const ms = $('delay-trigger').value;
+  const msg = $('msg'); msg.innerHTML = '<span class="nota">salvando delay…</span>';
+  try { const r = await fetch('/configurar-delay?ms=' + encodeURIComponent(ms)); const j = await r.json();
+    msg.innerHTML = j.ok ? '<span class="okmsg">delay do trigger: ' + j.delay_ms + ' ms · salvo em ' + j.salvo_em + '</span>' : '<span class="errmsg">' + j.erro + '</span>';
+    if (j.ok) $('delay-meta').textContent = 'configurado em ' + j.salvo_em + ' · delay ' + j.delay_ms + ' ms';
+  } catch(e) { msg.innerHTML = '<span class="errmsg">erro de rede: '+e+'</span>'; }
+};
+
+$('b-preview-dataset').onclick = async () => {
+  const msg = $('msg'); msg.innerHTML = '<span class="nota">capturando CSI + USB + ESP-CAM para validação…</span>';
+  try { const r = await fetch('/capturar-preview-dataset?t=' + Date.now()); const j = await r.json();
+    if (!j.ok) { msg.innerHTML = '<span class="errmsg">' + j.erro + '</span>'; return; }
+    mostraTripla(j); abrirModalPreview(j); $('b-salvar-dataset').disabled = false;
+    msg.innerHTML = '<span class="okmsg">prévia aberta para validação.</span>';
+  } catch(e) { msg.innerHTML = '<span class="errmsg">erro de rede: '+e+'</span>'; }
+};
+$('preview-modal-close').onclick = () => { $('preview-modal').style.display='none'; };
+$('preview-modal-save').onclick = async () => {
+  const msg = $('msg'); $('preview-modal-save').disabled=true;
+  try { const r = await fetch('/salvar-preview-dataset?t=' + Date.now()); const j = await r.json();
+    if (!j.ok) { msg.innerHTML='<span class="errmsg">'+j.erro+'</span>'; return; }
+    mostraTripla(j); carregarGaleriaDataset(); $('preview-modal').style.display='none';
+    msg.innerHTML='<span class="okmsg">dataset salvo permanentemente: '+j.diretorio+'</span>';
+  } catch(e) { msg.innerHTML='<span class="errmsg">erro ao salvar: '+e+'</span>'; }
+  finally { $('preview-modal-save').disabled=false; }
+};
+
+$('b-salvar-dataset').onclick = async () => {
+  const msg = $('msg'); msg.innerHTML = '<span class="nota">gravando dataset validado…</span>';
+  try { const r = await fetch('/salvar-preview-dataset?t=' + Date.now()); const j = await r.json();
+    if (!j.ok) { msg.innerHTML = '<span class="errmsg">' + j.erro + '</span>'; return; }
+    mostraTripla(j); carregarGaleriaDataset(); $('preview-modal').style.display='none';
+    msg.innerHTML = '<span class="okmsg">salvo permanentemente: ' + j.diretorio + '</span>';
+  } catch(e) { msg.innerHTML = '<span class="errmsg">erro de rede: '+e+'</span>'; }
+};
+
+function mostraTrigger(j) {
+  if (!j || !j.foto) return;
+  const im=$('trigger-foto'); im.src=j.foto.url+'?t='+Date.now(); im.style.display='block';
+  $('trigger-meta').textContent='trigger '+j.trigger_n+' · delay até a foto '+j.delay_trigger_ate_foto_ms+' ms · série '+j.serie;
+}
+
+$('b-zerar').onclick = async () => { if (confirm('Zerar fundo, referência e histórico?')) { await fetch('/zerar'); estado(); historico(); $('msg').textContent = 'calibração zerada'; $('anotada').style.display = 'none'; } };
+
+const CAMPOS = [
+  ['tampa_ausente_frac', 'Altura mínima do topo (fração da referência)', 0.01],
+  ['tilt_incerto_graus', 'Inclinação: zona cinzenta (graus)', 0.5],
+  ['tilt_reprova_graus', 'Inclinação: reprova acima de (graus)', 0.5],
+  ['deformidade_frac', 'Desvio de corpo que reprova (fração da largura)', 0.01],
+  ['nitidez_min', 'Nitidez mínima (foco)', 1],
+  ['diff_fundo', 'Sensibilidade contra o fundo', 1],
+];
+
+async function estado() {
+  const r = await fetch('/estado?t=' + Date.now()); const j = await r.json();
+  $('ponto').className = 'ponto' + (j.camera === 'ok' ? '' : ' off');
+  $('txt-cam').textContent = j.camera === 'ok' ? 'câmera ativa' : ('câmera: ' + j.camera + (j.erro_camera ? ' (' + j.erro_camera + ')' : ''));
+  $('txt-contadores').textContent = `fundo: ${j.tem_fundo ? 'ok' : 'falta'} · referência: ${j.tem_referencia ? 'ok' : 'falta'} · análises: ${j.analises}`;
+  const mn = j.modelo || {};
+  const ms = $('modelo-status');
+  if (ms) {
+    const dets = mn.deteccoes || [];
+    const n = dets.length;
+    const rotulos = dets.map(d => `${d.label || '?'} ${(Number(d.confidence || 0) * 100).toFixed(0)}%`).join(', ');
+    ms.textContent = `modelo: ${mn.modelo || '-'} · status: ${mn.status || '-'} · detecções: ${n}` +
+      (rotulos ? ` · ${rotulos}` : '') +
+      (mn.inference_ms != null ? ` · ${mn.inference_ms} ms` : '') +
+      (mn.erro ? ` · ${mn.erro}` : '');
+    ms.className = mn.status === 'erro' ? 'errmsg' : (mn.status === 'ok' ? 'okmsg' : 'nota');
+  }
+  const sel = $('modelo-vista');
+  if (sel && mn.vista) sel.value = mn.vista;
+  const mi = $('modelo-img');
+  if (mi && mn.atualizado_em && mn.status !== 'erro') { mi.src = '/modelo.jpg?t=' + Date.now(); mi.style.display = 'block'; }
+  mostraTripla(j.ultimo && (j.ultimo.preview_dataset || j.ultimo.ultima_tripla));
+  mostraTrigger(j.ultimo && j.ultimo.ultima_trigger);
+  $('passos').textContent = !j.tem_fundo
+    ? 'Passo 1: tire a garrafa da frente e clique "Capturar fundo".'
+    : (!j.tem_referencia ? 'Passo 2: coloque uma garrafa BOA na posição e clique "Capturar garrafa boa".'
+                         : 'Calibrado. Coloque a garrafa a inspecionar e clique "Analisar garrafa".');
+  const mf = $('mini-fundo'), mr = $('mini-ref');
+  if (j.tem_fundo) { mf.src = '/fundo.jpg?t=' + Date.now(); mf.style.display = 'block'; } else { mf.style.display = 'none'; }
+  if (j.tem_referencia) { mr.src = '/referencia.jpg?t=' + Date.now(); mr.style.display = 'block'; } else { mr.style.display = 'none'; }
+  if (j.referencia) {
+    $('padroes').textContent = 'padrões da referência: nitidez ' + j.referencia.nitidez +
+      ' · brilho ' + j.referencia.brilho + ' · altura relativa ' + j.referencia.altura_rel;
+  } else { $('padroes').textContent = ''; }
+  if (j.roi) pintarRoi(j.roi);
+  if (j.limiares && !$('painel-limiares').dataset.pronto) {
+    $('painel-limiares').innerHTML = CAMPOS.map(([k, rot]) =>
+      `<label>${rot}<input id="lim-${k}" value="${j.limiares[k]}"></label>`).join('');
+    $('painel-limiares').dataset.pronto = '1';
+  }
+}
+
+const CAMPOS_ROI = [['x0', 'esquerda (%)'], ['y0', 'topo (%)'], ['x1', 'direita (%)'], ['y1', 'base (%)']];
+
+function pintarRoi(roi) {
+  $('painel-roi').innerHTML = CAMPOS_ROI.map(([k, rot]) =>
+    `<label>${rot}<input id="roi-${k}" value="${(roi[CAMPOS_ROI.findIndex(c => c[0] === k)] * 100).toFixed(1)}"></label>`).join('')
+    + `<div class="nota" style="margin-top:8px">atual: ${(roi[0]*100).toFixed(0)}–${(roi[2]*100).toFixed(0)}% x ${(roi[1]*100).toFixed(0)}–${(roi[3]*100).toFixed(0)}%</div>`;
+}
+
+$('b-salvar-roi').onclick = async () => {
+  const v = (k) => (parseFloat($('roi-' + k).value || '0') / 100).toFixed(4);
+  const url = '/roi?x0=' + v('x0') + '&y0=' + v('y0') + '&x1=' + v('x1') + '&y1=' + v('y1');
+  const r = await fetch(url + '&t=' + Date.now()); const j = await r.json();
+  if (j.ok) { pintarRoi(j.roi); $('msg').innerHTML = '<span class="okmsg">ROI salva</span>'; }
+  else { $('msg').innerHTML = '<span class="errmsg">' + (j.erro || 'falhou') + '</span>'; }
+};
+
+$('b-salvar').onclick = async () => {
+  const q = CAMPOS.map(([k]) => k + '=' + encodeURIComponent($('lim-' + k).value)).join('&');
+  const r = await fetch('/limiar?' + q + '&t=' + Date.now()); const j = await r.json();
+  estado();
+  const ig = Object.entries(j.ignorados || {});
+  $('msg').innerHTML = ig.length
+    ? '<span class="errmsg">não aplicado: ' + ig.map(([k, m]) => k + ' (' + m + ')').join('; ') + '</span>'
+    : '<span class="okmsg">limiares salvos</span>';
+};
+
+async function historico() {
+  const r = await fetch('/historico?t=' + Date.now()); const j = await r.json();
+  const tb = $('hist');
+  if (!j.itens.length) { tb.innerHTML = '<tr><td colspan="4" class="nota">nenhuma análise ainda</td></tr>'; return; }
+  tb.innerHTML = j.itens.map(i => `<tr><td class="mono">${i.quando}</td>
+    <td>${ROTULO[i.veredito] || i.veredito}</td><td>${NOME_CLASSE[i.classe] || i.classe}</td>
+    <td class="nota">${(i.motivos || []).join('; ')}</td></tr>`).join('');
+}
+
+estado(); historico(); setInterval(estado, 3000);
+carregarGaleriaDataset();
+</script>
+
+<script id="guia-enquadramento">
+(function(){
+  function atualiza(){
+    fetch('/estado?t=' + Date.now()).then(r => r.json()).then(j => {
+      const u = j.ultimo || {};
+      const med = u.medidas || {};
+      const box = u.bbox || med.bbox;   // /estado expoe bbox no nivel do ultimo
+      const img = document.getElementById('video');
+      const bbx = document.getElementById('bbx'), lbl = document.getElementById('lbl-bbx');
+      if (box && img && img.naturalWidth && img.naturalHeight && bbx){
+        const sx = img.clientWidth / img.naturalWidth, sy = img.clientHeight / img.naturalHeight;
+        // imagem usa object-fit contain: calcula a area realmente ocupada
+        const esc = Math.min(img.clientWidth / img.naturalWidth, img.clientHeight / img.naturalHeight);
+        const deslocX = (img.clientWidth - img.naturalWidth * esc) / 2;
+        const deslocY = (img.clientHeight - img.naturalHeight * esc) / 2;
+        bbx.style.display = 'block';
+        bbx.style.left = (deslocX + box[0] * esc) + 'px';
+        bbx.style.top = (deslocY + box[1] * esc) + 'px';
+        bbx.style.width = ((box[2] - box[0]) * esc) + 'px';
+        bbx.style.height = ((box[3] - box[1]) * esc) + 'px';
+        bbx.style.borderColor = (u.veredito === 'ok' || u.classe === 'normal') ? '#46d17a' : '#ff5d4d';
+        if (lbl){
+          lbl.style.display = 'block';
+          lbl.style.left = (deslocX + box[0] * esc) + 'px';
+          lbl.style.top = Math.max(0, (deslocY + box[1] * esc) - 22) + 'px';
+          lbl.style.background = (u.veredito === 'ok' || u.classe === 'normal') ? '#46d17a' : '#ff5d4d';
+          lbl.style.color = (u.veredito === 'ok' || u.classe === 'normal') ? '#04220f' : '#fff';
+          lbl.textContent = 'garrafa detectada: ' + (u.classe || u.veredito || '?');
+        }
+      } else if (bbx){ bbx.style.display = 'none'; if (lbl) lbl.style.display = 'none'; }
+    }).catch(function(){});
+  }
+  setInterval(atualiza, 1200); atualiza();
+})();
+</script>
+</body>
+</html>

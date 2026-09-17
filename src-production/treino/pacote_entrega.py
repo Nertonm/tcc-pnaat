@@ -189,12 +189,52 @@ def export_bundle(peso, contrato, metadados, saida, *, apply=False):
             shutil.rmtree(staging)
 
 
+def conferir(diretorio):
+    """Read-back de um pacote ja gravado, com a mesma verificacao do consumidor.
+
+    Existe porque a doc manda conferir o pacote e nao havia CLI para isso: o verificador so rodava
+    dentro da exportacao. Nao promove nada.
+    """
+    try:
+        modelo = verify_bundle(diretorio)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        print(f'BLOQUEADO: {exc}', file=sys.stderr)
+        return 2
+    print('pacote confere:', diretorio)
+    if isinstance(modelo, dict):
+        for chave, rotulo in (('arquivo', 'peso'), ('sha256', 'sha256'),
+                              ('classes', 'classes'), ('imgsz_treino', 'imgsz de treino'),
+                              ('imgsz_calibrados', 'imgsz calibrados'), ('estado', 'estado')):
+            if chave in modelo:
+                valor = modelo[chave]
+                if chave == 'sha256':
+                    valor = f'{str(valor)[:32]}...'
+                print(f'  {rotulo}: {valor}')
+    else:
+        print('  ', modelo)
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--pacote', type=Path, default=None,
+                        help='confere um pacote JA gravado (peso + contrato + metadados + '
+                             'modelo.json + SHA256SUMS) e sai; nao exporta nada')
     for option in ('peso', 'contrato', 'metadados-treino', 'saida'):
-        parser.add_argument('--' + option, required=True, type=Path)
+        parser.add_argument('--' + option, type=Path)
     parser.add_argument('--apply', action='store_true', help='gravar novo bundle candidato')
     args = parser.parse_args(argv)
+
+    if args.pacote is not None:
+        return conferir(args.pacote)
+
+    faltando = [nome for nome, valor in (('--peso', args.peso), ('--contrato', args.contrato),
+                                         ('--metadados-treino', args.metadados_treino),
+                                         ('--saida', args.saida)) if valor is None]
+    if faltando:
+        parser.error('para exportar faltam: ' + ', '.join(faltando)
+                     + ' (ou use --pacote DIR para conferir um pacote ja gravado)')
+
     try:
         model = export_bundle(args.peso, args.contrato, args.metadados_treino, args.saida, apply=args.apply)
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:

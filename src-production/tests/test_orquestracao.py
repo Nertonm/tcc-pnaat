@@ -23,7 +23,8 @@ from registro import Registro
 AGORA = datetime(2026, 9, 13, 4, 0, tzinfo=timezone.utc)
 RIG = IdentidadeDoRig(equipamento="pi5-rig", localizacao="bancada-b")
 ROI = (0.0, 0.0, 1.0, 1.0)  # recorte do quadro inteiro: o teste nao mede ROI
-CHECK_OK = lambda vistacap: (False, None)  # check instrumentado, sem violacao
+def CHECK_OK(vistacap):
+    return (False, None)  # check instrumentado, sem violacao
 
 
 class ClassificadorFalso:
@@ -92,7 +93,7 @@ def _item(
 ) -> ItemCapturado:
     alinhamentos = alinhamentos or {}
     vistas = []
-    for v, tom in zip((Vista.TOPO, Vista.LATERAL1, Vista.LATERAL2), tons):
+    for v, tom in zip((Vista.TOPO, Vista.LATERAL1, Vista.LATERAL2), tons, strict=False):
         if v in faltantes:
             continue
         vistas.append(

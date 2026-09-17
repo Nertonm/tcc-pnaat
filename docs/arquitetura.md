@@ -1,4 +1,11 @@
-# Arquitetura proposta
+# Arquitetura
+
+Este documento tem duas partes. A primeira é o desenho aprovado, com as expansões, incluindo
+atuação, MQTT com hub e múltiplos nós. A segunda, no fim, descreve o que o código roda hoje, com o
+que cada teste protege. Nada da primeira parte deve ser lido como implementado sem essa conferência.
+O manual de replicação é o `README.md` da raiz.
+
+## Arquitetura proposta
 
 ## Diagrama de blocos
 
@@ -125,3 +132,45 @@ Cada evento deve conter:
 
 MQTT, hub local, múltiplos nós, integração industrial, atuação física e confirmações mecânicas são extensões. Nenhuma delas deve ser apresentada como implementada ou necessária para validar o núcleo do projeto.
 
+
+
+## Arquitetura implementada
+
+O estado abaixo foi conferido contra `src-production/`. A arquitetura proposta no início deste arquivo
+continua proposta; ela inclui a topologia física e os domínios sem modelo no pacote lateral
+(CORPO). O detector de topo existe no acervo e atua como check dimensional.
+
+```text
+trigger-node (E18, GPIO27) -> ponte serial (esp32cam_site.py) -> CMD_TRIG -> ESP32-CAM
+                                                                        |
+                                              captura materializada (rig_service -> série/manifest)
+capturas por diretório -> orquestracao.py -> pacote YOLO -> decisão -> registro SQLite
+
+serie/manifest.json -> ingerir_serie.py -> artefato .npz legado -> decisão -> registro SQLite
+
+CSV ou POST /api/gatilho -> evento_gatilho no SQLite
+```
+
+O receptor UART está em `firmware/esp32cam-test/esp32cam_site.py`: é dono da serial, decodifica frames
+com `transport_bin.py`, recebe o trigger e envia o comando de captura. O serviço de rig
+(`rig_service/app.py`) grava a série com manifest; `ingerir_serie.py` importa a série para o registro
+e `orquestracao.executar()` roda a única cadeia de decisão. O desenho firmware -> receptor ->
+`ItemCapturado` -> decisão -> registro é o comportamento atual; endereços, portas e diretórios são
+configuração da instalação.
+
+| Camada | Implementado | Limite observável |
+|---|---|---|
+| Trigger, ponte e foto | nó MicroPython (E18, GPIO27) + `esp32cam_site.py` (ponte) + ESP32-CAM (CMD_TRIG, debounce 50 ms/cooldown 250 ms, frame UART e CRC) | portas, endereço e implantação são dados da instalação |
+| Evento de gatilho | CSV e API gravam `evento_gatilho` | gravar gatilho não dispara inferência |
+| Captura materializada | `captura.py` valida layout, janela, alinhamento e duplicidade | depende de arquivos já gravados |
+| Pacote YOLO | `pacote_detector.py`, `preparo_detector.py`, `classificador_yolo.py` | detector lateral decide tampa nas laterais; detector de topo existe no acervo (`*-topo-detector-roi`, `models/INDEX.csv`) e é usado como check dimensional — topo nunca decide aprovação (D-23/D-30) |
+| Ingestão de série | `ingerir_serie.py` lê manifest, copia evidência e vincula gatilho | usa `.npz` legado, não pacote YOLO |
+| Decisão e banco | `decisao.py`, `conformidade.py`, `registro.py` | ausência de medida necessária resulta em inconclusivo |
+| API e site | `api.py`, `painel.py`, `consultas_site.py`, `site/` | site exibe capturas, fotos e séries do registro (`/api/evidencia`, `/api/series`, `/api/rig/series`); a captura em si vem do serviço de rig |
+
+O comando `make -C src-production verificar` cobre produto e firmware. Para os comandos e layouts de
+arquivo de cada rota, use `docs/operacao-pipeline.md`.
+
+## Fonte de cada rota
+
+`docs/operacao-pipeline.md` é o guia executável; os módulos citados acima são a fonte de comportamento.

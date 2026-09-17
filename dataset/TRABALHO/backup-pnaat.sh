@@ -8,7 +8,7 @@ set -euo pipefail
 
 RAIZ=$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)
 # a pasta de modelos e IRMA de tcc-pnaat/: deriva da localizacao do repo, nunca de $HOME
-# (rodando como root, $HOME/pnaat-modelos virava /root/pnaat-modelos e o pacote saia vazio)
+# (rodando como root, a home resolvida era a do root e o pacote saia vazio)
 M="${PNAAT_MODELOS:-$(dirname "$(dirname "$RAIZ")")/pnaat-modelos}"
 CARIMBO=$(date +%Y%m%dT%H%M%S)
 STAGE=$(mktemp -d /var/tmp/backup-pnaat-XXXXXX)
@@ -46,4 +46,4 @@ rm -rf "$STAGE"
 
 echo "pacote: $PACOTE ($(du -h "$PACOTE" | cut -f1))"
 echo "sha256: $(sha256sum "$PACOTE" | cut -d' ' -f1)"
-echo "puxe com: scp -J <host-do-salto> -i <chave> -P 22883 root@100.91.87.9:$PACOTE <destino>/"
+echo "puxe com: scp -J <host-do-salto> -i <chave> -P <porta> <usuario>@<host-do-tailnet>:$PACOTE <destino>/"

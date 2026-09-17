@@ -54,7 +54,8 @@ def test_iou_basico():
 def test_iou_min_para_detectar(tmp_path):
     base = _mvtec_sintetico(tmp_path / "mvtec")
     caixa_gt = (4, 4, 12, 12)  # caixa da máscara sintética
-    scorer = lambda caminho: [] if "good" in caminho else [caixa_gt]
+    def scorer(caminho):
+        return [] if "good" in caminho else [caixa_gt]
     rel = avalia(base, ("bottle",), scorer, "teste-caixa", 0.3, 4)
     assert rel["categorias"]["bottle"]["recall_defeito"] == pytest.approx(1.0)
     assert rel["categorias"]["bottle"]["fpr_good"] == pytest.approx(0.0)
@@ -63,7 +64,8 @@ def test_iou_min_para_detectar(tmp_path):
 def _avalia_baseline(base: Path, nome: str, seed: int = 7):
     from avaliacao_ood import _baseline_por_imagem
 
-    scorer = lambda caminho: _baseline_por_imagem(nome, seed, base, str(caminho))
+    def scorer(caminho):
+        return _baseline_por_imagem(nome, seed, base, str(caminho))
     return avalia(base, ("bottle", "carpet"), scorer, nome, 0.3, 4)
 
 

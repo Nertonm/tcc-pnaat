@@ -8,15 +8,19 @@ cada um declarado (dois números do dia foram invalidados e estão marcados lá)
 
 | defeito | onde | correção |
 |---|---|---|
-| k-fold usava a MESMA lista em treino e validação (treinava na validação) + arquivos de lista colidiam entre execuções | `kfold_por_item.py` | listas separadas por dobra, diretório único por execução (`mkdtemp`), asserção que aborta se houver imagem nos dois lados |
+| k-fold usava a mesma lista em treino e validação (treinava na validação) + arquivos de lista colidiam entre execuções | `kfold_por_item.py` | listas separadas por dobra, diretório único por execução (`mkdtemp`), asserção que aborta se houver imagem nos dois lados |
 | pesos iniciais já tinham visto o teste (v1 viu 12 de 18 imagens; v0 tinha 25 imagens nossas) | `treina_v1.py` / filas | base passa a ser pré-treino **só externo** (lista com asserção de 0 imagens nossas); as métricas anteriores ficam marcadas como inválidas |
 | imagens do projeto 19 (equipe) nunca entravam: o filtro de classe descartava `classe=deformidade` em silêncio | `monta_v1_detector.py` | classe aceita nas duas montagens; `--com-corpo` cria a 4ª classe `corpo_deformidade`; contagem de descartes por motivo no manifest |
 | gate de presença de classe reprovava vistas com menos classes (topo tem 2) | `monta_v1_detector.py` | `--permitir-classe-ausente` rebaixa a gate a aviso, com registro |
-| caminho de mídia do Label Studio (`/data/upload/N/…`) não resolvia | `monta_v1_detector.py` | `resolve()` acha o arquivo no volume (nome tem prefixo uuid); `/data/upload/` conta como domínio próprio |
+| caminho de mídia do Label Studio (`/data/upload/N/...`) não resolvia | `monta_v1_detector.py` | `resolve()` acha o arquivo no volume (nome tem prefixo uuid); `/data/upload/` conta como domínio próprio |
 | quase-duplicata cruzando splits (mesma garrafa em séries diferentes) | `monta_v1_detector.py` | agrupamento por hash perceptual (dHash) antes do split; o grupo inteiro vai para o mesmo destino |
 | `treina_v1.py` exigia manifest do dataset derivado da `--tag` (quebrava k-fold com tag própria) | `treina_v1.py` | campo do manifest vira opcional |
 
 ## 2. A cadeia (ordem exata)
+
+> **Caminhos canônicos hoje:** `src-production/treino/{exporta_anotacoes,guarda_frescor,fingerprint_ls,monta_v1_detector}.py`.
+> As cópias em `dataset/TRABALHO/` são histórico desta receita e divergem do canônico (import de
+> `caminhos.py`); o fluxo de anotação está descrito em `docs/reference/uso-do-label-studio.md`.
 
 ```bash
 cd ~/tcc-pnaat/github
@@ -62,15 +66,15 @@ Filas que encadeiam tudo sem disputar GPU: `dataset/TRABALHO/filas/fila_limpa.sh
 
 `aumenta_offline.py`: 3× no split de **treino** apenas, dedup por sha256, cada cópia grava
 origem + ops + seed no manifest. Ops: brilho ±20%, contraste ±15%, ruído gaussiano, motion
-blur leve, re-encode JPEG 85–95, flip horizontal, rotação ±5°. Fora de propósito: hue forte
+blur leve, re-encode JPEG 85 a 95, flip horizontal, rotação ±5°. Fora de propósito: hue forte
 (cor da tampa é sinal de classe), shear/perspectiva/90° (câmera fixa), rotação grande.
 
 ## 4. Regras que não podem ser quebradas (aprendidas na marra)
 
 1. Nada de métrica sem lista de treino e validação **separadas e verificadas**.
-2. Nenhum peso que já viu o teste pode ser base de avaliação — base limpa ou nada.
+2. Nenhum peso que já viu o teste pode ser base de avaliação: base limpa ou nada.
 3. Split por item **e** quase-duplicata: sha256 sozinho não protege.
-4. Descarte de item no montador tem que ser **contado por motivo** — descarte silencioso já
+4. Descarte de item no montador tem que ser **contado por motivo**: descarte silencioso já
    escondeu 16 imagens anotadas.
 5. Limiar se escolhe em validação, nunca no teste.
 

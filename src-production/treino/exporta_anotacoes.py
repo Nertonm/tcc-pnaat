@@ -26,6 +26,7 @@ import sys
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from pathlib import Path
 
 DS = _RAIZ_REPO / "dataset"
 T = DS / "TRABALHO"
@@ -68,15 +69,35 @@ PROJETOS = projetos_com_anotacao()
 creds = dict(l.split("=", 1) for l in open("/srv/label-studio/credenciais.env").read().splitlines() if "=" in l)
 TOKEN = creds["LABEL_STUDIO_USER_TOKEN"].strip()
 
-# metadados do manifesto, para o export carregar dominio e bloco de origem
-MANIFESTO = {}
-with (DS / "MANIFEST.csv").open(newline="", encoding="utf-8") as _f:
-    for _r in csv.DictReader(_f):
-        _a = (_r.get("arquivo") or "")
-        if _a.startswith("dataset/"):
-            _a = _a[len("dataset/"):]
-        MANIFESTO[_a] = {"bloco": _r.get("bloco") or "", "classe_fonte": _r.get("classe") or "",
-                         "sessao": _r.get("sessao") or "", "sha256": _r.get("sha256") or ""}
+def carrega_manifesto(caminho: Path) -> dict:
+    """Metadados do manifesto (bloco, classe de origem, sessao, sha256) por arquivo.
+
+    Manifesto ausente e ERRO declarado, nao export degradado: sem ele a linha do CSV perde a
+    procedencia (de onde veio a imagem e qual era o rotulo da fonte) e a auditoria do dataset
+    passa a nao ter contra o que conferir. Antes isto abria o arquivo direto e morria em
+    `FileNotFoundError` sem dizer o que faltava.
+    """
+    if not caminho.is_file():
+        raise SystemExit(
+            f"[export] manifesto ausente: {caminho}\n"
+            "          sem ele o export nao carrega bloco/classe_fonte/sessao/sha256. Aponte o "
+            "manifesto do conjunto (dado de instalacao, fora do repositorio) ou gere-o antes."
+        )
+    manifesto: dict = {}
+    with caminho.open(newline="", encoding="utf-8") as _f:
+        for _r in csv.DictReader(_f):
+            _a = _r.get("arquivo") or ""
+            if _a.startswith("dataset/"):
+                _a = _a[len("dataset/"):]
+            manifesto[_a] = {"bloco": _r.get("bloco") or "", "classe_fonte": _r.get("classe") or "",
+                             "sessao": _r.get("sessao") or "", "sha256": _r.get("sha256") or ""}
+    return manifesto
+
+
+# NOTA: este modulo tem efeito de lado no import (le o banco do Label Studio e o arquivo de
+# credenciais antes de qualquer funcao). Por isso ele NAO e importado pela suite: e CLI de bancada.
+# Quem quiser testar a logica deve extrair a funcao pura, nao importar o modulo.
+MANIFESTO = carrega_manifesto(DS / "MANIFEST.csv")
 
 
 def dominio_de(classe: str, caixas: list) -> str:

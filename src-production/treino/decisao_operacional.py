@@ -57,8 +57,8 @@ def main() -> int:
         nomes = vt.names or {}
         cand = []
         if vt.boxes is not None and len(vt.boxes):
-            for b, c, k in zip(vt.boxes.xyxy.cpu().numpy(), vt.boxes.conf.cpu().numpy(),
-                               vt.boxes.cls.cpu().numpy().astype(int)):
+            for _b, c, k in zip(vt.boxes.xyxy.cpu().numpy(), vt.boxes.conf.cpu().numpy(),
+                               vt.boxes.cls.cpu().numpy().astype(int), strict=False):
                 cand.append((float(c), nomes.get(int(k), str(k))))
         cand.sort(reverse=True)
         # limiar por classe COM viés de segurança: defeito acima do limiar dele vence "normal"

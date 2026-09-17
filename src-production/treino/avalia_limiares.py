@@ -74,7 +74,7 @@ def main() -> int:
             if pred.boxes is not None and len(pred.boxes):
                 xyxy = pred.boxes.xyxy.cpu().numpy()
                 cls = pred.boxes.cls.cpu().numpy().astype(int)
-                caixas = [(int(c), tuple(float(v) for v in b)) for b, c in zip(xyxy, cls)]
+                caixas = [(int(c), tuple(float(v) for v in b)) for b, c in zip(xyxy, cls, strict=False)]
             usados = set()
             for cg, bg in gt:
                 achou = False

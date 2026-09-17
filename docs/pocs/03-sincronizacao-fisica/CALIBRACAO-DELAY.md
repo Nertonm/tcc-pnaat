@@ -1,6 +1,6 @@
 # Calibração: atraso trigger → captura e casamento da velocidade
 
-Procedimento de bancada do sistema `src/pocs/expansao_sincronizacao/` + `scripts/calibrar_delay_trigger.py`.
+Procedimento de bancada do sistema `code-workspace/src/pocs/expansao_sincronizacao/` + `code-workspace/scripts/calibrar_delay_trigger.py`.
 Status: sistema entregue e verificado em 2026-09-14 (ver seção de evidências).
 
 ## O problema, em uma linha
@@ -27,10 +27,10 @@ transforma a medição em extrapolação — e o relatório avisa quando isso ac
 ## Fase 1 — rodar a calibração (uma vez por vista)
 
 ```bash
-cd ~/tcc-pnaat/github/code-workspace
+cd <TCC_HOME>
 make calibrar-delay-bancada DIST=150 PASSOS=5                 # vista padrão: "principal"
 # ou, com o nome da vista (cada câmera tem o seu próprio atraso):
-$HOME/tcc-pnaat/github/.venv/bin/python scripts/calibrar_delay_trigger.py \
+<TCC_HOME>/.venv/bin/python code-workspace/scripts/calibrar_delay_trigger.py \
     --fonte log --vista topo --distancia-mm 150 --passagens 5 --janela 2.2 --aplicar
 ```
 
@@ -91,4 +91,4 @@ Evidências de 2026-09-14:
 | Caminho do ensaio, vista topo (d=150) | erro 0,0% contra verdade, 114 amostras em 2 passagens |
 | Caminho do ensaio, vista lateral1 (d=220) | erro 0,0%, τ\*=2200 ms, sem apagar a vista topo |
 | Caso infeasível (d=300, janela 1,2 s) | reprova, exit 1, nenhum delay aplicado |
-| Suíte do repositório | 110 passed |
+| Suíte do repositório | 112 passed (estado 18/09) |

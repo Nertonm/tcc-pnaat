@@ -1,9 +1,8 @@
 """Pre-processamento deterministico; PADRAO DO PROJETO (portado do PoC-08).
 
-Fonte canonica: `code-workspace/src/pocs/poc08_preproc/preproc.py` (PoC-08, documentado em
-`docs/design/preprocessamento-ideal-pet.md` secao 2). O design doc exige que o MESMO pipeline
-rode no treino e na inferencia, com a versao registrada no manifesto; por isso a versao vive
-aqui e vai em todo sidecar.
+Fonte canonica: a PoC-08 portada (`preproc.py`); a versao original permanece no historico do projeto. O padrao do projeto exige
+que o MESMO pipeline rode no treino e na inferencia, com a versao registrada no manifesto; por
+isso a versao vive aqui e vai em todo sidecar.
 
 Cadeia (a ordem do documento):
     1. flat-field + dark-frame      (so com gabarito; ausente => registrado como nao aplicado)

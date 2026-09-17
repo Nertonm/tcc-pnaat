@@ -31,7 +31,8 @@ class SeriesTest(unittest.TestCase):
         for f in self.man["fontes"]:
             (self.s / f["nome"]).write_bytes(b"unit fixture")
         (self.s / "manifest.json").write_text(json.dumps(self.man))
-        sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+        def sha(p):
+            return hashlib.sha256(p.read_bytes()).hexdigest()
         self.d = {
             "serie": self.s.name,
             "trigger_n": 2,

@@ -190,7 +190,8 @@ def main():
 
     validos = {k: v for k, v in resultados.items() if "erro" not in v}
     if not validos:
-        print("\nnenhum extrator funcionou"); return 1
+        print("\nnenhum extrator funcionou")
+        return 1
     # criterio declarado: maior recall de defeito_tampa; desempate pelo recall medio
     melhor = max(validos, key=lambda k: ((validos[k]["por_classe"]["defeito_tampa"]["recall"] or 0),
                                          validos[k]["recall_medio"] or 0))

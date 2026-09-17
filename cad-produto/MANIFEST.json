@@ -9,9 +9,9 @@
     {
       "caminho": "03-referencias/vendor",
       "aponta_para_fora_do_diretorio": true,
-      "destino_existe": true,
-      "arquivos_atras_do_link": 1338,
-      "aviso": "conteudo nao acompanha copia, clone ou publicacao"
+      "destino_existe": false,
+      "arquivos_atras_do_link": 0,
+      "aviso": "diretorio nao presente na arvore entregue (apenas freecad/)"
     }
   ],
   "estrutura": {
@@ -55,8 +55,8 @@
     "00-produto/composicao-esteira": [
       {
         "arquivo": "README.md",
-        "bytes": 2737,
-        "sha256": "f0082ae7f55b66b7720f90e3ac88531ef148ceef28068f8060baa5aef330ca9e",
+        "bytes": 6771,
+        "sha256": "61c78cb70a74740b3ca788430fcc07f3e9f0a1716925935b687f2b6ec10aca81",
         "estado": "MONTAGEM",
         "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
       },
@@ -283,8 +283,8 @@
       },
       {
         "arquivo": "README.md",
-        "bytes": 2709,
-        "sha256": "c40b96c3ce4c327f4d4cfc3e5d220fe3ae62b938aa4897a383a81ac9c905c6bf",
+        "bytes": 6771,
+        "sha256": "61c78cb70a74740b3ca788430fcc07f3e9f0a1716925935b687f2b6ec10aca81",
         "estado": "PECA_PARA_IMPRESSAO",
         "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
       },
@@ -475,8 +475,8 @@
     "03-referencias/freecad": [
       {
         "arquivo": "README.md",
-        "bytes": 2167,
-        "sha256": "53ac7e7ad02c1730df0691cf4b8a1043df869ce05f955b15d9ebf749064912f4",
+        "bytes": 6771,
+        "sha256": "61c78cb70a74740b3ca788430fcc07f3e9f0a1716925935b687f2b6ec10aca81",
         "estado": "DOCUMENTACAO_DE_REFERENCIA",
         "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
       }
@@ -491,8 +491,8 @@
       },
       {
         "arquivo": "README.md",
-        "bytes": 6664,
-        "sha256": "8f4c72375b5de370c4cf268a7028b3381bbf2822b7fd86e1ce7a8436e814cce6",
+        "bytes": 6771,
+        "sha256": "61c78cb70a74740b3ca788430fcc07f3e9f0a1716925935b687f2b6ec10aca81",
         "estado": "DOCUMENTACAO",
         "origem": "00-produto/composicao-esteira-3cams-din-nativo-r03"
       }

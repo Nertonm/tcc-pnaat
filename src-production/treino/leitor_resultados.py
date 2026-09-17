@@ -17,7 +17,7 @@ def mostra(p: Path) -> None:
                 continue
             m = v.get('metricas') or v      # o gravador aninha as metricas em 'metricas'
 
-            def _g(*chaves):
+            def _g(*chaves, m=m):
                 for c in chaves:
                     if c in m:
                         return m[c]

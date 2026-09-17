@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# Hook pre-commit (PNAAT): chama o gate versionado. BLOQUEANTE por padrao.
-# Escape consciente: PNAAT_HOOK_BYPASS=1 git commit -m "..."
-# Instalacao: git config core.hooksPath code-workspace/scripts/git-hooks
-set -uo pipefail
-RAIZ="$(git rev-parse --show-toplevel)"
-exec "$RAIZ/code-workspace/scripts/commit_gate.sh"

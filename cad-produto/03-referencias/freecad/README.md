@@ -39,6 +39,6 @@ de exatidão, e que quem for usá-lo para ajuste deve medir o produto físico.
 
 ## Ferramenta
 
-FreeCAD. Os modelos foram lidos em STEP e exportados para `.stl` e `.FCStd` em
+FreeCAD. Os modelos foram lidos em STEP e referenciados como origem para os `.stl` entregues em
 `../../00-produto/composicao-esteira/`, que também traz os scripts de montagem e
 de conferência.

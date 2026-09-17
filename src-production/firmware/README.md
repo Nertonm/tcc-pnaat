@@ -1,11 +1,18 @@
-# ESP32-CAM: draft de integração com o Pi
+# Firmware do nó de visão e do nó de trigger
 
-Este diretório contém o firmware da visão embarcada do TCC, validado na bancada: **uma foto por
-trigger** (IRQ do sensor de presença ou comando de bancada), com a câmera em standby entre fotos e
-transporte binário enquadrado. Não é um release de produção: o trigger físico ainda não foi
-medido com o sensor real e a integração com o pipeline do Pi não está feita.
+O produto carrega dois nós de firmware, ambos com o código no repositório:
 
-## Objetivo da integração
+| Nó | Caminho | Papel |
+|---|---|---|
+| Visão (ESP32-CAM) | `esp32cam-test/` | uma foto por trigger, câmera em standby entre fotos, transporte binário enquadrado; receptor `esp32cam_site.py` é dono único da porta serial |
+| Trigger (ESP32 + E18-D80NK) | `trigger-node/` | sensor de presença com debounce, arming seguro e guarda anti-duplicação; MicroPython com lane de host |
+
+A integração de ponta a ponta tem código nesta árvore: o sensor dispara o nó de trigger, a ponte
+`esp32cam_site.py` recebe o enlace e comanda o nó de visão, e o gateway `api.py` conecta rig e ponte
+ao registro. O que permanece configuração de instalação são os endereços (`PNAAT_RIG`, `PNAAT_PONTE`)
+e a topologia das portas; não é código ausente.
+
+## Objetivo do nó de visão
 
 A ESP32-CAM deve cumprir somente estas responsabilidades:
 
@@ -18,7 +25,7 @@ A ESP32-CAM deve cumprir somente estas responsabilidades:
 O Pi é o dono do pipeline de visão, persistência, decisão e reação operacional. A ESP não deve
 classificar defeitos nem decidir aprovação/reprovação.
 
-## Fluxo desejado
+## Fluxo
 
 ```text
 sensor -> GPIO/IRQ -> fila FreeRTOS -> tarefa de captura
@@ -41,7 +48,7 @@ executar lógica pesada dentro da ISR.
 
 Dois modos, alternáveis em runtime por `CMD_TRANSPORT TEXT|BIN`:
 
-- `text`: linhas delimitadas com payload base64, no formato do draft original;
+- `text`: linhas delimitadas com payload base64, no formato de texto legado;
 - `bin`: enquadramento binário, com cabeçalho, payload e CRC por mensagem.
 
 ```text
@@ -60,7 +67,7 @@ Medido no fio, mesma placa e mesmas condições (frame de ~13 kB):
 |---|---|---|---|
 | texto base64 @ 921600 | 27.233 | 2,15x | 292 ms |
 | binário @ 921600 | 14.921 | 1,13x | 191 ms |
-| binário @ 1,5 Mbps |; |; | 145 ms |
+| binário @ 1,5 Mbps | — | — | 145 ms |
 
 Além do bloco binário, o firmware imprime `FRAME_INFO ... len= crc32=` em ASCII: o host recalcula
 o CRC-32 do frame montado com `zlib` e compara. Duas implementações independentes concordando
@@ -75,7 +82,7 @@ TRIGGER_GPIO = 13 (E18-D80NK, active-low, borda de descida)
 TRIGGER_ELECTRICAL_MODE = active-low, pull-up interno; níveis do sensor real ainda não medidos
 FRAME_ENCODING = binário (texto mantido por compatibilidade)
 FRAME_MAX_BYTES = 1024 B por chunk, 4096 B por mensagem, 4 MiB por frame no host
-FRAME_TIMEOUT_MS = 25 s por foto no host (evento completo medido em ~1,4 s)
+FRAME_TIMEOUT_MS = 25 s por foto no host (declarado no contrato; o enforcement de timeout ainda não está no receptor) (evento completo medido em ~1,4 s)
 RETRY_POLICY = fail-closed: frame rejeitado não é publicado e o host tenta uma segunda captura
 PERSISTENCE_POLICY = o host serve o último frame válido; o registro canônico é do pipeline do Pi
 ```
@@ -97,7 +104,7 @@ pronto em `CAM_POWER_GPIO` (-1 = ausente nesta placa).
 Comandos: `CMD_CAPTURE`, `CMD_STATUS`, `CMD_SENSOR` (teste A/B de energia), `CMD_TRANSPORT TEXT|BIN`,
 `CMD_BAUD <n>`, `CMD_TEST_FALHA_INIT` (diagnóstico: força a próxima captura a falhar na init).
 
-## Como o Pi deve receber
+## Como o Pi recebe
 
 O receptor do Pi deve ser uma única dona lógica da porta serial. Nenhuma thread HTTP deve escrever
 diretamente na UART enquanto outra thread lê. Comandos devem entrar em uma fila de comandos, e a
@@ -128,12 +135,12 @@ Regras obrigatórias no Pi:
 4. exigir sequência contígua, sem lacuna e sem duplicata;
 5. aplicar timeout tanto entre chunks quanto para o frame inteiro;
 6. limitar memória antes de alocar o payload anunciado;
-7. decodificar base64 com validação estrita enquanto o draft existir;
+7. decodificar base64 com validação estrita enquanto o modo texto existir;
 8. verificar tamanho real, `FF D8`, `FF D9` e CRC-32 antes de publicar;
 9. publicar o frame somente depois de todas as validações;
 10. preservar `event_id`, origem, timestamp, métricas e motivo de falha;
 11. nunca substituir silenciosamente um frame válido por um frame parcial ou antigo;
-12. responder `ACK` apenas após validação e `NACK` com motivo fechado quando rejeitar.
+12. responder `ACK` apenas após validação e `NACK` com motivo fechado quando rejeitar (regra declarada; o receptor atual ainda não emite ACK/NACK, o descarte é pelo CRC/fechamento).
 
 O estado `latest frame` é uma conveniência de visualização, não o registro canônico. O Pi deve
 persistir ou encaminhar o evento de forma idempotente, usando `event_id` e a identidade do rig.
@@ -168,15 +175,14 @@ Reações fail-closed:
 
 ## Trigger e pinos
 
-O draft histórico usa E18 em GPIO13, active-low, com interrupção na borda de descida. Isso é
-apenas uma hipótese de integração até confirmar a placa e a interface elétrica.
+O nó de visão (ESP32-CAM) usa o E18-D80NK no GPIO13 active-low, borda de descida, como comando de
+captura interno. O nó de trigger dedicado (MicroPython) usa `PRESENCE_PIN = 27` (fiação confirmada
+na bancada; o docstring sempre disse P27) e `CAPTURE_OUT_PIN = 26`, com divisor de nível na saída
+5V do sensor antes do pino 3,3V.
 
-Não ligar diretamente uma saída de sensor alimentada em tensão superior ao limite do ESP32. Antes
-do hardware real, confirmar se a saída é open-collector/NPN, usar a referência de 3,3 V adequada,
-GND comum e proteção de nível quando necessário.
-
-GPIO4 foi usado somente em uma execucao de bancada e não faz parte do trigger de produção. Não
-reativar gerador de sinal ou LED de teste na versão integrada.
+O sensor E18-D80NK é saída digital aberta (NPN): LOW = objeto dentro do alcance. Alimentação 5V;
+verifique a tensão real na saída antes de ligar direto ao GPIO. GND comum entre sensor, ESP32 e host
+é obrigatório. GPIO4 foi usado apenas num experimento de bancada e não faz parte do trigger.
 
 ## Critérios de aceite da integração
 
@@ -207,5 +213,22 @@ Pendentes:
 - `esp32cam-test/tests/test_transport_bin.py`: testes do transporte (oráculo diferencial e gates);
 - `esp32cam-test/esp32cam_site.py`: site de captura; dona única da porta serial;
 - `esp32cam-test/usb_stream_bridge.py`: bridge antiga de visualização local, superada pelo site;
-- `esp32cam-test/components/esp32-camera`: clone local do componente (v2.1.7), fora do versionamento;
-  o manifesto `idf_component.yml` declara a dependência.
+- componente `esp32-camera` (v2.1.7): restaurado pelo gerenciador de componentes do ESP-IDF a partir
+  de `idf_component.yml` + `dependencies.lock`; nao e versionado.
+
+## Nó de trigger (Sensor E18-D80NK + ESP32 MicroPython)
+
+Portado do canônico para o produto em `trigger-node/`: `esp/main.py` (firmware), `presence.py`
+(lógica pura testada), `host/` (supervisor da porta serial, escopo, harness, watch, esp_tool e
+simulador) e `tests/test_trigger.py`.
+
+```bash
+make -C src-production test-trigger       # lógica pura (5 testes)
+make -C src-production trigger-simular    # simulador sem hardware, mesmos eventos do firmware
+PYTHONPATH=src-production/firmware/trigger-node .venv/bin/python \
+  src-production/firmware/trigger-node/host/poc01_teste.py --passagens 10 --espera 6 --separacao 3
+```
+
+Pinos confirmados na bancada no `esp/main.py`: `PRESENCE_PIN = 27`, `CAPTURE_OUT_PIN = 26`. A fiação
+detalhada está em `trigger-node/esp/README.md`. A divergência entre a versão GPIO33 das cópias
+antigas e a GPIO27 do canônico foi resolvida na bancada: fica registrada GPIO27.

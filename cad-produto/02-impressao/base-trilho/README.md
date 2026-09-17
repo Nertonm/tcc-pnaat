@@ -11,7 +11,7 @@ Base de chao do trilho: vao para a peca ja impressa + furo do parafuso.
 
     2. CIRCULO VAZIO para o parafuso prender a peca
        furo passante O6,5 ao longo de Z, em X=-30,50 / Y=29,00
-       escareado O13 x 1,0 de um lado (arruela M6 O12 + cabeca)
+       escareado O13 x 1,8 de um lado (arruela M6 O12 + cabeca; conferido com a DOCUMENTACAO-20260914)
        o parafuso entra por um lado, atravessa o corpo, passa pelo vao,
        atravessa o bracket e sai do outro lado
 

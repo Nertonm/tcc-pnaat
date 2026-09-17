@@ -1,0 +1,39 @@
+%% Interligação do rig PNAAT: blocos e interfaces.
+%% ESTADO: o que está declarado no firmware e no código. O esquemático elétrico do sensor de
+%% proximidade é contribuição de outro integrante da equipe e ainda NÃO foi publicado; até então,
+%% a ligação do E18-D80NK ao GPIO do ESP32 é REQUISITO NÃO VALIDADO (ver docs/hardware.md § 2).
+flowchart LR
+    subgraph bancada[Bancada de envase]
+        item([Garrafa PET no trilho]) --> sensor[Sensor de presença<br/>E18-D80NK<br/>5 V · saída NPN]
+        item --> esteira[Esteira<br/>~100 mm/s declarado<br/>FORA do núcleo: o sistema não controla]
+    end
+
+    subgraph borda[ESP32-CAM · borda]
+        sensor -. "GPIO13, active-low, borda de descida<br/>NÍVEL ELÉTRICO NÃO MEDIDO: exige<br/>terra comum e condicionamento (NPN→3V3)" .-> irq[ISR mínima<br/>timestamp + fila FreeRTOS]
+        irq --> fototask[Task de captura<br/>1 foto por trigger]
+        fototask --> cam[OV2640<br/>PWDN alto = standby<br/>XCLK parado entre fotos]
+        cam --> enc[Enquadramento binário<br/>SOF A5 5A + CRC16 + CRC32]
+    end
+
+    subgraph host[Host de visão · Raspberry Pi 5 ou Linux x86-64]
+        enc -->|UART/USB, console e imagem no mesmo fio<br/>~191 ms por frame de 13 kB a 921600 bps| receptor[transport_bin.py<br/>dona única da porta serial]
+        receptor --> itemcap[ItemCapturado<br/>lateral1 · lateral2 · topo]
+        itemcap --> preparo[preparo_detector.py<br/>ROI + rotação do contrato]
+        preparo --> modelo[classificador_yolo.py<br/>pacote verificado por SHA-256]
+        modelo --> decisao[decisao.py + conformidade.py<br/>defeito reprova · topo veta · silêncio = inconclusivo]
+        decisao --> registro[(registro.py · SQLite<br/>idempotente por item_id)]
+        registro --> api[api.py + site<br/>dashboard e consultas]
+    end
+
+    subgraph cameras[Câmeras]
+        csi[Câmera CSI<br/>lateral1 ou topo]
+        usb[Webcam USB UVC<br/>lateral2]
+    end
+
+    csi --> itemcap
+    usb --> itemcap
+
+    classDef naomedido fill:#fff3e0,stroke:#e65100,color:#111,stroke-dasharray:4 4
+    classDef fora fill:#eceff1,stroke:#607d8b,color:#111
+    class sensor,irq naomedido
+    class esteira fora

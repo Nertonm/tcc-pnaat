@@ -35,12 +35,15 @@ def inputs(tmp_path):
     m = {'peso_sha256': sha, 'classes': c['classes'], 'args': {'imgsz': 480},
          'dataset': str(tmp_path), 'dataset_manifest_sha256': hashlib.sha256(manifest.read_bytes()).hexdigest()}
     cp, mp = tmp_path / 'c.json', tmp_path / 'm.json'
-    cp.write_text(json.dumps(c)); mp.write_text(json.dumps(m))
+    cp.write_text(json.dumps(c))
+    mp.write_text(json.dumps(m))
     return p, cp, mp, tmp_path / 'output'
 
 
 def edit(path, change):
-    value = json.loads(path.read_text()); change(value); path.write_text(json.dumps(value))
+    value = json.loads(path.read_text())
+    change(value)
+    path.write_text(json.dumps(value))
 
 
 def test_import_has_no_side_effects():
@@ -51,7 +54,7 @@ def test_import_has_no_side_effects():
 def test_cli_dry_run_apply_readback(inputs):
     mod = load()
     command = [sys.executable, str(SCRIPT)]
-    for option, path in zip(('peso', 'contrato', 'metadados-treino', 'saida'), inputs):
+    for option, path in zip(('peso', 'contrato', 'metadados-treino', 'saida'), inputs, strict=False):
         command += ['--' + option, str(path)]
     result = subprocess.run(command, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
@@ -105,11 +108,13 @@ def test_missing_metadata(inputs):
 def test_existing_and_racing_output_preserved(inputs):
     mod = load()
     inputs[3].mkdir()
-    sentinel = inputs[3] / 'keep'; sentinel.write_bytes(b'keep')
+    sentinel = inputs[3] / 'keep'
+    sentinel.write_bytes(b'keep')
     with pytest.raises(ValueError, match='existe'):
         mod.export_bundle(*inputs, apply=True)
     assert sentinel.read_bytes() == b'keep'
-    sentinel.unlink(); inputs[3].rmdir()
+    sentinel.unlink()
+    inputs[3].rmdir()
     original = mod.rename_new
     def racing(source, dest):
         dest.mkdir()
@@ -123,7 +128,8 @@ def test_existing_and_racing_output_preserved(inputs):
 
 def test_failure_only_removes_owned_staging(inputs):
     mod = load()
-    unrelated = inputs[3].parent / '.pacote-detector-existing'; unrelated.mkdir()
+    unrelated = inputs[3].parent / '.pacote-detector-existing'
+    unrelated.mkdir()
     with patch.object(mod.shutil, 'copyfile', side_effect=OSError('injected')), pytest.raises(OSError):
         mod.export_bundle(*inputs, apply=True)
     assert list(inputs[3].parent.glob('.pacote-detector-*')) == [unrelated]
@@ -133,16 +139,19 @@ def test_failure_only_removes_owned_staging(inputs):
 def test_weight_change_during_copy_rejected(inputs):
     """Copia corrompida no meio da escrita tem de ser RECUSADA (mensagem e do verificador).
     """
-    mod = load(); original = mod.shutil.copyfile
+    mod = load()
+    original = mod.shutil.copyfile
     def corrupt(source, dest):
-        original(source, dest); Path(dest).write_bytes(b'corrupt')
+        original(source, dest)
+        Path(dest).write_bytes(b'corrupt')
     with patch.object(mod.shutil, 'copyfile', corrupt), pytest.raises(ValueError, match='checksum|nao casa|divergente'):
         mod.export_bundle(*inputs, apply=True)
     assert not inputs[3].exists()
 
 
 def test_checksum_readback_rejects_tamper(inputs):
-    mod = load(); mod.export_bundle(*inputs, apply=True)
+    mod = load()
+    mod.export_bundle(*inputs, apply=True)
     (inputs[3] / inputs[0].name).write_bytes(b'corrupt')
     with pytest.raises(ValueError, match='checksum'):
         mod.verify_bundle(inputs[3])

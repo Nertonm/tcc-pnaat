@@ -49,19 +49,3 @@ Grau de verificação: **P** texto conferido na fonte · **S** secundária (abst
 | Kaggle: *Water Bottle Defect-Level Detection* | `no_cap` 150 e `loose_cap` 150 em garrafa de água | S | banco de comparação |
 | Mendeley: defeitos de embalagem em vinho | tampa ausente em garrafa opaca, visão de topo | S | não se aplica (domínio distinto) |
 
-## Material da disciplina
-
-| Referência | O que estabelece | Gr. | Usada em |
-|---|---|---|---|
-| Aula 7: *Observabilidade e Monitoramento em Edge AI* | telemetria do nó deve cobrir CPU, memória, temperatura e tempo de inferência; cadeia Pi → Node Exporter → Alloy → Prometheus → Grafana | P | RF-08 |
-
-## Atribuições incorretas (não usar)
-
-| Item | Por que não usar |
-|---|---|
-| `arXiv:2404.08401` | é trabalho sobre registro de campo esportivo (PnLCalib); não é a fonte do ajuste de elipse, apesar da atribuição circulante |
-| "Tan et al." (índices de refração do PET em 0,3363) | erro físico (PET fica em ≈1,57-1,64) e fonte não identificável |
-| `researchsquare rs-9814627` | URL sem conteúdo; a frase atribuída a ele não foi encontrada |
-| "sensor capacitivo A*STAR (2021)" (LOD 0,11/0,23 cm) | fonte não localizada em busca primária (2026-09-12); o número não foi encontrado em nenhuma origem |
-| Cognex, página de iluminação | página real, mas a citação circulante não é literal |
-| Relatório de levantamento por IA (pré-processamento PET) | mistura material real, misatribuição, erro físico e citação não verificável: só os itens com grau **P** valem |

@@ -513,7 +513,7 @@ def medir_por_validacao_cruzada(
             escala.transform(X[treino]), y[treino]
         )
         for verdadeiro, previsto in zip(
-            y[teste], cabeca.predict(escala.transform(X[teste]))
+            y[teste], cabeca.predict(escala.transform(X[teste])), strict=False
         ):
             linha = por_classe.setdefault(verdadeiro, [0, 0])
             linha[0] += 1

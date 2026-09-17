@@ -173,7 +173,7 @@ class ClassificadorDoPacote:
             return []
         nomes = getattr(modelo, "names", {})
         saida: list[tuple[Classe, float]] = []
-        for confianca, indice in zip(caixas.conf.cpu().numpy(), caixas.cls.cpu().numpy().astype(int)):
+        for confianca, indice in zip(caixas.conf.cpu().numpy(), caixas.cls.cpu().numpy().astype(int), strict=False):
             nome = str(nomes.get(int(indice), indice))
             classe = _NOME_PARA_CLASSE.get(nome)
             if classe is None:

@@ -46,5 +46,5 @@ Enquanto a classificacao de tampa nao estiver integrada e sem dados de defeito, 
 apenas parte do fluxo. O video deve **dizer isso em voz alta**: declarar o que nao esta integrado e
 qual e o proximo passo tecnico.
 
-Cada README de pacote (`code-workspace/src/pocs/pocNN_*/README.md`) declara a ideia isolada,
+Cada README de pacote (`workspace/src/pocs/pocNN_*/README.md`) declara a ideia isolada,
 a hipotese, o metodo, o criterio de passagem, a evidencia e o limite atual daquela camada.

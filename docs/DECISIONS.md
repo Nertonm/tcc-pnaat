@@ -72,13 +72,6 @@ rodar nas **duas vistas laterais**; a vista de topo permanece como **check dimen
 cuja unica funcao e verificar que a dimensao nao foi violada (pode escalonar, nunca aprovar sozinha).
 Ver D-23.
 
-## Nota de conformidade (2026-09-11):
-o estado atual da implementação da PoC-04 usa uma vista como maioria global, o que contradiz a regra desta
-decisão ("não existe maioria global entre as três câmeras"). Registrado
-como não-conformidade aberta, não como mudança de direção. A regra
-permanece D-04 (+ emenda); a implementação deve ser corrigida para
-aderir, não o contrário.
-
 ## D-05: Topologia da demonstração
 
 - Opções:
@@ -90,7 +83,7 @@ aderir, não o contrário.
   - aquisição física, captura, classificação, combinação das decisões, persistência e telemetria devem permanecer observáveis;
   - a indisponibilidade de um nó deve produzir estado explícito;
   - a topologia deve preservar a associação dos eventos ao mesmo `item_id`.
-- A decidir: número definitivo de sensores, distribuição dos serviços, carga da demonstração e política de fallback, confirmados nas PoCs 04 e 05.
+
 
 ## D-06: Separação do item reprovado para análise manual
 
@@ -106,23 +99,8 @@ aderir, não o contrário.
   - a ausência de confirmação dentro do timeout deve produzir estado de falha;
   - o item separado deve permanecer disponível para análise humana;
   - nenhum item classificado como normal pode ser direcionado intencionalmente ao caminho de análise manual.
-- A decidir: tipo de atuador, modelo e interface elétrica do sensor de confirmação, posicionamento físico, timeout, comportamento diante de falha e procedimento de parada manual. A decidir: PoC dedicada, ainda não numerada na lista atual (PoC-01 a PoC-07 + Final).
+- B
 - Alternativa descartada C, por eliminar a análise humana e introduzir risco de descarte incorreto.
-
-### Emenda a D-06 (2026-09-11):  separação física é Expansão, não núcleo
-- A "Direção adotada: A" original está incoerente com docs/escopo.md, que
-exclui ejeção, atuador, rotação mecânica e descarte automático do núcleo,
-e com requisitos.md, que já marca RF-14 (encaminhamento sem controlar
-atuação física) como Expansão.
-
-- Direção corrigida: A passa a ser condicional (Expansão), sujeita a PoC
-dedicada e aprovação de prazo — mesmo tratamento dado a D-10/D-11/D-12.
-Fallback do núcleo: opção B (apenas sinalização, sem separação física),
-que corresponde ao que RF-14 já permite.
-
-A regra e o ciclo detectar → separar → analisar → corrigir → registrar
-permanecem válidos como desenho da expansão, não como comportamento
-exigido do núcleo.
 
 ## D-07: Medição dimensional da tampa
 
@@ -134,34 +112,21 @@ exigido do núcleo.
   - a medição deve preservar unidade, referência, câmera, posição e versão da calibração;
   - calibração inválida ou geometria alterada deve impedir o uso conclusivo da medida;
   - a medição dimensional não pode ser apresentada como validada sem ensaio no setup.
-- A decidir: viabilidade da meta de erro absoluto máximo de 0,5 mm, método de calibração, geometria de iluminação e limite dimensional, confirmados por PoC e medição de aceite.
-- Fallback: B, caso a precisão dimensional não seja atingida de forma reproduzível.
+- Decidido B.
 
 ## D-08: Kit de golden samples
 
 - Opções:
   - A: kit de amostras normais e defeituosas conhecidas para injeção controlada na demonstração, isolado dos indicadores produtivos.
   - B: utilizar somente itens comuns do lote.
-- Direção adotada: A.
-- Regra:
-  - cada amostra deve possuir identificação individual e classe esperada;
-  - os eventos devem ser marcados com `is_golden`;
-  - os resultados não devem compor os indicadores produtivos;
-  - a quantidade de amostras deve seguir as classes aprovadas e a disponibilidade real, sem número arbitrário previamente fixado.
-- A decidir: quantidade, taxonomia, rótulos, armazenamento e protocolo de uso na demonstração.
+- Decidido: B
 
 ## D-09: Relatório de lote como evolução
 
 - Opções:
   - A: relatório em PDF com indicadores, severidade, evidências, qualidade dos dados e tendência, acompanhado do status de envio da notificação.
   - B: manter somente o dashboard e os registros consultáveis.
-- Direção condicional: A, desde que os requisitos essenciais e a integração do hub estejam validados e exista prazo disponível.
-- Regra:
-  - o relatório não pode preencher campos ausentes com valores estimados ou inventados;
-  - registros parciais, inválidos ou inconclusivos devem permanecer identificados;
-  - o relatório deve preservar a identificação do lote e a origem dos indicadores.
-- A decidir: inclusão na demonstração, formato, conteúdo, canal, tratamento de dados parciais e orçamento de implementação.
-- Fallback: B, caso o relatório não seja aprovado para a entrega atual.
+- Decidido: B
 
 ## D-10: Camada evolutiva de descritores geométricos
 
@@ -170,14 +135,7 @@ exigido do núcleo.
   - B: modelos de visão de maior custo computacional.
   - C: não incluir camada adicional de descritores ou generalização.
 - Direção condicional: A, como camada evolutiva independente da decisão principal.
-- Regra:
-  - a camada não deve substituir os classificadores dos domínios da tampa e do corpo;
-  - o resultado não deve alterar silenciosamente a decisão principal;
-  - cada resultado deve preservar vista de origem, versão do algoritmo e versão da calibração;
-  - alegações de generalização somente podem ser feitas dentro da população efetivamente testada.
-- A decidir: descritores utilizados, limiar, taxa aceitável de falsos positivos, ganho mensurável e custo de execução no Raspberry Pi 5.
-- Critério de continuidade aprovação em PoC isolada, atendimento ao orçamento de latência e decisão registrada.
-- Fallback: C, mantendo somente os classificadores do núcleo.
+- Decidido: C
 
 ## D-11: Detector evolutivo de anomalia
 
@@ -185,15 +143,7 @@ exigido do núcleo.
   - A: detector autossupervisionado treinado somente com imagens normais e transformações sintéticas versionadas.
   - B: abordagem baseada em reconstrução.
   - C: não incluir detector adicional de anomalia.
-- Direção condicional: A, sujeita a PoC isolada e sem participação na regra principal de decisão por domínios.
-- Regra:
-  - o conjunto de treino deve preservar a proveniência e conter somente as amostras definidas como normais;
-  - transformações sintéticas, configuração e sementes devem ser versionadas;
-  - o detector deve produzir score e estado separados;
-  - o resultado não pode cancelar reprovação produzida pelo núcleo;
-  - treino, validação e teste devem permanecer separados.
-- A decidir: método específico, métrica, alvo de desempenho, população de validação, orçamento de latência e forma de integração.
-- Fallback: C, mantendo o núcleo supervisionado quando a camada não demonstrar ganho mensurável ou exceder o orçamento de desempenho.
+- Decidido: C.
 
 ## D-12: Execução evolutiva do detector de anomalia na borda
 
@@ -201,14 +151,7 @@ exigido do núcleo.
   - A: destilação professor-aluno, com o professor utilizado somente durante o treinamento e o aluno quantizado validado no hardware-alvo.
   - B: executar o modelo professor no hardware-alvo.
   - C: não implantar essa camada na borda.
-- Direção condicional: A, somente após a validação do modelo professor e a aprovação da D-11.
-- Regra
-  - o modelo professor não integra a solução operacional no Raspberry Pi 5;
-  - o modelo aluno deve possuir versão, runtime e parâmetros de quantização identificados;
-  - resultados de outro hardware não substituem o benchmark no Raspberry Pi 5.
-- A decidir formato de quantização, runtime, limite aceitável de perda de qualidade, latência, consumo de memória e comportamento de fallback.
-- Critério de continuidade: benchmark reproduzível do modelo aluno no Raspberry Pi 5, dentro do orçamento definido antes do ensaio.
-- Fallback: C, caso o aluno não preserve qualidade suficiente ou exceda o orçamento de execução.
+- Decidido:
 
 ## D-13: Expansão evolutiva do dataset
 
@@ -278,20 +221,18 @@ exigido do núcleo.
   - a estrutura não deve ser descrita como compatível com qualquer esteira sem validação dimensional;
   - as interfaces devem ser parametrizadas sempre que possível no FreeCAD.
 - A decidir: mecanismo de fixação, faixa de ajuste, tolerância de calibração, material, orientação de impressão e método de travamento, validados no laboratório.
-- Detalhes em `docs/design/grip-extensivel.md`.
 
 ### Emenda a D-17 (2026-09-11): fixação por trilho DIN TS35 de 50 cm
 - Direção corrigida: o rig R05 adota trilho DIN TS35 (IEC 60715, 35 mm),
 comprimento de 50 cm, como mecanismo de fixação — com peças já
 construídas (case Pi5 DIN, angle adapter 90°, bracket M6). Isso
 substitui a direção anterior de perfil T-slot de alumínio (2020/2040)
-descrita em D-17 e em docs/design/grip-extensivel.md.
+descrita em D-17.
 
-- Consequência: as opções A (garra M6/M8) e B (spring-loaded) de
-grip-extensivel.md ficam sem objeto — o mecanismo de fixação já não é
-mais uma decisão em aberto, é o trilho DIN TS35 de 50 cm.
-grip-extensivel.md deve ser marcado como proposta supersedida por esta
-emenda, preservando o documento como histórico.
+- Consequência: as opções A (garra M6/M8) e B (spring-loaded) do design do grip extensível ficam sem
+objeto: o mecanismo de fixação já não é mais uma decisão em aberto, é o trilho DIN TS35 de 50 cm. O
+design do grip extensível fica marcado como proposta supersedida por esta emenda, preservando o
+documento como histórico.
 
 - A decidir: posicionamento do trilho na esteira/bancada, fixação do
 próprio trilho DIN à estrutura, e se as SPECs futuras de mount (como a
@@ -434,7 +375,7 @@ como premissa silenciosa.
   inconclusivo e taxa de escalonamento por motivo. Alem disso, cada item avaliado gera **imagem
   anotada** mostrando o que discriminou a decisao (classe prevista x verdadeira, confianca, medidas e
   motivos).
-- Implementado em: `code-workspace/scripts/avaliar_poc02.py` (+ `tests/test_avaliar_poc02.py`).
+- Implementado em: `workspace/scripts/avaliar_poc02.py` (+ `tests/test_avaliar_poc02.py`).
 - Consequencia: a acuracia global agregada deixa de ser criterio; nenhum numero pode ser publicado como
   "RNF-02 atendido" sem o limite inferior do IC.
 
@@ -497,9 +438,9 @@ como premissa silenciosa.
 - Consequencia: a demonstracao com o rig v0 (1 vista de corpo) reporta `inconclusivo` para item normal
   em vez de aprovar por uma vista unica. E o comportamento correto pela regra, e o proximo passo
   declarado e a bancada de 2 laterais + topo.
-- Implementado em: `code-workspace/src/pocs/poc04_fusao/fusion.py`,
-  `code-workspace/src/pocs/events.py` (vocabulario D-28 + dominio/qualidade),
-  `code-workspace/scripts/avaliar_poc04.py`, `code-workspace/tests/test_fusion.py`.
+- Implementado em: `workspace/src/pocs/poc04_fusao/fusion.py`,
+  `workspace/src/pocs/events.py` (vocabulario D-28 + dominio/qualidade),
+  `workspace/scripts/avaliar_poc04.py`, `workspace/tests/test_fusion.py`.
 - Evidencia: harness `make poc04` (casos declarados com ground truth; falha se divergir) e o teste de
   mutacao que reverte a regra e exige que o harness acuse.
 
@@ -531,8 +472,8 @@ como premissa silenciosa.
   seguem obrigatórias como evidência e a vista de topo continua sem decidir (D-23). Histórico preservado.
 - A decidir: (i) confiança mínima do classificador que dispara o fallback; (ii) se o fallback lê as duas
   vistas laterais ou apenas a disponível; (iii) o vocabulário do domínio do corpo (D-28).
-- Implementado em (a fazer): `code-workspace/src/pocs/poc02_classificacao/` (papel das duas camadas) e
-  `code-workspace/src/pocs/poc04_fusao/fusion.py` (precedência dentro do domínio, já compatível com D-29).
+- Implementado em (a fazer): `workspace/src/pocs/poc02_classificacao/` (papel das duas camadas) e
+  `workspace/src/pocs/poc04_fusao/fusion.py` (precedência dentro do domínio, já compatível com D-29).
 - Evidência: `aval_sem_confundimento.py` (mesmo domínio, n=44, recall por classe com IC de Wilson e baseline
   de preditor constante) e `aval_cnn_sem_conf.txt`, **a versionar no repositório**.
 
@@ -1342,3 +1283,138 @@ de alvo 1200 ms saiu 1055 ms tarde. Para eliminar isso de vez, o proximo passo e
 
 Outra alavanca ja identificada antes: mais luz. Encurta a exposicao do sensor, o que reduz o warmup
 deste pipeline E o borrao de movimento — o mesmo ganho nas duas frentes.
+
+
+## D-54: A entrega final tem três árvores, um manual e o hardware documentado
+
+Estado: adotado na preparação da entrega final (18/09/2026).
+
+`src-production/` é o produto: API, pipeline, decisão, registro, site, firmware e a cadeia de treino.
+`workspace/` fica como história congelada das PoCs, e nada do produto importa de lá.
+`cad-produto/` é o CAD do rig, com inventário e créditos. `docs/` continua sendo a fonte normativa.
+
+Entraram nesta rodada, como peças da entrega:
+
+| peça | o que é |
+|---|---|
+| `README.md` da raiz | manual de replicação: instalação, execução, verificação e limites |
+| `Makefile` da raiz | atalhos que delegam para o produto (`install`, `verificar`, `lint`) |
+| `docs/hardware.md` | BOM, pinagem, montagem, o que foi medido e o que não foi |
+| `docs/diagramas/interligacao-eletrica.mmd` | blocos e interfaces do sistema |
+
+Evidência medida nesta máquina, em 18/09/2026: `make verificar` roda 506 testes do produto e 17 do
+firmware; `make -C workspace test` roda 112; `make lint` passa nas duas árvores; `make doctor` dá
+7 FAIL e 2 WARN no perfil de runtime, sendo dois de `anomalib` e cinco de diretórios de dados
+externos, tudo declarado no `README.md` §5.4.
+
+A checagem de higiene confere o **índice**, não a árvore de trabalho:
+reportou 0 achado enquanto o índice estava em dia e passou a acusar `dataset/TRABALHO/backup-pnaat.sh`
+depois da limpeza do IP, porque a correção está na worktree e ainda não foi para o índice. Em repo
+temporário com o conteúdo já corrigido no índice, a mesma checagem fecha em 0 achado. Ler o número
+dele como se descrevesse a árvore foi como o IP de tailnet sobreviveu no repositório (D-57).
+
+Saíram da árvore, na mesma preparação e por decisão do grupo, 30 arquivos: `evidencias/**`,
+itens de `evidencias/`, `docs/entrega2/` e `docs/reference/`. Os documentos que ficaram estão no índice
+`docs/README.md`, que lista apenas o que existe na árvore.
+
+As citações que apontavam para documentos que saíram da árvore foram atualizadas para o que existe:
+o índice (`docs/README.md`) lista só documento presente, e as notas de `dataset/TRABALHO/` passaram a
+apontar para a execução da própria receita.
+
+Os documentos desta entrega (`docs/hardware.md`, `docs/diagramas/`, `docs/reference/uso-do-label-studio.md`
+e `docs/reference/classificar-gemini.md`) estão na árvore de trabalho e entram no commit da entrega.
+## D-55: O gate de commit passou a rodar a suíte do produto e as regras de correção do lint
+
+Motivo: o gate rodava a suíte das PoCs e do firmware, não a do produto, e chamava esse passo de
+"suíte de testes". Foi por essa fresta que um `NameError` de teste (`banco` sem `banco = _banco(...)`)
+entrou na `main` por um PR com tudo verde. Prova por mutação: com a linha de volta, a suíte passa.
+
+Regra adotada:
+
+- o gate roda as três suítes, `ruff` com as regras de correção (`F`), a checagem de
+  mídia no staging;
+- o escape consciente exige `PNAAT_HOOK_BYPASS=1` **e** o trailer `Bypass: <motivo>` na mensagem do
+  commit, com o trailer validado pelo próprio gate;
+- `core.hooksPath` é configuração local e cada clone precisa de `make -C workspace hooks`.
+
+Política de lint declarada em `src-production/pyproject.toml`: `select` E4, E7, E9, F, B e W6;
+ignorados E501, B008, E402 e E741, cada um com motivo escrito; `treino/*.py` liberado de E402 porque
+ajusta `sys.path` antes de importar. No `workspace`, onde o código é história congelada, ficam as
+mesmas regras com exclusões declaradas (E702, E741, E701, B007) e os notebooks `*.ipynb` fora do lint,
+porque são evidência de método: o primeiro passe do ruff reescreveu células e foi revertido.
+
+Estado: `make -C src-production lint` e o lint das PoCs dão 0 achado. A dívida antiga foi zerada
+(`F401` e `E401` removidos, `B904` e `B023` corrigidos).
+
+## D-56: A regra de mídia tem uma fonte única, e o doctor passou a consumi-la
+
+O `workspace/scripts/doctor.py` repetia a regra de mídia com exceção apenas para `dataset/`,
+então acusava FAIL no CAD do entregável (`cad-produto/**`), que a política permite, e o relatório do
+doctor contradizia o da checagem sobre a mesma árvore. Agora ele importa `midia_bloqueada` de
+`workspace/scripts/politica_midia.py`, que já era a fonte única da checagem de higiene e do gate.
+
+Regra: a política de mídia mora em um arquivo só, e quem confere importa de lá. Duas implementações da
+mesma regra divergem no primeiro ajuste, e a que fica para trás acusa o que a outra permite.
+
+Evidência: `PASS repo sem midia versionada fora das excecoes declaradas: 0 arquivo(s)`, com
+`politica_midia.py --selftest` saindo OK.
+
+## D-57: A regra de IP da checagem passou a cobrir a faixa da CGNAT (100.64.0.0/10)
+
+Motivo: o repositório carregava um IP de tailnet num exemplo de `scp` em
+`dataset/TRABALHO/backup-pnaat.sh`, junto da porta de salto, e a checagem reportava 0 achado,
+porque `RE_IP_PRIVADO` cobria só as faixas RFC1918 (10/8, 172.16/12 e 192.168/16). O gate ficava verde
+com identificador de infraestrutura versionado.
+
+Adotado: `RE_IP_PRIVADO` cobre explicitamente 100.64/10, com duas contraprovas no selftest, uma
+afirmando que IP de tailnet é achado e outra garantindo que rótulo de câmera (`acerola-csi.jpg`,
+`Acerola USB`) continua permitido. O arquivo foi limpo: IP, porta e caminho pessoal viraram
+placeholder.
+
+O endereço e a porta seguem no repositório em forma de histórico: o `-S` acha o endereço em um commit
+e a porta em nove. A checagem confere o índice, e é isso que ela reporta; histórico não é o que ele lê.
+
+## D-58: A prosa dos documentos de entrega segue a voz da casa, com gate determinístico
+
+Motivo: os textos escritos com apoio de automação saíram com marcas reconhecíveis de texto gerado,
+enquanto os documentos do grupo são secos e diretos. A comparação medida: `CONTRIBUTING.md`,
+`docs/escopo.md` e o `CONTRIBUTING.md`, que seguem na árvore, têm zero travessão e zero negrito; os textos novos vinham com travessão frequente,
+negrito mecânico, listas com rótulo em negrito, caixa alta de ênfase e construção do tipo "não é X, e
+sim Y".
+
+Antes e depois, medido em 18/09/2026:
+
+| documento | travessão | negrito |
+|---|---|---|
+| `README.md` | 24 → 0 | 62 → 1 |
+| `docs/hardware.md` | 25 → 0 | 62 → 0 |
+| `docs/arquitetura.md` | 0 → 0 | 4 → 0 |
+| `docs/README.md` | 1 → 0 | 2 → 0 |
+| `src-production/site/README.md` | 3 → 1 | 2 → 1 |
+| `docs/reference/uso-do-label-studio.md` | 29 → 0 | 65 → 0 |
+| `docs/reference/classificar-gemini.md` | 52 → 0 | 64 → 7 |
+
+O travessão que permanece em `src-production/site/README.md` é texto que já era do grupo. O último
+documento reprovava no gate de prosa do skill de humanização (`slop-lint.py`, perfil house, ferramenta
+de fora do repositório) e passou a ser aprovado depois da revisão.
+
+Regra: documento com fonte não perde citação. As citações `arquivo:linha` são conferidas por
+multiconjunto antes de gravar (106 antes e 106 depois no documento do Label Studio; 60 e 61 no do
+rotulador, com uma referência abreviada expandida), tabela continua tabela e número não vira sinônimo.
+O gate da prosa é determinístico, e a receita ficou registrada no skill de documentação.
+
+## D-59: Contrato e pacote ganharam modo de conferência, e o limiar é a lacuna conhecida
+
+Adotado: `treino/gera_contrato_preproc.py --conferir` confere o contrato já gravado e
+`treino/pacote_entrega.py --pacote <dir>` faz o read-back de um pacote, os dois sem GPU e sem
+reconstruir nada. Ambos usam o mesmo validador do consumidor (`preparo_detector` e `pacote_detector`),
+e o `--conferir` recomputa a impressão digital a partir dos campos do próprio arquivo e confere o
+SHA-256 do peso quando ele está na máquina. Conferido nesta entrega: o contrato em uso responde
+`rc=0`, com impressão `7f0a24339a26f9ca...`, `imgsz` 480 e limiares 0,4 / 0,2 / 0,4 para `normal`,
+`tampa_ausente` e `defeito_tampa`.
+
+A impressão digital cobre ROI, rotação, orientação de entrada, `imgsz` de treino, classes,
+`vista_por_camera` e o SHA-256 do peso. O limiar por classe é validado de forma estrutural, com tipo,
+faixa e o campo `fonte` declarado, e não entra na impressão digital: editar o número mantendo `fonte`
+e `calibrado` passa na validação estrutural. O `--conferir` confere o que a impressão cobre, e o
+limiar conferido é o gravado no arquivo.

@@ -150,22 +150,88 @@ def montar(*, peso: Path, metadados: Path, roi_json: Path, calibracao: Path | No
     return contrato
 
 
+def conferir(saida: Path) -> int:
+    """Confere o contrato gravado com o mesmo validador do consumidor e recomputa o fingerprint.
+
+    O que isto prova: o arquivo em disco e o que o `preparo_detector` aceita (fingerprint canonico
+    dos campos que mudam a predicao), que a ROI declarada e valida e que o limiar do imgsz de treino
+    esta calibrado com fonte. NAO prova desempenho nem que a instalacao usa aquele recorte -- isso e
+    papel do canario com imagem real.
+    """
+    if not saida.is_file():
+        print(f'BLOQUEADO: contrato ausente: {saida}', file=sys.stderr)
+        return 2
+    try:
+        bruto = json.loads(saida.read_text(encoding='utf-8'))
+        aberto = ContratoDePreprocessamento.abrir(saida)
+    except (OSError, ValueError, KeyError, json.JSONDecodeError, ErroDePreparo) as erro:
+        print(f'BLOQUEADO: contrato invalido: {erro}', file=sys.stderr)
+        return 2
+    canonico = {campo: bruto[campo] for campo in CAMPOS_DO_FINGERPRINT}
+    canonico['modelo_sha256'] = bruto['modelo']['sha256']
+    recomputado = hashlib.sha256(
+        json.dumps(canonico, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    if recomputado != bruto.get('fingerprint'):
+        print('BLOQUEADO: impressao digital nao confere com os campos do arquivo:'
+              f' {recomputado[:16]}... != {str(bruto.get("fingerprint"))[:16]}...', file=sys.stderr)
+        return 2
+    # O limiar do imgsz de treino ser CALIBRADO nao e conferido aqui: o validador do consumidor
+    # (`ContratoDePreprocessamento.abrir`) ja recusa contrato sem calibracao, e uma guarda que nao
+    # pode falhar nao e guarda. O estado aparece no relatorio abaixo.
+    limiar_do_imgsz = bruto['limiares_por_imgsz'][str(aberto.imgsz_treino)]
+    peso = Path(bruto['modelo']['arquivo'])
+    candidato = peso if peso.is_file() else saida.parent / peso.name
+    if candidato.is_file():
+        medido = sha256(candidato)
+        if medido != bruto['modelo']['sha256']:
+            print(f'BLOQUEADO: peso {candidato} nao e o do contrato (sha256 divergente)',
+                  file=sys.stderr)
+            return 2
+        origem = str(candidato)
+    else:
+        origem = f'{peso.name} (ausente nesta maquina: sha declarado {bruto["modelo"]["sha256"][:16]}...)'
+    print('contrato confere:', saida)
+    print('  fingerprint:', bruto['fingerprint'][:32], '...')
+    print('  peso:', origem)
+    print('  imgsz:', aberto.imgsz_treino, '| classes:', ', '.join(bruto['classes']))
+    print('  limiares (calibrados na validacao):',
+          ', '.join(f'{c}={limiar_do_imgsz[c]}' for c in bruto['classes']))
+    print('  ROI por camera:',
+          ', '.join(f'{cam}=[{v["x"]},{v["y"]},{v["w"]},{v["h"]}]'
+                    for cam, v in sorted(bruto['roi_por_camera'].items())))
+    print('  cameras->vistas:', ', '.join(f'{c}->{v}' for c, v in bruto['vista_por_camera'].items()))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('--peso', required=True, type=Path)
-    ap.add_argument('--metadados', required=True, type=Path, help='model-meta.json do run')
-    ap.add_argument('--roi', required=True, type=Path, help='roi-por-camera.json')
+    ap.add_argument('--conferir', action='store_true',
+                    help='confere o contrato ja gravado (nao gera): ROI, limiares, classes, '
+                         'imgsz e impressao digital; nao precisa de peso nem de metadados')
+    ap.add_argument('--peso', type=Path, help='model-meta/.pt do run (obrigatorio para gerar)')
+    ap.add_argument('--metadados', type=Path, help='model-meta.json do run (obrigatorio para gerar)')
+    ap.add_argument('--roi', type=Path, help='roi-por-camera.json (obrigatorio para gerar)')
     ap.add_argument('--calibracao', type=Path, default=None,
                     help='saida do calibra_limiar_val.py (limiar por classe NA VALIDACAO)')
-    ap.add_argument('--vistas', required=True, help='camera=vista,camera=vista (ex.: csi=lateral1,usb=lateral2)')
-    ap.add_argument('--rotacao', required=True, help='camera=graus,camera=graus (ex.: csi=0,usb=90)')
+    ap.add_argument('--vistas', help='camera=vista,camera=vista (ex.: csi=lateral1,usb=lateral2)')
+    ap.add_argument('--rotacao', help='camera=graus,camera=graus (ex.: csi=0,usb=90)')
     ap.add_argument('--orientacao', choices=ORIENTACOES, default='quadro_ja_orientado',
                     help='se a fonte entrega o quadro ja orientado como no treino, ou cru')
     ap.add_argument('--imgsz', type=int, default=None, help='sobrepoe o imgsz dos metadados')
     ap.add_argument('--saida', type=Path, default=PIPELINE / 'contrato' / 'preprocessamento.json')
     ap.add_argument('--forcar', action='store_true', help='sobrescreve contrato existente')
     a = ap.parse_args(argv)
+
+    if a.conferir:
+        return conferir(a.saida)
+
+    faltando = [nome for nome, valor in (('--peso', a.peso), ('--metadados', a.metadados),
+                                         ('--roi', a.roi), ('--vistas', a.vistas),
+                                         ('--rotacao', a.rotacao)) if not valor]
+    if faltando:
+        ap.error('para gerar o contrato faltam: ' + ', '.join(faltando)
+                 + ' (ou use --conferir para so conferir o contrato gravado)')
 
     try:
         contrato = montar(peso=a.peso, metadados=a.metadados, roi_json=a.roi,
@@ -192,6 +258,7 @@ def main(argv: list[str] | None = None) -> int:
     print('modelo sha256:', contrato['modelo']['sha256'][:32], '…')
     print('imgsz:', aberto.imgsz_treino, '| calibrado: sim')
     print('cameras:', ', '.join(f'{c}->{v}' for c, v in contrato['vista_por_camera'].items()))
+    return 0
 
 
 if __name__ == '__main__':

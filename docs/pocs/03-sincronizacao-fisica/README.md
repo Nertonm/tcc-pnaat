@@ -1,6 +1,6 @@
 # PoC 03: sincronização física
 
-- Status: **calibração do atraso trigger → captura entregue em 2026-09-14** (`docs/pocs/03-sincronizacao-fisica/CALIBRACAO-DELAY.md`; código em `code-workspace/src/pocs/expansao_sincronizacao/`). A sincronização multi-câmera por item segue pendente.
+- Status: **calibração do atraso trigger → captura entregue em 2026-09-14** (`docs/pocs/03-sincronizacao-fisica/CALIBRACAO-DELAY.md`; código em `workspace/src/pocs/expansao_sincronizacao/`). A sincronização multi-câmera por item segue pendente.
 - Pergunta binária: as três imagens pertencem ao mesmo item na janela definida?
 - Hipótese: trigger único, encoder e posição fixa evitam troca de item.
 - Métrica: correlação por item, janela temporal e perda de vista.

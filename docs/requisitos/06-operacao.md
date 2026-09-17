@@ -1,5 +1,5 @@
 # Operação, documentação, aceite e calendário
-
+A ficha é normativa. O estado do software já implementado está em `docs/operacao-pipeline.md`, `docs/dashboard-site.md` e `docs/dados-telemetria.md`; os critérios abaixo continuam sendo critérios de aceite e não afirmações de que todos os ensaios foram executados.
 ## Operação e manutenção
 
 ### OPS-01: Runbook de bancada

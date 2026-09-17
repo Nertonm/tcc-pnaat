@@ -57,7 +57,8 @@ def embedding(caminhos):
     from PIL import Image
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     m = torchvision.models.mobilenet_v3_small(weights=torchvision.models.MobileNet_V3_Small_Weights.IMAGENET1K_V1)
-    m.classifier = torch.nn.Identity(); m.eval().to(dev)
+    m.classifier = torch.nn.Identity()
+    m.eval().to(dev)
     tf = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor(),
                              transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
     out = []
@@ -73,9 +74,11 @@ def main():
     itens = carrega()
     chaves = [i["crop"] for i in itens]
     if CACHE.exists() and str(np.load(CACHE, allow_pickle=False)["assinatura"]) == ",".join(chaves):
-        X = np.load(CACHE, allow_pickle=False)["X"]; print("embeddings do cache")
+        X = np.load(CACHE, allow_pickle=False)["X"]
+        print("embeddings do cache")
     else:
-        X = embedding(chaves); np.savez(CACHE, X=X, assinatura=",".join(chaves))
+        X = embedding(chaves)
+        np.savez(CACHE, X=X, assinatura=",".join(chaves))
     y = np.array([i["classe"] for i in itens])
     dom = np.array([i["dominio"] for i in itens])
     sp = np.array([i["split"] for i in itens])

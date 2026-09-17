@@ -1,7 +1,7 @@
 # Medição: viés do ajuste de elipse e o que limita a metrologia da tampa
 
-Data: 2026-09-11. Harness: `code-workspace/scripts/medir_vies_elipse.py` (determinístico, seed 1234,
-200 trials por célula). Teste de regressão: `code-workspace/tests/test_vies_elipse.py`.
+Data: 2026-09-11. Harness: `workspace/scripts/medir_vies_elipse.py` (determinístico, seed 1234,
+200 trials por célula). Teste de regressão: `workspace/tests/test_vies_elipse.py`.
 
 Motivo: o paper de Halir & Flusser (1998),
 avisa que o ajuste por distância **algébrica** tem viés sistemático que encolhe a elipse. Como o

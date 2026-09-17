@@ -47,7 +47,7 @@ def _predicao(caminho: str):
         xyxy = r.boxes.xyxy.cpu().numpy()
         confs = r.boxes.conf.cpu().numpy()
         classes = r.boxes.cls.cpu().numpy().astype(int)
-        for (x1, y1, x2, y2), c, k in zip(xyxy, confs, classes):
+        for (x1, y1, x2, y2), c, k in zip(xyxy, confs, classes, strict=False):
             caixas.append(
                 {
                     "box": (float(x1), float(y1), float(x2), float(y2)),

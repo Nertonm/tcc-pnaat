@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# DIVERGENCIA DECLARADA (2026-09-18): o passo 1 abaixo chama $DS/exporta_anotacoes.py
+#   e confere frescor em $DS/export, mas o exportador canonico (src-production/treino/exporta_anotacoes.py)
+#   grava o CSV em dataset/TRABALHO/anotacoes-ls.csv e os recibos em dataset/TRABALHO/_exportacoes/.
+#   Enquanto os dois lados nao forem alinhados, este passo ABORTA com rc=3.
+#   Dono: quem opera a bancada. Gatilho de promocao: alinhar o caminho do frescor (ou
+#   trocar o passo pelo alvo do Makefile) e registrar o lote que passou.
 # novo_lote.sh — execução completa para um LOTE NOVO de anotações da equipe.
 #
 # NÃO roda sozinho. Disparar UMA vez, quando a equipe fechar um lote no Label Studio.

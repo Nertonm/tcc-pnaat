@@ -44,7 +44,7 @@ def avalia(modelo, ds: Path, split: str, conf: float, imgsz: int):
         if r.boxes is not None and len(r.boxes):
             xy = r.boxes.xyxy.cpu().numpy()
             cl = r.boxes.cls.cpu().numpy().astype(int)
-            caixas = [(int(c), tuple(float(v) for v in b)) for b, c in zip(xy, cl)]
+            caixas = [(int(c), tuple(float(v) for v in b)) for b, c in zip(xy, cl, strict=False)]
         usados = set()
         for cg, bg in gt:
             achou = False
@@ -52,7 +52,9 @@ def avalia(modelo, ds: Path, split: str, conf: float, imgsz: int):
                 if k in usados or cp != cg:
                     continue
                 if iou(bg, bp) >= 0.3:
-                    usados.add(k); achou = True; break
+                    usados.add(k)
+                    achou = True
+                    break
             tp[cg] += 1 if achou else 0
             fn[cg] += 0 if achou else 1
         for k, (cp, _) in enumerate(caixas):

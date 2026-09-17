@@ -14,6 +14,8 @@ prova que é parte da pipeline. Antes de executar, consultar este mapa e o fluxo
 |---|---|---|---|
 | Contrato humano | `README.md`, `RUBRICA.md`, `RESPOSTAS-DO-RESPONSAVEL.md`, `anotadores.csv` | instruções e vocabulário | revisão humana |
 | Filas | `wp-B`, `wp-E1`, `wp-E2`, `wp-F`, `wp-G`, `wp-J` | tarefas declaradas | Label Studio ou HTML, nunca treino direto |
+> **Nota de caminho:** os scripts canônicos de export/frescor vivem em `src-production/treino/`; as cópias em `dataset/TRABALHO/` são histórico. Fluxo completo em `docs/reference/uso-do-label-studio.md`.
+
 | Exportação | `exporta_anotacoes.py`, `anotacoes-ls.csv`, `_exportacoes/` | Label Studio para CSV canônico | `anotacoes-ls.csv` + recibo |
 | Validação de fila | `gerar_filas.py`, `gerar_ferramenta.py`, `validar_entrega.py`, `juntar_entregas.py`, `bateria_validacao.py` | gera/consolida/confere entrega humana | CSV validado |
 | Montagem lateral | `monta_v0_detector.py` | gera candidato YOLO lateral | dataset/manifest lateral separado |
@@ -36,7 +38,7 @@ prova que é parte da pipeline. Antes de executar, consultar este mapa e o fluxo
 | Backup/patch/ferramenta gerada | `_backups/`, `_patches/`, `_ferramentas/` | preservação e reprodução histórica; não reclassificar como fonte |
 
 
-## Pipeline medido v1 (2026-09-15) — superfície ativa
+## Pipeline medido v1 (2026-09-15): superfície ativa
 
 Família que produz os números do relatório `docs/reference/resultados-deteccao-20260915.md`.
 Regra de validade embutida: base limpa (pré-treino só externo) + split por item com

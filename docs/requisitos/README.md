@@ -31,5 +31,5 @@ Uma ficha descreve o que deve ser feito. O estado muda somente com artefato prod
 
 2. `01-funcionais.md` e `02-nao-funcionais.md`
 3. `03-dados-interfaces.md` e `04-atuacao-seguranca.md`
-4. `05-hardware-ml.md` e `06-operacao-documentacao.md`
-5. `07-aceite-calendario.md`
+4. `05-hardware-ml.md` e `06-operacao.md`
+5. `06-operacao.md (aceite e calendário)`

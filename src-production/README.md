@@ -1,9 +1,9 @@
-# src-production — o produto
+# src-production: o produto
 
 Pacote `iamralp`. Esta arvore e o **entregavel**: codigo, testes, esquema do hub, firmware, o site
-estatico e o pipeline de treino que produz o detector. `../code-workspace/` guarda as PoCs como
-historico congelado (nada daqui importa de la; nada de la sobe para ca sem reescrita tipada) e
-`revisar/` guarda a arvore de trabalho que originou esta — **nao e importada em runtime**.
+estatico e o pipeline de treino que produz o detector. As PoCs da geração anterior foram removidas
+deste checkout; documentos sob `docs/pocs/` permanecem como histórico, sem fonte executável nesta
+árvore. `dataset/TRABALHO/` e `dirty-workspace/` guardam a arvore de trabalho antiga: **nao e importada em runtime**.
 
 ## Modulos
 
@@ -15,12 +15,12 @@ historico congelado (nada daqui importa de la; nada de la sobe para ca sem reesc
 | `captura.py` | Monta as vistas do mesmo `item_id`; verificacao de posicionamento fail-closed (NCC + tolerancia em px) |
 | `identidade.py` | Formato e geracao do `item_id` (`<lote>-<sequencia>`), com sequencia ancorada no banco |
 | `registro.py` | Persistencia idempotente por `item_id`; recusa evidencia divergente |
-| `painel.py` | As 14 consultas analiticas de `docs/dados-telemetria.md` secao 3, somente leitura |
+| `painel.py` | As consultas analiticas de `docs/dados-telemetria.md` secao 3, somente leitura |
 | `orquestracao.py` | Pipeline unica (captura -> decisao -> conformidade -> registro) e entry point |
 | `classificador.py` | Classificador da tampa (extrator congelado + linear) atras do protocolo da D-30; CORPO devolve `None` |
 | `classificador_artefato.py` | Consumidor do artefato `.npz` medido (D-37) |
 | `classificador_yolo.py` | Consumidor do PACOTE de detector (YOLO) na cadeia: contrato verificado, decisao sem silencio |
-| `preparo_detector.py` | Pre-processamento do detector: recorte, rotacao e contrato — a MESMA funcao do treino |
+| `preparo_detector.py` | Pre-processamento do detector: recorte, rotacao e contrato, a mesma funcao do treino |
 | `pacote_detector.py` | Formato do pacote (peso + contrato + metadados + checksums), verificado dos dois lados |
 | `fonte_gatilho.py` | Le o CSV de eventos de gatilho da bancada e persiste pela API do registro (RF-01.1) |
 | `ingerir_serie.py` | Ingere uma serie de captura do rig como item do registro |
@@ -93,7 +93,7 @@ Campos que o contrato precisa declarar, e por que cada um e guarda:
 | `rotacao_graus` + `orientacao_entrada` | `quadro_ja_orientado` (a fonte entrega como no treino) ou `rotacionar_no_consumo`. **Ambiguidade e erro**: adivinhar troca 90 por 0 em silencio |
 | `vista_por_camera` | qual camera produz qual vista; vista repetida em duas cameras e erro |
 | `imgsz_treino` | a resolucao do treino; limiar calibrado em outro tamanho nao vale |
-| `limiares_por_imgsz[c].calibrado` + `fonte` | limiar sem fonte e provisorio (D-24) e nao decide sem pedido explicito |
+| `limiares_por_imgsz[c].calibrado` + `fonte` | limiar sem fonte e recusado pelo preparo (`preparo_detector.py` exige `calibrado`) |
 | `classes` | por NOME; a ordem do indice no `.pt` e a identidade da classe |
 | `modelo.sha256` | contrato de um peso nao vale para outro |
 | `fingerprint` | hash canonico dos campos que mudam a predicao; arquivo editado a mao nao abre |
@@ -123,7 +123,9 @@ Quem le o numero precisa saber disso; o codigo ja declara o mapeamento em `class
 - **silencio nunca vira `normal`**: sem caixa acima do limiar da classe, o resultado e `inconclusivo`;
 - **defeito nao e suprimido por `normal` mais confiante**: caixa de defeito acima do limiar dela
   decide, mesmo perdendo na confianca;
-- `topo` nunca decide (D-23/D-30) e CORPO nao tem modelo neste pacote: devolvem `None` e o `Decisor`
+- `topo` nunca decide (D-23/D-30): o pacote lateral devolve `None` para topo, e o detector de topo do
+  acervo (`*-topo-detector-roi`, em `models/INDEX.csv`) existe como check dimensional. CORPO nao tem
+  modelo neste pacote: devolve `None` e o `Decisor`
   roteia para fallback;
 - aprovacao exige o rig completo (D-04/D-29): sem medida de CORPO o item fica `inconclusivo`, nunca
   `ok`;
@@ -145,12 +147,9 @@ make treino-dataset TAG=v10                   # monta o dataset (split por item 
 make treino-run     TAG=v10 EPOCHS=150         # treina a partir do dataset
 make treino-avalia  TAG=v10                    # mAP por dominio + tabela de limiar
 make treino-kfold   TAG=v10 K=5                # metrica de aceitacao (k-fold por item)
-make pacote PESO=... TAG=v10                   # empacota o candidato (dry-run; --apply grava)
+make pacote PESO=... PACOTE=<dir> TAG=v10      # empacota o candidato (dry-run; --apply grava)
 make smoke-detector PACOTE=... CAPTURA=... ITEM=... DB=... JANELA=... ALINHAMENTO=... \
   EQUIPAMENTO=... LOCALIZACAO=...                  # execucao da cadeia com o pacote
-make auditar-dataset DATASET=... KFOLD=...     # auditoria adversarial do dataset montado
-make treino-run-seguro TAG=v10                 # treino pela porta de recursos (guardiao)
-make treino-corpo-dataset && make treino-corpo-run    # frente CORPO (modelo separado)
 make auditar-dataset DATASET=... KFOLD=...     # auditoria adversarial do dataset montado
 make treino-run-seguro TAG=v10                 # treino pela porta de recursos (guardiao)
 make treino-corpo-dataset && make treino-corpo-run    # frente CORPO (modelo separado)
@@ -191,15 +190,15 @@ Fechar um pacote, em quatro passos, sem GPU:
 
 # 2. contrato: ROI derivada, rotacao e camera->vista declaradas, limiares da calibracao
 ../.venv/bin/python treino/gera_contrato_preproc.py --peso PESO.pt \
-    --metadados "$PNAAT_MODELOS/<tag>-lateral-detector-roi/model-meta.json" \
+    --metadados-treino "$PNAAT_MODELOS/<tag>-lateral-detector-roi/model-meta.json" \
     --roi treino/contrato/roi-por-camera.json --calibracao "$PNAAT_MODELOS/calibracao-<tag>-val.json" \
-    --vistas csi=lateral1,usb=lateral2,espcam=topo --rotacao csi=0,usb=90,espcam=180 \
+    --vistas csi=topo,usb=lateral2,espcam=lateral1 --rotacao csi=0,usb=90,espcam=180 \
     --saida treino/contrato/preprocessamento.json --forcar
 
 # 3. pacote (dry-run por padrao; --apply grava)
 ../.venv/bin/python treino/pacote_entrega.py --peso PESO.pt \
     --contrato treino/contrato/preprocessamento.json \
-    --metadados "$PNAAT_MODELOS/<tag>-lateral-detector-roi/model-meta.json" \
+    --metadados-treino "$PNAAT_MODELOS/<tag>-lateral-detector-roi/model-meta.json" \
     --saida "$PNAAT_MODELOS/ENTREGA/<tag>-lateral" --apply
 
 # 4. execucao da cadeia com o pacote real: TUDO declarado, nada pre-programado
@@ -236,27 +235,28 @@ proprio canario e rollback.
 
 O numero nao se sustenta por afirmacao: os quatro passos abaixo o recomputam. Peso, contrato e
 artefato do classificador sao DADOS e vivem fora do git (o indice em `models/INDEX.csv` guarda o
-sha256 de cada peso treinado):
+sha256 de cada peso treinado). Os pacotes do entregável estão publicados em https://huggingface.co/Nerton/pnaat-modelos,
+com `SHA256SUMS` por pacote:
 
 O artefato do classificador vive fora do git (dado). Medido na bancada em 2026-09-16:
 
 | arquivo | sha256 (inicio) | tamanho |
 |---|---|---|
-| `dataset/modelo-inferencia.npz` | `61c7fce611e16d00…` | 406862 bytes |
-| `dataset/modelo-inferencia.json` | `159dcdef34470742…` | 1453 bytes |
+| `dataset/modelo-inferencia.npz` | `61c7fce611e16d00...` | 406862 bytes |
+| `dataset/modelo-inferencia.json` | `159dcdef34470742...` | 1453 bytes |
 
 Qualquer um pode recomputar com `sha256sum` e comparar; o indice de pesos (`models/INDEX.csv`) guarda
 o mesmo tipo de prova para os pesos treinados.
 
 ```bash
-# 1. o artefato do classificador (dado, fora do git)
-sha256sum dataset/modelo-inferencia.npz dataset/modelo-inferencia.json
+# 1. o artefato do classificador (dado de instalacao; nao existe no clone)
+#    quem tiver a copia confere com sha256sum no local da instalacao
 # 2. o canario recomputa recall por classe e taxa de inconclusivo do json declarado
 .venv/bin/python src-production/canario_modelo_artefato.py --json /tmp/canario.json
 # 3. o contrato do detector: ROI, limiares e impressao digital do peso
 .venv/bin/python src-production/treino/gera_contrato_preproc.py --conferir
-# 4. o pacote do detector, conferido dos dois lados
-.venv/bin/python src-production/treino/pacote_entrega.py --pacote models/ENTREGA/v9b-lateral-calibrado
+# 4. o pacote do detector, conferido dos dois lados (caminho do acervo de instalacao)
+.venv/bin/python src-production/treino/pacote_entrega.py --pacote "$PNAAT_MODELOS/ENTREGA/<tag>-lateral"
 ```
 
 Sem o artefato do passo 1 o canario nao roda -- e diz isso, em vez de dar numero menor em silencio.
@@ -269,16 +269,12 @@ diretorio do clone (`api.py --site`, default a propria `site/`), e midia/dado na
 instala o pacote para servir o site aponta `--site` para a copia dele; o `sdist` vai completo, para
 quem quer reconstruir a arvore.
 
-## Divida declarada de estilo
+## Lint: limpo
 
-`make lint` roda o ruff com a config do `pyproject.toml` (regras de correcao + B). O gate de commit
-roda so as regras F -- as que pegam nome indefinido e codigo morto, que foi como um `NameError` de
-teste passou verde uma vez. O residuo ATUAL, medido, nao escondido:
-
-- `F401`/`E401` (import morto): corrigido;
-- `E741` (nome ambiguo): declarado no ignore com motivo;
-- `E702`, `E731`, `B905`, `B007`, `F841`, `B023`, `B904`: pendente, sem efeito de comportamento
-  conhecido. Nao ha "0 achados" aqui: ha achado com dono.
+`make lint` roda limpo com a config do `pyproject.toml` (regras de correcao + B). As exclusoes
+(E501, B008, E402, E741) sao declaradas e comentadas; E701/E702 sao per-file declaradas no servico
+portado do rig (`rig_service/app.py`), com motivo no pyproject. A divida antiga (F401/E401, B904,
+B023, F841, B007) foi zerada e os notebooks ficam fora do lint como evidencia de metodo.
 
 ## O que NAO esta verificado
 
@@ -287,14 +283,14 @@ teste passou verde uma vez. O residuo ATUAL, medido, nao escondido:
   k-fold do pipeline de treino, em dado real.
 - **Peso em uso no rig**: o contrato do pacote precisa ser gerado para o peso medido
   (`treino/calibra_limiar_val.py` + metadados do run). O contrato historico de `v9a` **nao** vale
-  para `v9b` — o carregador recusa (sha divergente), de proposito.
+  para `v9b`: o carregador recusa (sha divergente), de proposito.
 - **ROI/rotacao medidos da instalacao atual**: a ROI por camera vem de `treino/roi_por_camera.py`
   (derivada das caixas anotadas) e a rotacao e declarada, nao inferida.
 
 ## Fora desta arvore (e por que)
 
-Os nomes abaixo **nao existem nesta arvore** (vivem em `revisar/`, dado de instalacao ou fora do
-repositorio) e aparecem aqui so para dizer onde foram parar. Excluidos: os candidatos v0 e
+Os nomes abaixo **nao existem nesta arvore** (vivem em `dataset/TRABALHO/` e `dirty-workspace/`, dado de
+instalacao ou fora do repositorio) e aparecem aqui so para dizer onde foram parar. Excluidos: os candidatos v0 e
 os experimentos pontuais (`monta_v0_*`, `treina_v0_*`, `experimento_*`, `revisao*_drift`, `t3b_split`,
 `benchmark_justo`, `otimiza_*`), as filas antigas (`treino/filas/*.sh`, com caminhos da arvore
 antiga), o servico de borda (`treino/servico_inferencia3.py`, `site_teste_camera.py`,

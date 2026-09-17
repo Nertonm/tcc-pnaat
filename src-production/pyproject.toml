@@ -11,12 +11,13 @@ dependencies = ["numpy", "opencv-python"]
 
 [project.optional-dependencies]
 # inferencia na borda: extrator congelado + classificador raso (D-30)
-inferencia = ["torch", "torchvision", "ultralytics", "scikit-learn"]
+inferencia = ["torch", "torchvision", "ultralytics", "scikit-learn", "PyYAML"]
 # Leitura de imagem (PIL) e estatistica (scipy) sao import TARDIO em modulos de runtime
 # (avaliacao_ood.py, classificador_artefato.py, preprocessamento.py). Declarados aqui porque
 # dependencia que so existe na maquina de quem escreveu nao esta declarada -- esta emprestada.
 leitura = ["Pillow", "scipy"]
-dev = ["pytest", "pytest-timeout", "ruff"]
+dev = ["pytest", "pytest-timeout", "ruff", "PyYAML"]
+serial = ["pyserial>=3.5"]
 
 [tool.setuptools]
 # Modulos soltos na raiz da arvore (layout escolhido: sem subpacote src/).
@@ -69,6 +70,10 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Scripts de bancada importam antes de ajustar sys.path de proposito.
 "treino/*.py" = ["E402"]
+# Servico de rig portado do canonico (src-production/rig_service): estilo one-liner
+# do autor original; refatoracao de estilo seria diff de risco sem ganho de correcao.
+# F821 segue ativo e Corrigido; so E701/E702 (estilo) ficam docados.
+"rig_service/app.py" = ["E701", "E702"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

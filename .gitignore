@@ -33,7 +33,7 @@ data/
 *.step
 *.stl
 *.3mf
-cad-workspace/exports/**
+exports/**
 
 # Analysis and tooling
 .ipynb_checkpoints/
@@ -60,12 +60,12 @@ docs/agent/
 **/docs/agent/
 
 # Explicitly versioned CAD G0 templates
-!cad-workspace/data/
-!cad-workspace/data/g0/
-!cad-workspace/data/g0/**
+!data/
+!data/g0/
+!data/g0/**
 
 # Vendor external snapshots (not publishable)
-cad-workspace/references/vendor/**
+references/vendor/**
 
 # dataset/ do rig: versionado de proposito por decisao do grupo (125 arquivos, ~19 MiB na worktree)
 # A excecao esta declarada tambem no commit_gate.sh; a politica de midia precisa ser unificada.
@@ -74,7 +74,6 @@ cad-workspace/references/vendor/**
 **/notebooks/results/
 
 # notebooks do projeto sao versionados (evidencia de metodo); resultados gerados nao
-!code-workspace/notebooks/*.ipynb
 
 
 # Segredos e credenciais (nunca versionar)
@@ -97,21 +96,20 @@ runs/
 poc03_saida/
 
 # Staging de trabalho (nao e entrega)
-cad-workspace/stage*/
+stage*/
 **/stage0-*/
 **/stage1-*/
 
 # demo da PoC: entradas (fotos reais) e saidas geradas ficam fora do git
-demo/entrada/
-demo/saida/
+entrada/
+saida/
 
 # demo da PoC (fotos reais + saidas) e staging do workstream CAD
-code-workspace/demo/
-cad-workspace/candidate-audit-*/
-cad-workspace/structural-candidate-*/
+workspace/
+candidate-audit-*/
+structural-candidate-*/
 
 # artefatos gerados do PoC-01 (stream, evidencias)
-code-workspace/poc01_passagens.csv
 poc01/
 
 # Kernel CAD e insumos de terceiros (nunca versionar: .step/.stl ja estavam fora)
@@ -120,17 +118,16 @@ poc01/
 *.FCBak
 *.zip
 # Backups locais de script (nao sao entrega; ficam no disco, fora do git)
-code-workspace/scripts/*.bak*
 *.bak2-*
 
 # Artefatos grandes de auditoria/staging (acima do limite do gate: ficam locais)
-cad-workspace/_backup-organizacao-20260911/*.tsv
-cad-workspace/auditoria-r07-20260911T052357Z/redux-sections.json
+_backup-organizacao-20260911/*.tsv
+auditoria-r07-20260911T052357Z/redux-sections.json
 # Saidas geradas do lote de impressao acima do limite do gate (ficam locais)
-cad-workspace/lote-impressao-20260911/astra2-case.json
-cad-workspace/lote-impressao-20260911/astra2-secoes.json
+lote-impressao-20260911/astra2-case.json
+lote-impressao-20260911/astra2-secoes.json
 # desenho de secoes do lote acima do limite do gate
-cad-workspace/lote-impressao-20260911/astra2-secoes.svg
+lote-impressao-20260911/astra2-secoes.svg
 
 # dataset/: o dado PROPRIO (dataset/nosso/) e versionado, por decisao do grupo.
 # Terceiros (CC BY 4.0), derivados, anotacoes e saidas de experimento vivem na arvore e
@@ -183,4 +180,9 @@ _backup-*/
 cad-produto/03-referencias/vendor
 
 # Area de workspaces sujos: fica no disco, nao entra no historico
-dirty-workspaces/
+dirty-workspace*/
+
+# demo local da entrega (make demo): banco e evidencias gerados
+/hub.db
+/evidencias/
+.dvc/

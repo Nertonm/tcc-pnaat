@@ -57,7 +57,8 @@ def completo(tampa, corpo, conf=0.92):
 def main() -> int:
     DESTINO.parent.mkdir(parents=True, exist_ok=True)
     if DESTINO.exists():
-        DESTINO.unlink()
+        print(f"recusado: banco já existe: {DESTINO}; escolha um novo diretório de demo", file=sys.stderr)
+        return 2
     reg = Registro.abrir(DESTINO)
     cx = reg._cx
     cx.execute(
@@ -121,7 +122,7 @@ def main() -> int:
             None,
         ),
     ]
-    for item_id, lote, segundos, classe, medidas, vista_evidencia in itens:
+    for item_id, lote, segundos, classe, medidas, _vista_evidencia in itens:
         reg.registrar(
             Evento(
                 item_id=item_id,
@@ -158,7 +159,7 @@ def main() -> int:
             (caminho, 40 + (hash(item_id) % 20), 1.2, item_id, vista),
         )
 
-    for i, (seg, estado, item, motivo) in enumerate(
+    for _i, (seg, estado, item, motivo) in enumerate(
         [
             (0, "aceito", "ITM-001", None),
             (4, "aceito", "ITM-002", None),

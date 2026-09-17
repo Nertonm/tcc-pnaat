@@ -1,6 +1,6 @@
 # Requisitos do nucleo
 
-Esta é a versão canônica em Markdown do catálogo usado no PDF. Todos são propostas de engenharia: `Núcleo` pertence à validação inicial; `Expansão` fica registrada para evolução, sem ser apresentada como capacidade validada.
+Esta é a versão canônica em Markdown do catálogo usado no PDF. Os requisitos são normativos: alguns já têm implementação de software em `src-production/`, enquanto hardware, integração externa e validação de desempenho continuam condicionados à evidência do setup declarado. `Núcleo` e `Expansão` classificam escopo, não substituem a verificação do código.
 
 ## Requisitos funcionais
 
@@ -18,13 +18,13 @@ Esta é a versão canônica em Markdown do catálogo usado no PDF. Todos são pr
 | RF-09 | Apresentar dashboard com itens, defeitos, localização, recorrência e saúde do nó. | Núcleo |
 | RF-10 | Medir taxa de eventos da bancada sem controlar a velocidade da esteira. | Expansão |
 | RF-11 | Identificar intervalos sem evento acima do limite definido e registrá-los para análise. | Expansão |
-| RF-12 | Registrar correção do operador preservando decisão original, correção, responsável e horário. | Expansão |
-| RF-13 | Avaliar detector opcional de anomalia desconhecida como camada adicional. | Expansão |
-| RF-14 | Registrar encaminhamento de item para análise humana, sem comandar atuação física. | Expansão |
+| RF-12 | Registrar correção do operador preservando decisão original, correção, responsável e horário. | Núcleo (implementado) |
+| RF-13 | Avaliar detector opcional de anomalia desconhecida como camada adicional. | Parcial (camada isolada) |
+| RF-14 | Registrar encaminhamento de item para análise humana; atuação física de separação fica na expansão (PoC-07). | Expansão |
 | RF-15 | Medir altura da tampa em milímetros quando a calibração estiver disponível. | Expansão |
 | RF-16 | Manter golden samples com defeito conhecido, isolados das estatísticas operacionais. | Expansão |
 | RF-17 | Gerar relatório de lote com indicadores, severidade, evidências e tendência. | Expansão |
-| RF-18 | Calcular descritores geométricos por vista e score de anomalia sobre conjunto normal. | Expansão |
+| RF-18 | Calcular descritores geométricos por vista e score de anomalia sobre conjunto normal. | Parcial (camada isolada) |
 | RF-19 | Avaliar detecção autossupervisionada com imagens de itens normais e anomalias sintéticas. | Expansão |
 | RF-20 | Avaliar consistência entre vistas pelo score conjunto dos classificadores. | Expansão |
 | RF-21 | Avaliar destilação de modelo para execução no hardware alvo. | Expansão |

@@ -11,7 +11,10 @@ Regras que valem nesta fronteira:
     porta. Assim o navegador nao precisa de CORS nem de servidor extra. O front, porem, CARREGA
     Tailwind e Lucide de CDN externo (site/index.html); a promessa de "sem CDN" vale para a API,
     nao para a pagina;
-  * **leitura pela conexao read-only** (`mode=ro`): GET nao pode mutar o registro por acidente;
+  * **leitura pela conexao read-only** (`mode=ro`): GET nao pode mutar o registro por acidente.
+    UMA excecao declarada: `/api/health` abre o registro pelo caminho canonico do `Registro`, que
+    cria o esquema quando o banco e novo -- sem isso a propria sonda de saude respondia 503
+    `banco_indisponivel` em banco recem-criado (`_rota_health`, secao "Banco do registro");
   * **escrita por um unico caminho**: POST passa pela API do `Registro`, que e quem valida. A API
     nao faz INSERT na mao;
   * **ausencia declarada**: consulta sem base devolve `null` + motivo, nunca 0 (zero na tela se le
@@ -121,7 +124,7 @@ TIPOS_DE_IMAGEM = (".jpg", ".jpeg", ".png")
 def _evidencia_valida(caminho: str | None, raiz: Path) -> Path | None:
     """Devolve o arquivo quando ele e imagem E esta DENTRO da raiz de evidencias declarada.
 
-    Por que a trava existe (achado da revisao de ponta a ponta): o caminho vem de
+    Por que a trava existe, achado da revisao do codigo: o caminho vem de
     `inspecao_vista.caminho_evidencia`, que e dado do banco. Sem fronteira, uma linha apontando para
     `/etc/passwd` fazia a API servir o arquivo; a sonda devolveu HTTP 200 com 2435 bytes dele. Com
     a raiz declarada, o que esta fora nao e lido; o que nao e imagem nao e servido; e o que nao
@@ -1421,7 +1424,7 @@ def criar_servidor(
             try:
                 alvo.relative_to(site.resolve())  # travessia de diretorio barrada aqui
             except ValueError:
-                raise ErroDeApi(404, "caminho_fora_do_site", relativo)
+                raise ErroDeApi(404, "caminho_fora_do_site", relativo) from None
             if alvo.is_dir():
                 alvo = alvo / "index.html"
             if not alvo.is_file():

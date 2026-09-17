@@ -1,0 +1,18 @@
+# Contexto de build do docker/ (ver docker/Dockerfile e docker/docker-compose.yml).
+# Exclui da imagem o que o runtime não usa: venv, dataset, modelos, git e caches.
+
+.git
+.venv
+__pycache__
+*.py[cod]
+.ruff_cache
+.pytest_cache
+*.egg-info
+dataset
+models
+dirty-workspace
+latex-workspace
+series
+docker/series
+*.db
+*.log

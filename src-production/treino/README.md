@@ -4,7 +4,7 @@ Este diretorio e a receita canonica do detector: monta o dataset, treina, avalia
 mede k-fold, empacota o candidato e produz o artefato `.npz` que a cadeia consome.
 
 Historico (filas antigas, candidatos v0, experimentos pontuais e servico de borda) fica em
-`../revisar/treino/`. Aqui esta so o que a cadeia usa hoje.
+`dataset/TRABALHO/` e em `dirty-workspace/`. Aqui esta so o que a cadeia usa hoje.
 
 ## Cadeia, na ordem
 
@@ -38,12 +38,6 @@ Verificacao e operacao: `auditoria_dataset.py` (auditoria adversarial do dataset
 Frente CORPO (modelo separado): `monta_corpo_detector.py`, `monta_corpo.py`, `treina_corpo.py`,
 `treina_corpo_cls.py`, `le_smoke_corpo.py`, `monta_deformidade.py`.
 
-Verificacao e operacao: `auditoria_dataset.py` (auditoria adversarial do dataset montado) e
-`guardiao_treino.sh` (porta de recursos com watchdog).
-
-Frente CORPO (modelo separado): `monta_corpo_detector.py`, `monta_corpo.py`, `treina_corpo.py`,
-`treina_corpo_cls.py`, `le_smoke_corpo.py`, `monta_deformidade.py`.
-
 ## Produtor do artefato `.npz` (receita medida, D-37)
 
 `compara_extratores.py` monta o conjunto canonico (`carrega()`), compara extratores e escreve o
@@ -51,11 +45,14 @@ artefato pelo exportador `exporta_modelo.py` (`dataset/modelo-inferencia.npz` + 
 O canario da cadeia (`../canario_modelo_artefato.py`) **reusa** esse `carrega()` de proposito: se cada
 lado montasse a sua lista, a comparacao nao provaria nada sobre o port.
 
+Os pacotes já publicados estão em https://huggingface.co/Nerton/pnaat-modelos, com `SHA256SUMS` por pacote: baixar de lá dispensa
+o treino para consumir o detector.
+
 ## Contrato de caminhos
 
 | variavel | aponta | default |
 |---|---|---|
-| `PNAAT_MODELOS` | pesos, runs, datasets derivados | irmao de `tcc-pnaat/` (`../../pnaat-modelos` a partir daqui) |
+| `PNAAT_MODELOS` | pesos, runs, datasets derivados | irmao do diretorio pai do clone |
 | `PNAAT_DADOS` | dados fora do repo (`dataset/`, `det_runs/`, `modelos/`) | pai do clone |
 
 Resolvidos por `caminhos.py` (ancestral que tem `docs/` e `dataset/`, sem ancestral fixo), e
@@ -69,7 +66,7 @@ make treino-dataset TAG=v10          # monta o dataset
 make treino-run     TAG=v10 EPOCHS=150
 make treino-avalia  TAG=v10
 make treino-kfold   TAG=v10 K=5
-make pacote         TAG=v10
+make pacote         TAG=v10 PACOTE=<dir>
 ```
 
 Chamada direta de um modulo:
@@ -79,7 +76,7 @@ Chamada direta de um modulo:
     --out "$PNAAT_MODELOS/v10-lateral-detector-roi/dataset"
 ```
 
-## Regras que a cadeia assume (aprendidas na pratica)
+## Regras que a cadeia assume 
 
 - metrica so com listas separadas e verificadas: split por ITEM, nunca por imagem;
 - nenhum peso que ja viu o teste serve de base de avaliacao;

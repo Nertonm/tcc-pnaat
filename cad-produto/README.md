@@ -104,7 +104,7 @@ Os arquivos exportados foram reabertos e conferidos. As medidas exatas estão em
 
 Foram conferidos o número de corpos, sólidos e triângulos, o tamanho do conjunto,
 o apontamento da câmera de topo, a folga dela até a garrafa e o encaixe da case
-no trilho. Nenhum par de peças apresentou interferência.
+no trilho. Os pares testados não passaram do limite declarado de 0,1 mm³; a case tem resíduos não nulos de interferência registrados nos JSONs de verificação.
 
 O encaixe da case foi medido com controle: empurrar a case para dentro ou para
 fora faz o teste acusar colisão, e afastar a peça faz o teste acusar zero. Isso

@@ -49,7 +49,7 @@ Status: `P` = primária/industrial com vínculo verificável · `S` = secundári
 
 ## Protocolo de calibração (pré-registro, D-24b)
 
-Script: `code-workspace/scripts/calibrar_limiares_tampa.py` (+ `tests/test_calibrar_limiares_tampa.py`).
+Script: `workspace/scripts/calibrar_limiares_tampa.py` (+ `tests/test_calibrar_limiares_tampa.py`).
 Método: varredura determinística de candidatos, escolha pelo **índice de Youden** (sens + espec − 1) com
 desempate por maior margem; saída com sensibilidade/especificidade e **limite inferior do IC95**, zona
 cinzenta, `n` por classe, hash do CSV de entrada e data.

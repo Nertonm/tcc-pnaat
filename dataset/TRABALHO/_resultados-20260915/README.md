@@ -1,11 +1,11 @@
-# Resultados medidos — 2026-09-15
+# Resultados medidos: 2026-09-15
 
 Evidência por NÚMERO e sha256 do arquivo original (o JSON bruto contém caminho absoluto
-e nome de host, por isso não entra no repositório — a política de sanitização proíbe).
+e nome de host, por isso não entra no repositório).
 Originais em `<diretório de modelos>/` (ver RECEITA). Contaminados do dia (base que viu o
 teste, split antigo) NÃO estão aqui: seguem marcados como inválidos no relatório.
 
-## Candidato v5 (base limpa, sem as imagens da equipe) — teste próprio 18 imagens
+## Candidato v5 (base limpa, sem as imagens da equipe): teste próprio 18 imagens
 
 | classe | mAP50 | mAP50-95 |
 |---|---|---|
@@ -15,7 +15,7 @@ teste, split antigo) NÃO estão aqui: seguem marcados como inválidos no relat�
 
 Origem: v5/avaliacao-teste-limpo.json · sha256 `aa3c90d024fddd8d`
 
-## Candidato v6a (com as imagens da equipe) — teste próprio 18 imagens
+## Candidato v6a (com as imagens da equipe): teste próprio 18 imagens
 
 | classe | mAP50 | mAP50-95 |
 |---|---|---|
@@ -45,7 +45,7 @@ Origem: `evidencia-v6-3-rig-test.json` · sha256 `6470dd50c211dc0d`
 ## k-fold por item (protocolo de entrega: base limpa + ajuste fino em cada dobra)
 
 - dobras: 5
-- mAP50 média ± desvio: **0.6708 ± 0.1487** [0.5123–0.9187]
+- mAP50 média ± desvio: **0.6708 ± 0.1487** [0.5123 a 0.9187]
 - mAP50-95 média: 0.2743 ± 0.1018
 - listas das dobras em `<dataset>/kfold-listas/` (auditáveis)
 - sha256 do JSON: `03f64114df0c7272`
@@ -72,7 +72,7 @@ JSON: `decisao-operacional.json` · sha256 `259afa47490d3263`
 ## Pendências declaradas (não medidas)
 
 - gate fora de domínio (MVTec) do candidato: o corpus está no repo (`dataset/benchmark/mvtec`,
-  montado como `/label-studio/files/dataset` no container) — falta rodar com o caminho do host
+  montado como `/label-studio/files/dataset` no container): falta rodar com o caminho do host
 - v7b (4 classes) e v7aug (A/B do aumento offline): treinando/na fila
 - k-fold por item do candidato com as listas versionadas em `<dataset>/kfold-listas/`
 - canário no rig: depende de captura física
@@ -82,7 +82,7 @@ JSON: `decisao-operacional.json` · sha256 `259afa47490d3263`
 | item | valor |
 |---|---|
 | k-fold por item (aceitação) | mAP50 0.6708 ± 0.1487 (reprodutível) |
-| A/B do aumento 3× | perdeu no ponto de operação (0,550 vs 0,711) — manter sem aumento |
-| gate OOD (MVTec bottle) | AUROC 0.500 — acaso; uso só como gate |
+| A/B do aumento 3× | perdeu no ponto de operação (0,550 vs 0,711): manter sem aumento |
+| gate OOD (MVTec bottle) | AUROC 0.500 (acaso); uso só como gate |
 | topo | fora de escopo (val 0,035) |
 | modelo de entrega | v7a (= v6a) · sha b92be4f42ccfa58f · 6,1 MB |

@@ -55,7 +55,7 @@ def auroc(positivos, negativos) -> float:
     postos[ordem] = np.arange(1, todos.size + 1)
     # empates recebem posto medio
     valores, contagens = np.unique(todos, return_counts=True)
-    for v, c in zip(valores, contagens):
+    for v, c in zip(valores, contagens, strict=False):
         if c > 1:
             idx = np.nonzero(todos == v)[0]
             postos[idx] = postos[idx].mean()
@@ -236,7 +236,8 @@ def main() -> int:
         return 2
     if a.baseline:
         nome = f"baseline:{a.baseline}"
-        scorer = lambda caminho: _baseline_por_imagem(a.baseline, a.seed, raiz, caminho)
+        def scorer(caminho):
+            return _baseline_por_imagem(a.baseline, a.seed, raiz, caminho)
     elif a.scorer:
         nome = a.scorer
         scorer = carrega_scorer(a.scorer)

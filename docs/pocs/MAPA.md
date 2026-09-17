@@ -6,7 +6,7 @@ Os diretórios originais ficam como estão (histórico preservado). Este mapa s�
 |---|---|---|
 | `01-classificador-topo` | **PoC-01: captura multi-view** | o docs focava topo; o entregue cobre abertura de janela por evento com mais de uma vista |
 | `02-deformidade-lateral` | **PoC-03: deformidade lateral** | muda o número (02→03) |
-| `03-sincronizacao-fisica` | **Expansão: calibração trigger → captura** (`src/pocs/expansao_sincronizacao/`, `scripts/calibrar_delay_trigger.py`) | sincronização física com a esteira saiu do núcleo; o código da expansão é `expansao_sincronizacao/`, sem número, para não colidir com a numeração entregue |
+| `03-sincronizacao-fisica` | **Expansão: calibração trigger → captura** (`code-workspace/src/pocs/expansao_sincronizacao/`, `code-workspace/scripts/calibrar_delay_trigger.py`) | sincronização física com a esteira saiu do núcleo; o código da expansão é `expansao_sincronizacao/`, sem número, para não colidir com a numeração entregue |
 | `04-correlacao-multi-no` | **PoC-04: identidade e fusão** | multi-nó virou expansão; o núcleo funde vistas do mesmo item |
 | `05-integracao-dados` | **PoC-05: registro local** | mesmo tema, nome diferente |
 | `06-resiliencia` | **PoC-06: resiliência** | alinhado |
@@ -14,7 +14,7 @@ Os diretórios originais ficam como estão (histórico preservado). Este mapa s�
 | — | **PoC-02: classificação de tampa** | não existia no docs |
 | — | **PoC-Final: conjectura integrada** | não existia no docs |
 
-Código correspondente: `code-workspace/src/pocs/pocNN_*/` (01..08) + `pocfinal/`.
+Código correspondente: `workspace/src/pocs/pocNN_*/` (01..08) + `pocfinal/`.
 
 
 ---

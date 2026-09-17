@@ -1,194 +1,85 @@
-# Dados e telemetria
+# Dados e telemetria: estado implementado
 
-## 1. Priorização
+A fonte canônica do contrato de dados é `src-production/esquema.sql`, consumida por `registro.py`,
+`painel.py`, `consultas_site.py` e `api.py`. Este documento explica o que já está implementado e
+separa as interfaces que continuam fora do núcleo.
 
-| Eixo | Prioridade | Impacto |
+## 1. Persistência implementada
+
+O SQLite do produto contém, entre outras, estas tabelas:
+
+| Tabela | Papel no produto | Fonte |
 |---|---|---|
-| Arquitetura e schema de dados | Alta | Alto |
-| Dashboard e notificação | Alta | Alto |
-| Taxonomia de defeitos | Alta | Alto |
-| Sincronização de relógio | Alta | Médio-alto |
-| Telemetria de saúde | Alta | Médio-alto |
-| Qualidade de dados | Alta | Médio-alto |
-| Genealogia e relacionamento | Média | Médio |
-| Dados sintéticos leves | Alta | Médio-alto |
-| Detecção simples de drift | Média | Médio |
-| Aprendizado ativo com humano no ciclo | Parcial | Médio |
-| Benchmark comercial para o pitch | Alta | Médio |
-| Detecção one-class | Parcial | Alto, com risco |
-| Re-identificação visual | Fora de escopo | Baixo |
-| Câmera como nó distribuído | Fora de escopo | Baixo |
+| `lote` | agrupamento de itens | `esquema.sql` |
+| `ponto_linha` | identificação do ponto de captura | `esquema.sql` |
+| `taxonomia_defeito` | classe, descrição, severidade e vista | `esquema.sql` |
+| `item` | identidade, lote, trigger, status por domínio e status final | `esquema.sql`, `registro.py` |
+| `inspecao_vista` | vista, domínio, qualidade, classe, confiança, evidência e latência | `esquema.sql`, `registro.py` |
+| `evento_gatilho` | evento recebido do sensor ou de fonte declarada | `esquema.sql`, `registro.py` |
+| `evidencia` | caminho, SHA-256, vista e origem da prova | `esquema.sql`, `registro.py` |
+| `heartbeat_no` | estado, fila e latência de nós observados | `esquema.sql`, `painel.py` |
+| `correcao_operador` | decisão original, correção, operador e horário | `esquema.sql`, `registro.py` |
+| `evento_rejeicao` | estados de ordem/confirmação quando houver produtor de atuação | `esquema.sql`; sem atuador no núcleo |
+| `descritor_geometrico` | descritores e score de anomalia quando produzidos | `esquema.sql`; camada OOD isolada |
 
-## 2. Schema do hub
+`Registro.registrar()` grava item, vistas e evidências em transação. O mesmo `item_id` com a mesma
+prova é reenvio idempotente; evidência divergente é conflito. Falha na gravação faz rollback.
+`correcao_operador` não substitui `status_final`: a consulta deriva a decisão efetiva sem apagar o
+valor original.
 
-Motor: SQLite, suficiente para o volume de bancada. Evolução para série temporal fica como extensão.
+## 2. Regras de estado
 
-```sql
-CREATE TABLE lote (
-  lote_id TEXT PRIMARY KEY,
-  data_inicio TEXT NOT NULL,
-  turno TEXT,
-  observacoes TEXT
-);
+- `defeito` vence quando qualquer domínio detecta defeito.
+- Sem evidência necessária, o estado é `inconclusivo`, não `ok`.
+- `erro_processamento` é distinto de defeito físico.
+- Qualidade da captura (`completo`, parcial, timestamp divergente e evidência insuficiente) não é
+  confundida com a classe do item.
+- Consultas de leitura abrem o banco em modo read-only; `/api/health` é a exceção, pois pode criar o
+  schema de um banco novo.
 
-CREATE TABLE ponto_linha (
-  ponto_id INTEGER PRIMARY KEY,
-  nome TEXT NOT NULL,
-  tipo TEXT
-);
+## 3. Consultas e consumidores implementados
 
-CREATE TABLE taxonomia_defeito (
-  codigo TEXT PRIMARY KEY,
-  descricao TEXT NOT NULL,
-  severidade TEXT CHECK(severidade IN ('critico','major','minor')),
-  vista_esperada TEXT
-);
+As agregações de `painel.py` alimentam `/api/qualidade`, `/api/resumo`, `/api/lotes`, `/api/gatilhos`
+e o site. Estão implementadas taxas por lote, defeitos por severidade, tendência temporal, saúde,
+latência, correções, inconclusivos, saturação, gatilhos e discordância lateral. O frontend também
+faz polling periódico enquanto está visível.
 
-CREATE TABLE item (
-  item_id TEXT PRIMARY KEY,
-  lote_id TEXT REFERENCES lote(lote_id),
-  timestamp_trigger TEXT NOT NULL,
-  velocidade_rig_mm_s REAL,
-  fonte_trigger TEXT CHECK(fonte_trigger IN ('e18_d80nk','vl53l0x','ambos_correlacionados')),
-  status_tampa TEXT CHECK(status_tampa IN ('ok','defeito','inconclusivo','erro_processamento')),
-  status_corpo TEXT CHECK(status_corpo IN ('ok','defeito','inconclusivo','erro_processamento')),
-  discordancia_lateral INTEGER DEFAULT 0 CHECK(discordancia_lateral IN (0,1)),
-  status_final TEXT CHECK(status_final IN ('ok','defeito','inconclusivo','erro_processamento')),
-  motivo_inconclusivo TEXT,
-  qualidade_registro TEXT CHECK(qualidade_registro IN ('completo','parcial_1_vista_faltante','timestamp_divergente','evidencia_insuficiente','invalido')),
-  is_golden INTEGER DEFAULT 0,
-  score_consistencia REAL
-);
+A evidência é servida por `/api/evidencia` somente quando o caminho registrado resolve dentro da raiz
+de evidências e o arquivo é uma imagem permitida. Arquivo ausente, tipo inválido ou escape da raiz
+vira erro HTTP explícito.
 
-CREATE TABLE inspecao_vista (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  item_id TEXT REFERENCES item(item_id),
-  vista TEXT CHECK(vista IN ('topo','lateral1','lateral2')),
-  dominio TEXT CHECK(dominio IN ('tampa','corpo')),
-  vista_disponivel INTEGER DEFAULT 1 CHECK(vista_disponivel IN (0,1)),
-  qualidade_imagem TEXT CHECK(qualidade_imagem IN ('adequada','baixa','invalida','nao_avaliada')),
-  status_vista TEXT CHECK(status_vista IN ('ok','defeito','inconclusivo','erro_processamento')),
-  codigo_defeito TEXT REFERENCES taxonomia_defeito(codigo),
-  confianca REAL,
-  caminho_evidencia TEXT,
-  timestamp_captura TEXT,
-  latencia_ms INTEGER,
-  medida_mm REAL,
-  pixels_saturados_pct REAL,
-  score_cutpaste REAL,
-  score_ts REAL
-);
+## 4. Interfaces do sistema
 
-CREATE TABLE evento_ambiental (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  timestamp TEXT NOT NULL,
-  ponto_id INTEGER REFERENCES ponto_linha(ponto_id),
-  temperatura REAL,
-  umidade REAL,
-  qualidade_ar REAL
-);
+| Interface | Estado |
+|---|---|
+| trigger físico -> ponte serial -> câmera | implementada em `main.c`, `transport_bin.py` e `esp32cam_site.py`; a ligação elétrica e a instalação física exigem bancada |
+| CSV/HTTP -> `evento_gatilho` | implementada; persiste apenas o evento, não substitui captura |
+| serviço de rig/ponte -> gateway API | implementada por `PNAAT_RIG`, `PNAAT_PONTE` e `/api/rig/*` |
+| série materializada -> ingestão | implementada em `ingerir_serie.py`, com `manifest.json`, mapa e artefato legado |
+| captura materializada -> pacote YOLO -> decisão | implementada em `orquestracao.py` e `classificador_yolo.py` |
+| SQLite -> painel/site | implementada em `painel.py`, `consultas_site.py` e `api.py` |
+| correção -> trilha de operador | implementada e append-only |
+| SQLite -> MQTT | não implementada no núcleo |
+| SQLite -> ntfy | não implementada no núcleo |
+| atuador -> confirmação física | schema e consultas existem; produtor e ensaio físico não existem no núcleo |
+| encoder -> velocidade/throughput | coluna existe; produtor e ensaio não existem no núcleo |
 
-CREATE TABLE heartbeat_no (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  ponto_id INTEGER REFERENCES ponto_linha(ponto_id),
-  timestamp TEXT NOT NULL,
-  status TEXT CHECK(status IN ('online','degradado','offline')),
-  fila_pendente INTEGER,
-  latencia_envio_ms INTEGER
-);
+## 5. O que não deve ser confundido
 
-CREATE TABLE correcao_operador (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  item_id TEXT REFERENCES item(item_id),
-  decisao_original TEXT,
-  decisao_corrigida TEXT,
-  corrigido_por TEXT,
-  timestamp TEXT
-);
+O schema modela estados de MQTT, atuação, heartbeat e geometria para preservar o contrato de dados,
+mas a existência da coluna não prova que haja produtor operacional. Do mesmo modo, uma leitura de
+health ou heartbeat prova o estado registrado, não a cobertura de todos os nós físicos.
 
-CREATE TABLE evento_rejeicao (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  item_id TEXT REFERENCES item(item_id),
-  tentativa INTEGER DEFAULT 1,
-  timestamp_ordenado TEXT NOT NULL,
-  timestamp_confirmado TEXT,
-  timestamp_timeout TEXT,
-  status_ordem TEXT CHECK(status_ordem IN ('pendente','emitida','falha')),
-  status TEXT CHECK(status IN ('pendente','confirmada','falha','timeout')),
-  via_sensor TEXT
-);
+A camada OOD/one-class existe como avaliação isolada e tem testes próprios. Ela não está integrada à
+decisão normal do item nem deve ser apresentada como detector de produção.
 
-CREATE TABLE descritor_geometrico (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  item_id TEXT REFERENCES item(item_id),
-  vista TEXT CHECK(vista IN ('topo','lateral1','lateral2')),
-  hu1 REAL, hu2 REAL, hu3 REAL, hu4 REAL, hu5 REAL, hu6 REAL, hu7 REAL,
-  compacidade REAL,
-  simetria_axial REAL,
-  razao_dimensao REAL,
-  anomaly_score REAL
-);
+## 6. Verificação
 
-CREATE INDEX idx_item_lote ON item(lote_id);
-CREATE INDEX idx_inspecao_item ON inspecao_vista(item_id);
-CREATE INDEX idx_heartbeat_ponto_tempo ON heartbeat_no(ponto_id, timestamp);
+```bash
+make -C src-production verificar
+make -C src-production lint
 ```
 
-A coluna `qualidade_registro` liga a confiabilidade das evidências ao dado final. As colunas `status_tampa` e `status_corpo` preservam as decisões dos dois domínios, sem maioria global entre as três câmeras.
-
-O `status_final` deve ser `defeito` quando qualquer domínio detectar defeito. Quando nenhum defeito for detectado, mas a evidência necessária estiver ausente, inválida ou abaixo dos critérios mínimos, o resultado deve ser `inconclusivo`.
-
-A tabela `evento_rejeicao` mantém seu nome por compatibilidade documental, mas representa a separação do item reprovado para análise manual. Ordem emitida, confirmação e timeout devem permanecer distinguíveis. Os detalhes de retry, estado do atuador e segurança continuam definidos em `docs/requisitos/04-atuacao-seguranca.md`.
-
-## 3. Consultas analíticas
-
-1. Taxa de defeito por lote.
-2. Defeitos mais frequentes por período e severidade.
-3. Correlação entre defeito e variável ambiental em janela curta.
-4. Tendência temporal da taxa de defeito por hora.
-5. Itens de um lote com defeito crítico, com evidência.
-6. Saúde dos nós na última hora.
-7. Latência média e máxima de decisão por vista.
-8. Itens com correção manual, para auditoria.
-9. Separações não confirmadas ou encerradas por timeout, como evento de qualidade.
-10. Taxa de disparo falso ou perda de detecção do gatilho, por fonte configurada.
-11. Percentual de pixels saturados por vista e configuração de iluminação.
-12. Itens inconclusivos por lote e motivo.
-13. Distribuição das decisões dos domínios da tampa e do corpo.
-14. Frequência de discordância entre `lateral1` e `lateral2`.
-
-As consultas SQL estão detalhadas junto ao schema no histórico do repositório.
-As consultas devem preservar a diferença entre `ok`, `defeito`, `inconclusivo` e `erro_processamento`. Registros inconclusivos não podem ser contabilizados como itens aprovados.
-
-## 4. Taxonomia de defeitos
-
-Referência conceitual: lógica de nível de qualidade aceitável (AQL), sem implementar plano de amostragem completo.
-
-| Código | Descrição | Severidade | Vista | AQL de referência |
-|---|---|---|---|---|
-| TAMPA_AUSENTE | Tampa completamente ausente | critico | topo | 0% |
-| TAMPA_MAL_ROSQUEADA | Tampa desalinhada ou parcialmente rosqueada | major | topo | 2,5% |
-| CORPO_DEFORMADO_SEVERO | Deformidade que compromete a integridade | critico | lateral | 0% |
-| CORPO_DEFORMADO_LEVE | Deformidade estética sem risco de vazamento | minor | lateral | 4,0% |
-| ERRO_PROCESSAMENTO | Falha de captura ou inferência, categoria técnica | - | qualquer | - |
-
-## 5. Recomendações de implementação
-
-1. O schema, a taxonomia e o dashboard devem preservar as decisões dos domínios da tampa e do corpo, o estado inconclusivo, a qualidade por vista e a confirmação da separação para análise manual.
-2. Detecção one-class como camada de anomalia desconhecida, isolada em PoC com go/no-go de latência.
-3. Augmentação leve do dataset de peças 3D e detecção simples de drift.
-4. Qualidade de dados e heartbeat integrados ao dashboard, para que a resiliência seja métrica.
-5. Alternativas avaliadas e descartadas documentadas com justificativa.
-6. O E18-D80NK e o KY-040 devem permanecer identificados como componentes candidatos nos textos e consultas relacionados às PoCs; sua presença no schema ou no setup não representa validação.
-
-## 6. Fora do escopo
-
-Blockchain, gêmeo digital completo, PTP ou IEEE 1588 (relógio externo e sincronização por rede resolvem a necessidade), backbones pesados na borda, pipeline completo de MLOps, MES ou ISA-95 completo e redes sensíveis ao tempo.
-
-## 7. Referências
-
-- ISO 2859-1, referência conceitual para a taxonomia de defeitos.
-- MVTec AD, benchmark de detecção de anomalia industrial.
-- Documentação oficial do ntfy.
-- PatchCore e FastFlow como referências de detecção one-class, com métricas citadas somente após verificação no dataset próprio.
-- Domain randomization e sim-to-real, como referência metodológica.
+A suíte do produto cobre registro, rollback, idempotência, API, painel, site, contrato, pacote,
+qualidade e regras de decisão. O firmware tem suíte própria. A validação de hardware, MQTT, ntfy,
+atuador, encoder e retenção depende de seus produtores e ensaios específicos.

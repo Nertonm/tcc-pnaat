@@ -1,0 +1,83 @@
+# Composição dos três serviços do tcc-pnaat. O contexto de build é a RAIZ do repositório (..);
+# este diretório (docker/) carrega só o Dockerfile e o compose.
+#
+# Uso (da raiz do repositório):
+#   docker compose -f docker/docker-compose.yml build
+#   docker compose -f docker/docker-compose.yml up -d
+#   curl http://127.0.0.1:8080/api/health
+#
+# Sem hardware: apenas o serviço `api` fica saudável (é o núcleo). rig e ponte exigem devices
+# reais (diretório de séries, câmeras, /dev/ttyUSB*); sem eles sobem degradados.
+#
+# Variáveis de instalação:
+#   PNAAT_SERIES_DIR_HOST : caminho no host do diretório de séries do rig (default ./series,
+#                           relativo a docker/; criado como root se não existir)
+#   PONTE_SERIAL_CAM      : device da ESP32-CAM (default /dev/ttyUSB0)
+#   PONTE_SERIAL_TRIGGER  : device do trigger-node (default /dev/ttyUSB1)
+#   PNAAT_API_TOKEN       : Bearer token da API (default pnaat-local; troque em exposição real)
+#
+# Healthchecks usam urllib da própria imagem (sem curl no python:3.11-slim).
+
+name: tcc-pnaat
+
+services:
+  api:
+    image: tcc-pnaat:local
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: ["python", "src-production/api.py", "--db", "/data/hub.db", "--porta", "8080", "--host", "0.0.0.0"]
+    environment:
+      PNAAT_RIG: http://rig:8090
+      PNAAT_PONTE: http://ponte:8094
+      PNAAT_API_TOKEN: ${PNAAT_API_TOKEN:-pnaat-local}
+    ports:
+      - "8080:8080"
+    volumes:
+      - hub-db:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=3).status == 200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  rig:
+    image: tcc-pnaat:local
+    command: ["python", "src-production/rig_service/app.py", "--porta", "8090"]
+    environment:
+      PNAAT_SERIES_DIR: /series
+      PNAAT_PONTE: http://ponte:8094
+    volumes:
+      - ${PNAAT_SERIES_DIR_HOST:-./series}:/series
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8090/estado', timeout=3).status == 200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  ponte:
+    image: tcc-pnaat:local
+    command: ["python", "src-production/firmware/esp32cam-test/esp32cam_site.py", "--porta", "8094", "--host", "0.0.0.0", "--serial", "/dev/ttyUSB0", "--serial-trigger", "/dev/ttyUSB1"]
+    environment:
+      PNAAT_PONTE: http://127.0.0.1:8094
+    devices:
+      - "${PONTE_SERIAL_CAM:-/dev/ttyUSB0}:/dev/ttyUSB0"
+      - "${PONTE_SERIAL_TRIGGER:-/dev/ttyUSB1}:/dev/ttyUSB1"
+    ports:
+      - "8094:8094"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys,urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8094/status', timeout=3).status == 200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  hub-db:

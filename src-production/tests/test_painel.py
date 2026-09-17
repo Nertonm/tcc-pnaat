@@ -100,7 +100,7 @@ def painel(tmp_path):
     cx.execute(
         "UPDATE inspecao_vista SET caminho_evidencia='ev/i-C-lateral1.jpg' WHERE item_id='i-C' AND vista='lateral1'"
     )
-    for i, (dt, temp) in enumerate(
+    for _i, (dt, temp) in enumerate(
         [
             (T0, 21.0),
             (T0 + timedelta(seconds=5), 22.0),

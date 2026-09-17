@@ -14,7 +14,7 @@ do pré-processamento (CNR, Tenengrad, cobertura especular) que condicionam o ga
 
 ## O que roda
 
-`code-workspace/src/pocs/poc08_preproc/preproc.py`:
+`workspace/src/pocs/poc08_preproc/preproc.py`:
 
 | Etapa | Função | Custo alvo |
 |---|---|---|
@@ -31,7 +31,7 @@ do pré-processamento (CNR, Tenengrad, cobertura especular) que condicionam o ga
 - `make test-vision` verde (16 testes: recuperação de elipse sintética com ruído, RANSAC com 30% de
   outliers, shift conhecido no template matching, flat-field uniformiza vinheta, métricas coerentes).
 - Numa frame real: elipse encontrada (`ok=True`) e métricas dentro da faixa (CNR/especular documentados).
-- Regressão: qualquer mudança de parâmetro deve invalidar `pipeline_version` (ver `docs/design/preprocessamento-ideal-pet.md`).
+- Regressão: qualquer mudança de parâmetro deve invalidar `pipeline_version`.
 
 ## Estado
 

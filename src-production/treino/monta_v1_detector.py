@@ -338,7 +338,7 @@ def main() -> int:
             if h:
                 por_hash[h].append(i['item'])
         juntos = 0
-        for h, lista in por_hash.items():
+        for _h, lista in por_hash.items():
             for outro in lista[1:]:
                 if _find(lista[0]) != _find(outro):
                     juntos += 1

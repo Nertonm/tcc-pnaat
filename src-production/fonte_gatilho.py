@@ -300,7 +300,7 @@ class FonteDeCsvDeGatilho:
                     )
                 )
                 continue
-            lido = _evento_da_linha(linha, dict(zip(cabecalho, campos)))
+            lido = _evento_da_linha(linha, dict(zip(cabecalho, campos, strict=False)))
             if isinstance(lido, Recusa):
                 recusas.append(lido)
             else:

@@ -175,7 +175,11 @@ Cada ficha informa ator, pré-condição, entrada, comportamento, saída, crité
 
 ## Atuação, dados e extensão
 
-Os requisitos desta subseção não integram automaticamente o núcleo mínimo da demonstração. Sua implementação depende da aprovação da PoC aplicável, do orçamento de desempenho, da disponibilidade de prazo e de decisão registrada em `docs/DECISIONS.md`. A preservação dos IDs mantém a rastreabilidade e não representa validação ou compromisso de implementação.
+A subseção mistura requisitos com estado diferente: RF-12 (correção do operador) está implementado no
+produto (`POST /api/correcao`, trilha append-only preservando a decisão original); RF-13 e RF-18 têm
+camada isolada com testes (`avaliacao_ood.py`, `scorers.py`, tabela `descritor_geometrico`); os demais
+seguem normativos e dependem de PoC, orçamento de desempenho e decisão registrada em
+`docs/DECISIONS.md`. A preservação dos IDs mantém a rastreabilidade e não representa validação física.
 
 ### RF-13: Detectar anomalia desconhecida como camada condicional
 

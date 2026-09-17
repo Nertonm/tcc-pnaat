@@ -14,7 +14,7 @@ export RAIZ_REPO
 .PHONY: treino-dataset treino-run treino-avalia treino-kfold checa-modelos
 .PHONY: contrato pacote smoke-detector test-firmware verificar
 .PHONY: auditar-dataset treino-corpo-dataset treino-corpo-run treino-run-seguro
-.PHONY: indice-modelos lint
+.PHONY: indice-modelos lint test-trigger trigger-simular test-rig rig-serve
 
 test:
 	$(PY) -m pytest -q
@@ -29,8 +29,7 @@ limpar:
 # Pipeline de treino (PNAAT). Codigo em treino/, contrato em treino/contrato/.
 #
 # Contrato de caminhos (o mesmo que os scripts usam):
-#   PNAAT_MODELOS  pesos, runs, datasets derivados. Default: irmao do tcc-pnaat/
-#                  (irmao do diretorio pai do clone).
+#   PNAAT_MODELOS  pesos, runs, datasets derivados. Default: irmao do diretorio pai do clone.
 #   PNAAT_DADOS    dados fora do repo (datasets/, det_runs/, modelos/ antigos).
 #                  Default: diretorio pai do clone.
 # Os dois vem do ambiente quando existem; o default nunca usa nome de usuario.
@@ -104,8 +103,9 @@ treino-kfold: checa-modelos
 # ---------------------------------------------------------------------------
 # Pacote do detector: o elo entre treinar e inferir.
 #
-#   make pacote  PESO=... CAMERA=csi SAIDA=...   empacota (dry-run; --apply grava)
-#   make smoke-detector PACOTE=... IMAGEM=...    roda a cadeia com o pacote (decisao real)
+#   make pacote  PESO=... PACOTE=<dir>          empacota (dry-run; --apply grava)
+#   make smoke-detector PACOTE=... CAPTURA=... ITEM=... DB=... JANELA=... \\
+#       ALINHAMENTO=... EQUIPAMENTO=... LOCALIZACAO=...   roda a cadeia com o pacote (decisao real)
 #
 # O pacote NAO promove nada: quem sobe servico e decisao humana.
 # ---------------------------------------------------------------------------
@@ -166,3 +166,20 @@ indice-modelos:
 # Regras de correcao e estilo (config em pyproject.toml). Requer ruff no ambiente.
 lint:
 	$(PY) -m ruff check .
+
+
+# No de trigger/sensor (portado do canonico): logica pura e simulador sem hardware.
+test-trigger:
+	$(PY) -m pytest -q $(APP)/firmware/trigger-node/tests
+
+trigger-simular:
+	$(PY) $(APP)/firmware/trigger-node/host/simular_trigger.py --caso todos
+
+
+# Servico de rig (captura-3-cameras/serie/manifest), portado do canonico.
+# Exige PNAAT_SERIES_DIR no ambiente; a ponte e descoberta por PNAAT_PONTE (default 127.0.0.1:8094).
+test-rig:
+	cd $(APP)/rig_service && $(RAIZ_REPO)/.venv/bin/python test_rotas.py
+
+rig-serve:
+	cd $(APP)/rig_service && PYTHONPATH=. $(RAIZ_REPO)/.venv/bin/python app.py --porta $${PORTA:-8090}
