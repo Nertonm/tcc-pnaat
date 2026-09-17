@@ -13,15 +13,9 @@ sensor E18-D80NK
    -> ponte serial esp32cam_site.py  (dona da porta; CMD_TRIG)
    -> ESP32-CAM (uma foto por trigger, frame UART com CRC)
    -> rig_service (captura-3-cameras + série/manifest em PNAAT_SERIES_DIR)
-   -> capturas materializadas e ingestão de série (dois consumidores distintos):
-
-capturas <CAPTURA>/<ITEM>/*.jpg
+   -> ingerir_serie.py (manifest + mapa câmera->vista)
    -> orquestracao/classificador (pacote YOLO) -> decisao/conformidade
-
-serie/manifest.json (+ mapa câmera->vista)
-   -> ingerir_serie.py -> artefato .npz legado -> decisao/conformidade
-
-   (as duas rotas) -> registro SQLite -> api.py -> site
+   -> registro SQLite -> api.py -> site
 ```
 
 Duas formas de executar o mesmo núcleo descrito acima:
@@ -79,10 +73,9 @@ duplicatas (17 testes).
 ### 4.2 Nó de trigger: ESP32 + E18-D80NK
 
 ```bash
-make -C src-production/firmware flash-trigger PORTA_TRIGGER=/dev/serial/by-id/<ESP32-trigger>
-# equivalente direto (opcional), da raiz do repositório:
-.venv/bin/python src-production/firmware/trigger-node/host/esp_tool.py \
-  --porta /dev/serial/by-id/<ESP32-trigger> upload src-production/firmware/trigger-node/esp/main.py main.py
+cd src-production/firmware/trigger-node/host
+.venv/bin/python esp_tool.py upload ../esp/main.py main.py
+.venv/bin/python esp_tool.py run main.py --segundos 30
 ```
 
 Pinos confirmados na bancada: `PRESENCE_PIN=27`, `CAPTURE_OUT_PIN=26`. O esquemático de referência
@@ -153,7 +146,7 @@ decisão, por isso é sempre declarado.
 
 | O quê | Comando | Esperado |
 |---|---|---|
-| Produto e firmware | `make -C src-production verificar` | 506 + 4 skip no produto, 17 no firmware |
+| Produto e firmware | `make -C src-production verificar` | 510 + 4 skip no produto, 17 no firmware |
 | Lint | `make -C src-production lint` | `All checks passed!` |
 | Trigger (lógica pura) | `make -C src-production test-trigger` | 5 passed |
 | Trigger (simulador) | `make -C src-production trigger-simular` | janelas esperadas por caso |
@@ -192,30 +185,22 @@ raiz do repositório (contexto `..`); o `.dockerignore` da raiz exclui `.venv`, 
 e `.git` da imagem.
 
 ```bash
-# Sem hardware (só o núcleo): API, registro e site
-docker compose -f docker/docker-compose.yml build   # imagem tcc-pnaat:local (torch/ultralytics: build pesado)
-```bash
 docker compose -f docker/docker-compose.yml build   # imagem tcc-pnaat:local (torch/ultralytics: build pesado)
 export PNAAT_API_TOKEN='troque-este-token'
 docker compose -f docker/docker-compose.yml up -d api       # sem hardware: só o núcleo
 # com hardware (câmeras e portas seriais): docker compose --profile hardware -f docker/docker-compose.yml up -d
-curl -H "Authorization: Bearer $PNAAT_API_TOKEN" http://127.0.0.1:8080/api/health
+curl -H 'Authorization: Bearer troque-este-token' http://127.0.0.1:8080/api/health
 docker compose -f docker/docker-compose.yml ps
 docker compose -f docker/docker-compose.yml logs -f api
-```docker compose -f docker/docker-compose.yml ps
-docker compose -f docker/docker-compose.yml logs -f api
-
-# Com hardware (exige /dev/ttyUSB0 e /dev/ttyUSB1 mapeados e o diretório de séries):
-docker compose --profile hardware -f docker/docker-compose.yml up -d
 ```
 
 Serviços:
 
-| Serviço | Comando no container | Porta | Profile | Exigência |
-|---|---|---|---|---|
-| `api` | `python src-production/api.py --db /data/hub.db --porta 8080 --host 0.0.0.0` | 8080 | padrão | nenhuma: sobe sem hardware (núcleo) |
-| `rig` | `python src-production/rig_service/app.py --porta 8090` | 8090 | `hardware` | `PNAAT_SERIES_DIR`; câmeras opcionais |
-| `ponte` | `python src-production/firmware/esp32cam-test/esp32cam_site.py --porta 8094 --serial /dev/ttyUSB0 --serial-trigger /dev/ttyUSB1` | 8094 | `hardware` | devices `/dev/ttyUSB*` reais |
+| Serviço | Comando no container | Porta | Exigência |
+|---|---|---|---|
+| `api` | `python src-production/api.py --db /data/hub.db --porta 8080 --host 0.0.0.0` | 8080 | nenhuma: sobe sem hardware (núcleo) |
+| `rig` | `python src-production/rig_service/app.py --porta 8090` | 8090 | `PNAAT_SERIES_DIR`; câmeras opcionais |
+| `ponte` | `python src-production/firmware/esp32cam-test/esp32cam_site.py --porta 8094 --serial /dev/ttyUSB0 --serial-trigger /dev/ttyUSB1` | 8094 | devices `/dev/ttyUSB*` reais |
 
 Variáveis de instalação (compose):
 
@@ -230,9 +215,9 @@ O `hub.db` vive no volume nomeado `hub-db` (montado em `/data`, pré-criado com 
 não-root `app`, uid 1000, igual ao uid do nerton no host). Healthchecks por `urllib` (sem curl na
 imagem): `api` → `/api/health`, `rig` → `/estado`, `ponte` → `/status`.
 
-Limites: `ponte` e `rig` ficam no profile `hardware` porque exigem devices reais (seriais das ESPs e
-câmeras); sem esses devices o Docker não consegue criá-los. `up -d api` sobe só o núcleo; para
-validar a lógica inteira sem placa use os alvos da seção 7 (test-rig, test-trigger, trigger-simular).
+Limites: `ponte` e `rig` exigem devices reais (seriais das ESPs e câmeras). Sem eles os serviços
+sobem, mas ficam degradados (a ponte serve `/status` com serial fechada). Sem hardware, só o `api`
+é útil; para validar a lógica inteira sem placa use os alvos da seção 7.
 
 ## 11. Flash das duas ESPs
 

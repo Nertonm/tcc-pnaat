@@ -21,7 +21,7 @@ sem bancada) e não medido (sem instrumentação no rig).
 | 8 | Trilho DIN e peças impressas | ver seção 3 | estrutura do rig | conferida geometricamente, com ressalvas na seção 3 |
 | 9 | Encoder incremental KY-040 | candidato; não faz parte do implementado (`docs/DECISIONS.md:284,307-311`; `docs/arquitetura.md`, seção de expansões) | medição de movimento, na expansão | projetado (expansão) |
 | 10 | Esteira | teto derivado de cerca de 107 mm/s, com passo de 80 mm e três vistas; o valor de operação segue a decidir e não medido (`docs/DECISIONS.md:610-616`, `docs/pocs/03-sincronizacao-fisica/CALIBRACAO-DELAY.md:60-64`) | movimento do item; o sistema não controla a esteira | fora do núcleo |
-| 11 | Ferragens do trilho | furo passante Ø6,5 para M6, escareado Ø13×1,8, arruela Ø12, quatro furos Ø4,5 com rebaixo Ø9,0×5,0 (`cad-produto/02-impressao/base-trilho/README.md:12-19`) | fixação da base do trilho | medido |
+| 11 | Ferragens do trilho | furo passante Ø6,5 para M6, escareado Ø13×1,0, arruela Ø12, quatro furos Ø4,5 com rebaixo Ø9,0×5,0 (`cad-produto/02-impressao/base-trilho/README.md:12-19`) | fixação da base do trilho | medido |
 
 As peças impressas estão em `cad-produto/02-impressao/`. A base do trilho é a única com números de
 impressão publicados: um sólido, 241.237,2 mm³, 306,4 g, área de apoio de 11.952,0 mm² e envelope de
@@ -68,17 +68,11 @@ suposição (`docs/reference/ref-e18-d80nk-sensor.md:27,45-49`):
 Nos dois casos, conferir a tensão de saída em bancada antes de ligar. Terra comum entre sensor,
 ESP32 e host é obrigatório (`src-production/firmware/README.md:176`).
 
-O esquemático do trigger está publicado na raiz em `ESP32S3-Trigger.zip` (projeto Wokwi,
-documentado em `docs/reference/esquematico-trigger.md`; contribuição de Paulo Victor, commit `9fefd73`).
-Ele ilustra o condicionamento de nível do sinal (divisor de 2,2 kΩ na saída e 3,3 kΩ para terra) num
-ESP32-S3 DevKitC-1 com sensor PIR genérico, no GPIO de exemplo 5. Ele não é o esquemático da placa de
-produção: a placa de produção do trigger é o ESP32 com MicroPython (item 3 da lista de materiais), os
-pinos do firmware são GPIO27 (presença) e GPIO26 (saída de janela), e o PIR do simulador é high-active
-enquanto o E18-D80NK é active-low (LOW com objeto no alcance). O desenho serve de referência para o
-divisor; a montagem de produção segue a tabela de pinagem da seção 2 (terra comum; divisor somente se
-medir 5 V no sinal). URL do simulador: https://wokwi.com/projects/475343904586369025. O acionamento em
-operação é feito por comando de bancada. Falta medir, com o sensor real, os níveis de saída, o debounce,
-com alvo de 50 ms, e o cooldown, com alvo de 250 ms (`main.c:23-24`;
+O esquemático de interligação atualizado está em `docs/diagramas/interligacao-eletrica.mmd`. O
+projeto histórico `ESP32S3-Trigger.zip` usa um PIR genérico no Wokwi e **não** é a fonte normativa
+da pinagem; sua limitação está registrada em `docs/reference/esquematico-trigger.md`. O firmware
+declara GPIO27 e o modo elétrico. Falta medir, com o sensor real, os níveis de saída, o debounce, com
+alvo de 50 ms, e o cooldown, com alvo de 250 ms (`main.c:23-24`;
 `src-production/firmware/README.md:195-196`).
 
 A montagem óptica do sensor segue o princípio IR difuso do E18-D80NK: posição e angulação são validadas em bancada; difusor e dois LEDs RGB de 5 mm fazem parte da iluminação de bancada (`docs/requisitos/05-hardware-ml.md:23-31`).

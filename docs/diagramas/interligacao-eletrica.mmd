@@ -1,28 +1,33 @@
-%% Interligação do rig PNAAT: arquitetura adotada (montagem principal).
-%% A ligação direta E18 -> GPIO13 da ESP32-CAM existe no firmware e é declarada como
-%% alternativa, não como a montagem padrão. Níveis elétricos do sensor não medidos.
+%% Interligação do rig PNAAT: blocos e interfaces.
+%% ESTADO: interligação implementada no código. A ligação elétrica do E18 ainda exige que se meça
+%% sua saída antes de escolher entre ligação direta e condicionamento (ver docs/hardware.md § 2).
 flowchart LR
     subgraph bancada[Bancada de envase]
-        item([Garrafa PET no trilho]) --> sensor[Sensor fotoelétrico E18-D80NK<br/>5 V · saída NPN · active-low<br/>LOW com objeto no alcance]
+        item([Garrafa PET no trilho]) --> sensor[Sensor de presença<br/>E18-D80NK<br/>5 V · saída NPN]
         item --> esteira[Esteira<br/>~100 mm/s declarado<br/>FORA do núcleo: o sistema não controla]
     end
 
-    subgraph trigger[Trigger dedicado · ESP32 com MicroPython]
-        sensor -. "VCC 5V · GND comum · Sinal → GPIO27 (PULL_UP)<br/>divisor 5V→3V3 somente se medir 5 V no sinal<br/>NÍVEL ELÉTRICO NÃO MEDIDO" .-> trigger_fw[presence.py + esp/main.py<br/>debounce 20 ms · guarda 500 ms<br/>abre a janela por active-low]
-        trigger_fw --> ev["EV OPEN / EV CLOSE<br/>serial do trigger (USB-serial)"]
+    subgraph triggernode[Nó de trigger · ESP32 MicroPython]
+        cond{Saída livre medida}
+        sensor -->|preto · sinal NPN active-low| cond
+        cond -->|até 3,3 V: ligação direta| gpio27[GPIO27 · entrada com pull-up]
+        cond -->|próxima de 5 V: R1 2,2 kΩ série<br/>R2 3,3 kΩ ao GND| gpio27
+        gpio27 --> debounce[Debounce + guarda<br/>OPEN/CLOSE na UART USB]
+        gpio26[GPIO26 · saída opcional<br/>indicador da janela]
+        debounce --> gpio26
     end
 
-    subgraph borda[ESP32-CAM · borda]
-        ev -- "ponte lê a serial dedicada<br/>e envia CMD_TRIG" --> ponte[esp32cam_site.py<br/>ponte serial · dona da porta]
-        ponte --> irq[ISR mínima<br/>timestamp + fila FreeRTOS]
-        irq --> fototask[Task de captura<br/>1 foto por trigger]
+    subgraph borda[ESP32-CAM · nó de visão]
+        cmd[CMD_TRIG recebido pela UART] --> fototask[Task de captura<br/>1 foto por trigger]
         fototask --> cam[OV2640<br/>PWDN alto = standby<br/>XCLK parado entre fotos]
         cam --> enc[Enquadramento binário<br/>SOF A5 5A + CRC16 + CRC32]
-        sensor -. "ALTERNATIVA: SENSOR_GPIO = GPIO13<br/>direto na ESP32-CAM (TRIGGER_SOURCE_E18)<br/>não é a montagem padrão · não medida" .-> irq
     end
 
     subgraph host[Host de visão · Raspberry Pi 5 ou Linux x86-64]
-        enc -->|UART/USB, console e imagem no mesmo fio<br/>~191 ms por frame de 13 kB a 921600 bps| receptor[transport_bin.py<br/>dona única da porta serial]
+        debounce -->|UART/USB do trigger| ponte[esp32cam_site.py<br/>dona das duas seriais]
+        ponte -->|UART/USB da câmera| cmd
+        enc -->|UART/USB, console e imagem no mesmo fio<br/>~191 ms por frame de 13 kB a 921600 bps| ponte
+        ponte --> receptor[transport_bin.py]
         receptor --> itemcap[ItemCapturado<br/>lateral1 · lateral2 · topo]
         itemcap --> preparo[preparo_detector.py<br/>ROI + rotação do contrato]
         preparo --> modelo[classificador_yolo.py<br/>pacote verificado por SHA-256]
@@ -41,5 +46,5 @@ flowchart LR
 
     classDef naomedido fill:#fff3e0,stroke:#e65100,color:#111,stroke-dasharray:4 4
     classDef fora fill:#eceff1,stroke:#607d8b,color:#111
-    class sensor,trigger_fw,ev naomedido
+    class sensor,cond naomedido
     class esteira fora
