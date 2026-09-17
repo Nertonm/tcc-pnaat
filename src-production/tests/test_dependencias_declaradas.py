@@ -14,7 +14,7 @@ PYPROJECT = RAIZ / "pyproject.toml"
 #: modulo importado -> nome de distribuicao (o que aparece no pyproject)
 DISTRIBUICAO = {
     "PIL": "pillow",
-    "cv2": "opencv-python",
+    "cv2": "opencv-python-headless",
     "numpy": "numpy",
     "scipy": "scipy",
     "torch": "torch",
