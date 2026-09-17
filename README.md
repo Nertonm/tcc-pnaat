@@ -121,7 +121,7 @@ em `cad-produto/`.
 | GPU com `torch` e `ultralytics` | treino e inferência YOLO; não é necessária para API e consultas locais |
 
 `src-production/pyproject.toml` é a fonte das dependências. O runtime base declara `numpy` e
-`opencv-python`; os extras são `leitura` (Pillow e SciPy), `serial` (pyserial), `inferencia`
+`opencv-python-headless`; os extras são `leitura` (Pillow e SciPy), `serial` (pyserial), `inferencia`
 (torch, torchvision, ultralytics, scikit-learn e PyYAML) e `dev` (pytest, pytest-timeout, ruff e
 PyYAML). `anomalib` não é um extra declarado neste checkout. Se for necessário para um experimento,
 instale-o num ambiente separado e não o trate como pré-requisito do produto.
@@ -167,7 +167,26 @@ A saída esperada é `506 passed, 4 skipped` no produto, `17 passed` no firmware
 no lint. Os quatro skips são conhecidos: três exigem `scikit-learn`, do extra `inferencia`, e um exige
 o artefato `.npz` do classificador, que é dado e vive fora do git.
 
-### 5.4 Perfis de ambiente
+### 5.4 Execução conteinerizada
+
+Como alternativa ao ambiente virtual, a composição reproduz a API, o serviço do rig e a ponte em
+uma imagem Python 3.11. O perfil completo inclui a inferência e, por isso, o primeiro build pode ser
+demorado. Da raiz do clone:
+
+```bash
+docker compose -f docker/docker-compose.yml build
+export PNAAT_API_TOKEN='troque-este-token'
+docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml ps
+curl -H 'Authorization: Bearer troque-este-token' http://127.0.0.1:8080/api/health
+```
+
+Os serviços `rig` e `ponte` precisam das câmeras e das portas seriais reais; sem o hardware, use
+somente a API com `docker compose -f docker/docker-compose.yml up -d api`. Antes de expor a porta,
+defina um `PNAAT_API_TOKEN` próprio. Os devices, o diretório de séries e todas as variáveis estão
+documentados em `docker/docker-compose.yml` e em `docs/replicacao-ponta-a-ponta.md`.
+
+### 5.5 Perfis de ambiente
 
 O runtime cobre a demonstração e a operação. O perfil completo acrescenta o que só o treino e a
 detecção de anomalia usam.

@@ -186,8 +186,9 @@ e `.git` da imagem.
 
 ```bash
 docker compose -f docker/docker-compose.yml build   # imagem tcc-pnaat:local (torch/ultralytics: build pesado)
-docker compose -f docker/docker-compose.yml up -d   # api + rig + ponte
-curl http://127.0.0.1:8080/api/health               # 200 JSON; cria o schema do hub.db no primeiro /api/health
+export PNAAT_API_TOKEN='troque-este-token'
+docker compose -f docker/docker-compose.yml up -d
+curl -H 'Authorization: Bearer troque-este-token' http://127.0.0.1:8080/api/health
 docker compose -f docker/docker-compose.yml ps
 docker compose -f docker/docker-compose.yml logs -f api
 ```
@@ -207,7 +208,7 @@ Variáveis de instalação (compose):
 | `PNAAT_SERIES_DIR_HOST` | rig | `./series` (cria `docker/series/`) | bind do diretório de séries do host em `/series` |
 | `PONTE_SERIAL_CAM` | ponte | `/dev/ttyUSB0` | device da ESP32-CAM |
 | `PONTE_SERIAL_TRIGGER` | ponte | `/dev/ttyUSB1` | device do trigger-node |
-| `PNAAT_API_TOKEN` | api | `pnaat-local` | Bearer token; a API recusa bind fora do loopback sem token (api.py:1373) |
+| `PNAAT_API_TOKEN` | api | obrigatório, sem padrão | Bearer token; a API recusa bind fora do loopback sem token (api.py:1373) |
 
 O `hub.db` vive no volume nomeado `hub-db` (montado em `/data`, pré-criado com o dono do usuário
 não-root `app`, uid 1000, igual ao uid do nerton no host). Healthchecks por `urllib` (sem curl na
