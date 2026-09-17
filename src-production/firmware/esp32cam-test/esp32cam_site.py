@@ -12,7 +12,7 @@ Oracolo entre implementacoes: o firmware anuncia `FRAME_INFO ... crc32=XXXXXXXX`
 em ASCII e o host recalcula o CRC-32 do frame montado com zlib; divergencia
 indica erro de implementacao de CRC, nao corrupcao de enlace.
 
-Uso: python3 esp32cam_site.py [--porta 8091] [--host 0.0.0.0] [--serial /dev/ttyUSB0]
+Uso: python3 esp32cam_site.py [--porta 8094] [--host 0.0.0.0] [--serial /dev/ttyUSB0]
 """
 
 from __future__ import annotations
@@ -1336,7 +1336,7 @@ def main() -> None:
     global baud_atual
     ap = argparse.ArgumentParser()
     # 8091 passou a ser do container label-studio (docker-proxy)
-    ap.add_argument("--porta", type=int, default=8092)
+    ap.add_argument("--porta", type=int, default=8094)
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--serial", default="/dev/ttyUSB0")
     ap.add_argument("--serial-trigger", default="/dev/ttyUSB1")

@@ -1287,7 +1287,7 @@ deste pipeline E o borrao de movimento — o mesmo ganho nas duas frentes.
 
 ## D-54: A entrega final tem três árvores, um manual e o hardware documentado
 
-Estado: adotado na preparação da entrega final (18/09/2026).
+Estado: adotado na preparação da entrega final (16/09/2026).
 
 `src-production/` é o produto: API, pipeline, decisão, registro, site, firmware e a cadeia de treino.
 `workspace/` fica como história congelada das PoCs, e nada do produto importa de lá.
@@ -1302,7 +1302,7 @@ Entraram nesta rodada, como peças da entrega:
 | `docs/hardware.md` | BOM, pinagem, montagem, o que foi medido e o que não foi |
 | `docs/diagramas/interligacao-eletrica.mmd` | blocos e interfaces do sistema |
 
-Evidência medida nesta máquina, em 18/09/2026: `make verificar` roda 506 testes do produto e 17 do
+Evidência medida nesta máquina, em 16/09/2026: `make verificar` roda 506 testes do produto e 17 do
 firmware; `make -C workspace test` roda 112; `make lint` passa nas duas árvores; `make doctor` dá
 7 FAIL e 2 WARN no perfil de runtime, sendo dois de `anomalib` e cinco de diretórios de dados
 externos, tudo declarado no `README.md` §5.4.
@@ -1382,7 +1382,7 @@ enquanto os documentos do grupo são secos e diretos. A comparação medida: `CO
 negrito mecânico, listas com rótulo em negrito, caixa alta de ênfase e construção do tipo "não é X, e
 sim Y".
 
-Antes e depois, medido em 18/09/2026:
+Antes e depois, medido em 16/09/2026:
 
 | documento | travessão | negrito |
 |---|---|---|

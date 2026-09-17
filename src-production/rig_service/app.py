@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Site da garrafa: câmera do Pi -> veredito (OK / qual defeito).
+"""Servico de rig: captura das tres cameras, serie e manifest.
 
-Uma unica dona da camera (rpicam-vid em MJPEG). O navegador ve o quadro ao vivo e os botoes
-capturam o fundo, a referencia OK e analisam a garrafa. Sem Flask, sem OpenCV, sem instalacao.
+Expoe as rotas consumidas pelo gateway (`api.py`): /estado, /dataset-series, /historico,
+/teste-trigger-3-cameras, /configurar-delay, /capturar-3-cameras e /series-3-cameras/<serie>.
+Grava a serie em PNAAT_SERIES_DIR com manifest.json e os JPEGs das cameras (csi, usb, espcam).
+A ponte serial e chamada por PNAAT_PONTE.
 
-    python3 app.py [--porta 8090] [--largura 1296] [--altura 972]
+    python3 app.py [--porta 8090]
 """
 from __future__ import annotations
 

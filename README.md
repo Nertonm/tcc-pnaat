@@ -144,12 +144,12 @@ git clone https://github.com/Nertonm/tcc-pnaat.git && cd tcc-pnaat
 ### 5.2 Ambiente Python
 
 ```bash
-python3.11 -m venv .venv
+python3.11 -m venv .venv            # ou: uv venv --python 3.11 .venv
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -e "src-production[dev,leitura,serial]"
 ```
 
-O venv é único, na raiz do clone. O `Makefile` de `src-production/` encontra `../.venv/bin/python`.
+O venv é único, na raiz do clone (Python >= 3.11 e < 3.13; instale `python3.11`/`python3.12` ou use `uv`). O `Makefile` de `src-production/` encontra `../.venv/bin/python`.
 Para treino e inferência YOLO, acrescente o extra de inferência:
 
 ```bash
