@@ -2,7 +2,7 @@
 
 ## Escopo do projeto
 
-Trabalho de conclusão sobre inspeção multi-view e rastreabilidade em linha de envase. A documentação descreve um sistema planejado; a implementação evolui por provas de conceito isoladas.
+Trabalho de conclusão sobre inspeção multi-view e rastreabilidade em linha de envase. O produto (`src-production/`) é a entrega: firmware de trigger e de visão, ponte serial, serviço de rig, API, registro SQLite, dashboard, cadeia de treino e a documentação de replicação. As PoCs da geração anterior foram removidas deste checkout; os READMEs em `docs/pocs/` são histórico.
 
 ## Convenções de commit
 
