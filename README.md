@@ -34,7 +34,7 @@ com múltiplos nós são expansão (`docs/escopo.md`).
 
 | Artefato | Onde está | Estado |
 |---|---|---|
-| Código do produto (API, pipeline, decisão, registro, site) | `src-production/` | 510 testes passam, mais 17 do firmware |
+| Código do produto (API, pipeline, decisão, registro, site) | `src-production/` | suíte automatizada do produto e do firmware |
 | PoCs da geração anterior | fontes removidas deste checkout | os READMEs em `docs/pocs/` são histórico, não comandos executáveis |
 | Cadeia de treino (dataset, treino, avaliação, calibração, pacote) | `src-production/treino/` | pronta; rodar exige GPU e o acervo externo |
 | Modelos CAD do rig | `cad-produto/` | montagem conferida geometricamente, com ressalvas na seção 3 |
@@ -105,7 +105,9 @@ O mapa de câmeras para vistas é: `lateral1` vem da ESP32-CAM, `lateral2` da we
 câmera CSI apontada para baixo (`cad-produto/00-produto/composicao-esteira/contract.json`). Trocar
 esse mapa muda a decisão do item, por isso ele é declarado e não inferido.
 
-O esquemático elétrico do trigger está em `ESP32S3-Trigger.zip` na raiz (Wokwi: ESP32-S3 com divisor 2,2 kΩ/3,3 kΩ e GPIO27).
+O esquemático normativo está em `docs/diagramas/interligacao-eletrica.mmd`. O
+`ESP32S3-Trigger.zip` da raiz preserva a referência histórica Wokwi, mas usa um PIR genérico e não
+fecha a ligação ao GPIO27; não deve ser usado sozinho para montar a bancada.
 O firmware declara o pino e o modo elétrico esperado, e o documento de hardware marca a ligação como
 não validada até a medição de bancada.
 
@@ -145,7 +147,8 @@ em `cad-produto/`.
    deve produzir exatamente um par `EV OPEN`/`EV CLOSE`.
 
 O esquemático atualizado é `docs/diagramas/interligacao-eletrica.mmd`. O ZIP Wokwi preservado na
-raiz é histórico, usa um PIR genérico e não é a fonte normativa da pinagem.
+raiz é histórico, usa um PIR genérico e não é a fonte normativa da pinagem. Fotografias, tensão,
+distância e 10 passagens com garrafa vazia e cheia devem ser registradas na validação da bancada.
 
 ### 3.2 Sequência de montagem mecânica
 
@@ -197,12 +200,13 @@ git clone https://github.com/Nertonm/tcc-pnaat.git && cd tcc-pnaat
 ### 5.2 Ambiente Python
 
 ```bash
-python3.11 -m venv .venv
+python3.11 -m venv .venv            # ou: uv venv --seed --python 3.11 .venv
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -e "src-production[dev,leitura,serial]"
 ```
 
-O venv é único, na raiz do clone. O `Makefile` de `src-production/` encontra `../.venv/bin/python`.
+O venv é único, na raiz do clone (Python >= 3.11 e < 3.13; instale `python3.11`/`python3.12` ou use
+`uv`). O `Makefile` de `src-production/` encontra `../.venv/bin/python`.
 Para treino e inferência YOLO, acrescente o extra de inferência:
 
 ```bash
@@ -234,9 +238,10 @@ make -C src-production verificar     # suíte do produto e do firmware
 make -C src-production lint          # ruff com a configuração do projeto
 ```
 
-A saída esperada é `510 passed, 4 skipped` no produto, `17 passed` no firmware e `All checks passed!`
-no lint. Os quatro skips são conhecidos: três exigem `scikit-learn`, do extra `inferencia`, e um exige
-o artefato `.npz` do classificador, que é dado e vive fora do git.
+A saída esperada não contém falhas, termina com `produto e firmware verificados` e o lint imprime
+`All checks passed!`. Skips podem aparecer quando não estão instalados `scikit-learn`, do extra
+`inferencia`, ou o artefato `.npz` do classificador, que é dado e vive fora do git. Não se fixa aqui
+uma contagem: adicionar um teste correto não deve tornar o manual falso.
 
 ### 5.5 Execução conteinerizada
 
@@ -255,6 +260,12 @@ curl -H "Authorization: Bearer $PNAAT_API_TOKEN" http://127.0.0.1:8080/api/healt
 Os serviços `rig` e `ponte` precisam das câmeras e das portas seriais reais; sem o hardware, use
 somente a API (`up -d api`); `rig` e `ponte` ficam no profile `hardware`. Antes de expor a porta,
 defina um `PNAAT_API_TOKEN` próprio. Os devices, o diretório de séries e todas as variáveis estão
+Com hardware (câmeras e portas seriais reais), a pilha completa sobe pelo profile `hardware`:
+
+```bash
+docker compose --profile hardware -f docker/docker-compose.yml up -d
+```
+
 documentados em `docker/docker-compose.yml` e em `docs/replicacao-ponta-a-ponta.md`.
 
 ### 5.6 Perfis de ambiente
@@ -382,7 +393,7 @@ O dataset atual basta para demonstração de conceito não para afirmar desempen
 
 | Verificação | Comando | O que ela cobre |
 |---|---|---|
-| Produto, 510 testes, mais 17 do firmware | `make -C src-production verificar` | decisão, registro, API, cadeia, pacote, documentação e transporte |
+| Produto e firmware | `make -C src-production verificar` | decisão, registro, API, cadeia, pacote, documentação e transporte; termina sem falhas |
 | Lint | `make -C src-production lint` | zero achado com a configuração do `pyproject.toml` |
 | Contrato do detector | `treino/gera_contrato_preproc.py --conferir` | ROI, limiares, classes, imgsz, fingerprint e SHA-256 do peso, pelo validador do consumidor |
 | Pacote do detector | `treino/pacote_entrega.py --pacote <dir>` | read-back fechado de um pacote já gravado |
@@ -406,7 +417,7 @@ tcc-pnaat/
 │   ├── treino/            Cadeia de treino, do dataset ao pacote
 │   ├── firmware/          Firmware ESP32-CAM e receptor do transporte binário
 │   ├── site/              Frontend estático, servido pela API
-│   └── tests/             510 testes do produto
+│   └── tests/             suíte automatizada do produto
 ├── cad-produto/           CAD do rig: montagem, 21 peças, peças de impressão, créditos e SHA256SUMS
 ├── docs/                  Guia de operação, arquitetura, hardware, requisitos, decisões e referências
 ├── dataset/               Amostras de método, 181 arquivos

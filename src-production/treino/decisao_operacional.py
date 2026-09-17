@@ -32,7 +32,8 @@ def main() -> int:
     ap.add_argument('--imgsz', type=int, default=480)
     ap.add_argument('--conf-baixa', type=float, default=0.05)
     ap.add_argument('--limiares', default='normal=0.30,tampa_ausente=0.15,defeito_tampa=0.30,deformidade=0.60',
-                    help='limiar por classe, escolhido em VALIDAÇÃO')
+                    help='limiar por classe; o default e historico - a fonte que vale e o contrato '
+                         '(contrato/preprocessamento.json, "limiares_por_imgsz")')
     ap.add_argument('--saida', default=None)
     a = ap.parse_args()
 

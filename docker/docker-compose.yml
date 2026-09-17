@@ -6,10 +6,9 @@
 #   docker compose -f docker/docker-compose.yml up -d
 #   curl http://127.0.0.1:8080/api/health
 #
-# Sem hardware: `docker compose -f docker/docker-compose.yml up -d api` sobe só o núcleo.
-# Com hardware: `docker compose --profile hardware -f docker/docker-compose.yml up -d` sobe
-# api + rig + ponte. rig e ponte ficam no profile `hardware` porque exigem devices reais
-# (diretório de séries, câmeras, /dev/ttyUSB*).
+# Sem hardware: `docker compose -f docker/docker-compose.yml up -d api` sobe só o núcleo. Com hardware:
+# `docker compose --profile hardware -f docker/docker-compose.yml up -d`. rig e ponte exigem devices
+# reais (diretório de séries, câmeras, /dev/ttyUSB*); sem eles sobem degradados.
 #
 # Variáveis de instalação:
 #   PNAAT_SERIES_DIR_HOST : caminho no host do diretório de séries do rig (default ./series,

@@ -17,6 +17,8 @@ Cada ficha deve responder:
 ## Arquivos
 
 - `01-funcionais.md`: RF-01 a RF-30, incluindo RF-01.1.
+Os sub-identificadores `RF-01.2`, `RF-04.1` e `RF-05.1` existem em `01-funcionais.md`
+e seguem o mesmo catalogo.
 - `02-nao-funcionais.md`: RNF-01 a RNF-21.
 - `03-dados-interfaces.md`: dados, contratos MQTT, interfaces e rastreabilidade.
 - `04-atuacao-seguranca.md`: atuação, controlabilidade, observabilidade e segurança operacional.

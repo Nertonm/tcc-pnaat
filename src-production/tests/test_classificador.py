@@ -384,7 +384,7 @@ def test_limiar_roteador_entra_como_evidencia_provisoria():
     )
     assert (
         probabilidade.provisorio() is False
-        and probabilidade.fonte == "docs/DECISIONS.md:509"
+        and probabilidade.fonte == "docs/DECISIONS.md:452"
     )
     assert probabilidade.valor == pytest.approx(0.90)
 
@@ -404,7 +404,7 @@ def test_referencia_declarada_e_a_do_documento():
     assert REFERENCIA_MEDIDA.lb95 == pytest.approx(0.882, abs=5e-4)
     assert REFERENCIA_MEDIDA.maioria == pytest.approx(0.455, abs=5e-4)
     assert REFERENCIA_MEDIDA.ganho == pytest.approx(0.523, abs=5e-4)
-    assert REFERENCIA_MEDIDA.fonte == "docs/DECISIONS.md:509"
+    assert REFERENCIA_MEDIDA.fonte == "docs/DECISIONS.md:452"
     assert sum(d.n for d in REFERENCIA_MEDIDA.por_classe) == 44
     assert sum(d.acertos for d in REFERENCIA_MEDIDA.por_classe) == 43
 

@@ -9,7 +9,11 @@ Regras que este teste faz valer (sao regra do projeto, nao preferencia):
 from __future__ import annotations
 
 import re
+import os
 import subprocess
+import sys
+
+import pytest
 from pathlib import Path
 
 APP = Path(__file__).resolve().parents[1]
@@ -26,7 +30,7 @@ def test_frente_corpo_esta_na_arvore():
 
 def test_frente_corpo_compila():
     for nome in CORPO + ['auditoria_dataset.py']:
-        r = subprocess.run(['python3', '-m', 'py_compile', str(TREINO / nome)],
+        r = subprocess.run([sys.executable, '-m', 'py_compile', str(TREINO / nome)],
                            capture_output=True, text=True)
         assert r.returncode == 0, f'{nome}: {r.stderr}'
 
@@ -34,7 +38,7 @@ def test_frente_corpo_compila():
 def test_auditoria_de_dataset_existe_e_roda():
     alvo = TREINO / 'auditoria_dataset.py'
     assert alvo.is_file()
-    r = subprocess.run(['python3', str(alvo), '--help'], capture_output=True, text=True)
+    r = subprocess.run([sys.executable, str(alvo), '--help'], capture_output=True, text=True)
     assert r.returncode == 0 and '--dataset' in r.stdout
 
 
@@ -60,9 +64,22 @@ def test_guardiao_de_recursos_existe_e_e_shell_valido():
         assert marca in texto, marca
 
 
+#: alvo -> script que a receita do Makefile precisa citar
+ESPERADO = {
+    'auditar-dataset': 'auditoria_dataset.py',
+    'treino-corpo-dataset': 'corpo',
+    'treino-corpo-run': 'corpo',
+    'treino-run-seguro': 'guardiao',
+}
+
+
+@pytest.mark.skipif(
+    not (APP.parent / '.venv/bin/python').exists(),
+    reason='exige a .venv da raiz (make install) para expandir os alvos',
+)
 def test_alvos_do_makefile_para_as_ferramentas():
     for alvo in ('auditar-dataset', 'treino-corpo-dataset', 'treino-corpo-run', 'treino-run-seguro'):
         r = subprocess.run(['make', '-n', alvo], cwd=str(APP), capture_output=True, text=True,
-                           env={'PATH': '/usr/bin:/bin', 'PNAAT_MODELOS': '/tmp/modelos'})
+                           env={**os.environ, 'PNAAT_MODELOS': str(APP.parent / 'modelos-probe')})
         assert r.returncode == 0, f'{alvo}: {r.stderr}'
-        assert 'auditoria_dataset.py' in r.stdout or 'corpo' in r.stdout or 'guardiao' in r.stdout
+        assert ESPERADO[alvo] in r.stdout, f'{alvo}: receita nao cita {ESPERADO[alvo]!r}'

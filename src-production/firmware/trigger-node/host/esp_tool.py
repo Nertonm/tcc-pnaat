@@ -18,15 +18,17 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import os
 import sys
 import time
 from pathlib import Path
 
 import serial
 
-PORTA = "/dev/ttyUSB0"
+PORTA = os.environ.get("PNAAT_PORTA", "/dev/ttyUSB0")
 CHUNK = 512
-PAUSA = Path.home() / "poc01" / "PAUSA"
+#: mesmo diretorio que o supervisor usa (poc01_supervisor.py) para soltar a porta
+PAUSA = Path(os.environ.get("PNAAT_DIR", str(Path.home() / "poc01"))) / "PAUSA"
 
 
 def pausar_supervisor() -> None:

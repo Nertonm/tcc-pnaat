@@ -1,8 +1,8 @@
 """Classificador de vista que REPRODUZ o artefato medido; nao treina, nao inventa vintage.
 
 Artefato: `dataset/modelo-inferencia.npz` + `.json`. A receita abaixo foi portada de
-`dataset/TRABALHO/compara_extratores.py` (produtor) e `dataset/TRABALHO/servico_inferencia3.py`
-(consumidor); os dois reproduzem os mesmos numeros:
+`src-production/treino/compara_extratores.py` (produtor versionado); o consumidor original
+(`servico_inferencia3.py`) nao e versionado. Os numeros conferem entre produtor e este modulo:
 
     BGR -> RGB -> Resize(size) -> ToTensor -> Normalize(ImageNet)     [contrato de treino]
     embedding do extrator congelado (declarado em `config_extrator` no json)

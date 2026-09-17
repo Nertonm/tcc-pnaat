@@ -1,8 +1,10 @@
 """Mapa camera -> vista do rig, DECLARADO (nao inferido).
 
 O rig do PNAAT grava uma foto por CAMERA (os papeis sao `csi`, `usb` e `espcam`; o nome real de cada
-camera e dado da instalacao e fica no `mapeamento-rig.json`), e o registro do hub
-fala por VISTA (`topo`, `lateral1`, `lateral2`). Nada nos dois lados liga os dois nomes: o `roi.json`
+camera e dado da instalacao e fica no `mapeamento-rig.json`; os manifests e o site do rig de bancada
+ainda carregam os nomes de arquivo daquela instalacao, que sao dado, nao regra), e o registro do hub
+fala por VISTA (`topo`, `lateral1`, `lateral2`). Nada nos dois lados liga os dois nomes: o contrato
+`treino/contrato/roi-por-camera.json`
 lista cameras, o `dominio.py` lista vistas, e nenhum arquivo diz qual camera e qual vista. Sem esta
 declaracao, qualquer associacao serie->item e adivinhacao de quem le; e como o topo NUNCA decide
 (D-23/D-30), trocar a ordem muda a decisao do item.

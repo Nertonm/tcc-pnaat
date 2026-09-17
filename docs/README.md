@@ -17,12 +17,13 @@ O recorte atual é: Cenário 1, inspeção de envase. O núcleo propõe observa�
 | Catálogo RF-01 a RF-30 e RNF-01 a RNF-21 | `requisitos.md` |
 | Fichas detalhadas por domínio | `requisitos/README.md` |
 | Dados, schema do registro, taxonomia e consultas | `dados-telemetria.md` |
+| Estado do dashboard e das rotas de escrita | `docs/dashboard-site.md` |
 | Decisões técnicas, alternativas e critério de fechamento | `DECISIONS.md` |
 | Histórico e protocolo das provas de conceito | `pocs/README.md` (fontes de código removidas deste checkout) |
 | Correspondência da numeração de PoCs anterior | `pocs/MAPA.md` (histórico) |
 | Referências com grau de verificação | `REFERENCIAS.md` |
 | Hardware: BOM, pinagem, montagem e limites medidos | `hardware.md` |
-| Diagramas de interligação e do núcleo implementado | `diagramas/` |
+| Diagrama de interligação elétrica do núcleo implementado | `diagramas/` |
 | Como o dataset foi anotado, com o Label Studio (e o que é dado de instalação) | `reference/uso-do-label-studio.md` |
 | Rotulagem assistida por modelo generativo: só criação de dataset, não é runtime | `reference/classificar-gemini.md` |
 | Esquemático do trigger (Wokwi ESP32-S3 + sensor) | `reference/esquematico-trigger.md`; zip na raiz `ESP32S3-Trigger.zip` |

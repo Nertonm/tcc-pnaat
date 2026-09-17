@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """Avaliacao OOD do detector contra o MVTec AD (benchmark, fora do dominio PET).
 
-Contexto (decisao ja registrada no repositorio):
-  docs/reference/datasets-candidatos-20260913.md: "MVTec AD bottle / LOCO juice_bottle
-    -> benchmark, nao classe; anomalia generica != estado de tampa; MVTec nao garante PET"
-  docs/design/fluxo-treino-consolidado-20260914.md: 6.612 fora do split = blocos
-    benchmark-mvtec, "fora do treino, declarados como estresse".
+Contexto (analises anteriores, fora deste repositorio): MVTec AD bottle e LOCO juice_bottle entram
+como benchmark, nunca como classe - anomalia generica != estado de tampa, e MVTec nao garante PET.
+As referencias publicas de dataset estao em `docs/reference/datasets-externos-roboflow.md`.
 
 Este modulo NAO anota nada no Label Studio. Ele mede o modelo treinado contra a
 verdade do MVTec, offline:

@@ -175,10 +175,11 @@ Reações fail-closed:
 
 ## Trigger e pinos
 
-O nó de visão (ESP32-CAM) usa o E18-D80NK no GPIO13 active-low, borda de descida, como comando de
-captura interno. O nó de trigger dedicado (MicroPython) usa `PRESENCE_PIN = 27` (fiação confirmada
-na bancada; o docstring sempre disse P27) e `CAPTURE_OUT_PIN = 26`, com divisor de nível na saída
-5V do sensor antes do pino 3,3V.
+A ESP32-CAM oferece GPIO13 active-low como fonte **local alternativa**, mas esse pino fica sem fio na
+topologia adotada. O E18-D80NK liga ao nó de trigger dedicado (MicroPython), que usa
+`PRESENCE_PIN = 27` e `CAPTURE_OUT_PIN = 26`; o evento segue pela serial USB até a ponte, que envia
+`CMD_TRIG` à câmera. Só use divisor de nível se a saída livre do sensor for medida próxima de 5 V;
+uma saída open-collector pura usa o pull-up de 3,3 V.
 
 O sensor E18-D80NK é saída digital aberta (NPN): LOW = objeto dentro do alcance. Alimentação 5V;
 verifique a tensão real na saída antes de ligar direto ao GPIO. GND comum entre sensor, ESP32 e host
@@ -224,11 +225,11 @@ simulador) e `tests/test_trigger.py`.
 
 ```bash
 make -C src-production test-trigger       # lógica pura (5 testes)
-make -C src-production trigger-simular    # simulador sem hardware, mesmos eventos do firmware
+make -C src-production trigger-simular    # simulador do debounce básico, sem hardware
 PYTHONPATH=src-production/firmware/trigger-node .venv/bin/python \
   src-production/firmware/trigger-node/host/poc01_teste.py --passagens 10 --espera 6 --separacao 3
 ```
 
-Pinos confirmados na bancada no `esp/main.py`: `PRESENCE_PIN = 27`, `CAPTURE_OUT_PIN = 26`. A fiação
-detalhada está em `trigger-node/esp/README.md`. A divergência entre a versão GPIO33 das cópias
-antigas e a GPIO27 do canônico foi resolvida na bancada: fica registrada GPIO27.
+Pinos adotados no `esp/main.py`: `PRESENCE_PIN = 27`, `CAPTURE_OUT_PIN = 26`. A montagem e a medição
+obrigatória estão em `trigger-node/esp/README.md`. GPIO27 é a fonte normativa do código atual; isso
+não equivale a afirmar que níveis e condicionamento do sensor físico já foram validados.

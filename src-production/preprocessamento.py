@@ -1,6 +1,6 @@
 """Pre-processamento deterministico; PADRAO DO PROJETO (portado do PoC-08).
 
-Fonte canonica: a PoC-08 portada (`preproc.py`); a versao original permanece no historico do projeto. O padrao do projeto exige
+Fonte canonica: a PoC-08 (`docs/pocs/poc08_preproc/README.md`); a versao portada e este modulo. O padrao do projeto exige
 que o MESMO pipeline rode no treino e na inferencia, com a versao registrada no manifesto; por
 isso a versao vive aqui e vai em todo sidecar.
 

@@ -50,6 +50,10 @@ def test_realocacao_e_ambiente(tmp_path, monkeypatch):
         load_helper(path)
 
 
+@pytest.mark.skipif(
+    not (REPO / '.venv/bin/python').exists(),
+    reason='exige a .venv da raiz (make install) para expandir o alvo treino-run',
+)
 def test_make_caminhos_e_parametros():
     env = {k: v for k, v in os.environ.items() if k not in ('PY', 'PNAAT_MODELOS', 'PNAAT_DADOS')}
     p = subprocess.run(['make', '-n', 'treino-run'], cwd=APP, env=env, text=True, capture_output=True)

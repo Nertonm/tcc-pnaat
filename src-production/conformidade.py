@@ -1,8 +1,8 @@
 """Conformidade por dominio: a regra da D-04 (+ emenda) e da D-29, em um lugar so.
 
 Nome: as decisoes D-04 e D-29 chamam este passo de "fusao por dominios", mas o lexico corrente do
-repo para o comportamento e "regra deterministica" (README.md:5) e "combinacao das decisoes"
-(D-05:90); e "fusao" carrega a conotacao de votacao que a D-04/D-30 rejeitam. Este modulo usa o
+repo para o comportamento e "regra deterministica" (`docs/pocs/README.md:10`) e "combinacao das
+decisoes" (D-05:83); e "fusao" carrega a conotacao de votacao que a D-04/D-30 rejeitam. Este modulo usa o
 vocabulario de qualidade: item conforme, nao conforme ou inconclusivo. Divergencia de vocabulario
 declarada; alinhar o texto das decisoes e decisao do usuario, nao minha.
 

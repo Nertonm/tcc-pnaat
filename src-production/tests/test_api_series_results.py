@@ -47,11 +47,7 @@ class SeriesTest(unittest.TestCase):
             "modelo_sha256": sha(self.model / "v9b-lateral.pt"),
             "veredito": {"veredito": "inconclusivo"},
         }
-        api_path = (
-            ROOT / "live/api.py"
-            if (ROOT / "live/api.py").is_file()
-            else ROOT.parent / "api.py"
-        )
+        api_path = ROOT.parent / "api.py"
         text = api_path.read_text()
         tree = ast.parse(text)
         funcs = [

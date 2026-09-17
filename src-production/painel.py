@@ -6,10 +6,8 @@ Regra da fonte que este modulo faz valer: `ok`, `defeito`, `inconclusivo` e `err
 estados DIFERENTES, e **inconclusivo nunca conta como aprovado**. `aprovados()` existe separado de
 `contagem_por_estado()` justamente para que somar "nao defeito" nao passe por aprovacao.
 
-Duas consultas dependem de dado que o registro ainda nao produz, e isso esta dito no proprio metodo
+Uma consulta depende de dado que o registro ainda nao produz, e isso esta dito no proprio metodo
 em vez de virar numero inventado:
-  * gatilho por fonte (disparo falso / perda de deteccao); o schema guarda `fonte_trigger`, mas nao
-    guarda evento de gatilho sem item, entao falso disparo nao e observavel hoje;
   * saturacao por configuracao de iluminacao; a coluna existe por vista; a configuracao de luz nao.
 """
 

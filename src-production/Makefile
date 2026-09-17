@@ -126,7 +126,7 @@ pacote: checa-modelos
 	$(PY) $(TREINO)/pacote_entrega.py --peso "$(PESO)" \
 	  --contrato "$(CONTRATO)/preprocessamento.json" \
 	  --metadados-treino "$(PNAAT_MODELOS)/$(TAG)-$(VISTA)-detector-roi/model-meta.json" \
-	  --saida "$(PACOTE)"
+	  --saida "$(PACOTE)" $(if $(APLICAR),--apply,)
 
 exige-pacote:
 	@faltando=""; \

@@ -40,10 +40,11 @@ Frente CORPO (modelo separado): `monta_corpo_detector.py`, `monta_corpo.py`, `tr
 
 ## Produtor do artefato `.npz` (receita medida, D-37)
 
-`compara_extratores.py` monta o conjunto canonico (`carrega()`), compara extratores e escreve o
-artefato pelo exportador `exporta_modelo.py` (`dataset/modelo-inferencia.npz` + `.json`).
-O canario da cadeia (`../canario_modelo_artefato.py`) **reusa** esse `carrega()` de proposito: se cada
-lado montasse a sua lista, a comparacao nao provaria nada sobre o port.
+`compara_extratores.py` monta o conjunto canonico (`carrega()`), compara extratores e **grava o artefato
+ele mesmo** (`np.savez` em `main()`: `dataset/modelo-inferencia.npz` + `.json`). O canario da cadeia
+(`../canario_modelo_artefato.py`) **reusa** esse `carrega()` de proposito: se cada lado montasse a sua
+lista, a comparacao nao provaria nada sobre o port. (`exporta_modelo.py` tem um `carrega()` proprio,
+legado da primeira versao; nao participa desta receita.)
 
 Os pacotes já publicados estão em https://huggingface.co/Nerton/pnaat-modelos, com `SHA256SUMS` por pacote: baixar de lá dispensa
 o treino para consumir o detector.
@@ -54,9 +55,12 @@ o treino para consumir o detector.
 |---|---|---|
 | `PNAAT_MODELOS` | pesos, runs, datasets derivados | irmao do diretorio pai do clone |
 | `PNAAT_DADOS` | dados fora do repo (`dataset/`, `det_runs/`, `modelos/`) | pai do clone |
+| `dataset/split.csv`, `dataset/MANIFEST.csv`, `dataset/normalizado/` | insumos da receita medida do artefato (D-37) | dado de instalação, fora do clone |
+| instalação do Label Studio (banco, `credenciais.env`, porta e raiz de mídia) | export de anotações (`monta_v1_detector.py`, `exporta_anotacoes.py`, `fingerprint_ls.py`) | dado de instalação |
 
 Resolvidos por `caminhos.py` (ancestral que tem `docs/` e `dataset/`, sem ancestral fixo), e
-exportados pelo `Makefile` da arvore. Nenhum script carrega nome de usuario.
+exportados pelo `Makefile` da arvore. Nenhum script carrega nome de usuario, exceto o `chown` do export
+do Label Studio (`exporta_anotacoes.py`), que roda na maquina do rotulador.
 
 ## Como invocar
 
@@ -64,10 +68,14 @@ exportados pelo `Makefile` da arvore. Nenhum script carrega nome de usuario.
 cd src-production
 make treino-dataset TAG=v10          # monta o dataset
 make treino-run     TAG=v10 EPOCHS=150
-make treino-avalia  TAG=v10
+make treino-avalia  TAG=v10          # exige `oversample_dominio.py` rodado antes
 make treino-kfold   TAG=v10 K=5
-make pacote         TAG=v10 PACOTE=<dir>
+make pacote         TAG=v10 PACOTE=<dir> APLICAR=1     # sem APLICAR=1 o alvo e dry-run
 ```
+
+Passos 4 (calibracao do limiar na validacao) e 5 (evidencia do candidato) sao chamada direta, fora do
+`Makefile`: `src-production/treino/calibra_limiar_val.py` e `src-production/treino/evidencia_candidato.py`
+(cada um com `--help`).
 
 Chamada direta de um modulo:
 

@@ -6,6 +6,7 @@ Cada funcao recebe o caminho de UMA imagem e devolve:
 
 Configuracao por ambiente (nada de caminho fixo no codigo):
   PNAAT_PESOS        pesos do modelo (default: v0-lateral-detector best.pt)
+  PNAAT_MODELOS_DIR  raiz do acervo de modelos (default: ~/pnaat-modelos)
   PNAAT_CONF         confianca minima (default 0.05; mesma do relatorio de baseline)
   PNAAT_IMGSZ        tamanho de inferencia (default 320; igual ao treino)
   PNAAT_CLASSE_BOA   nome da classe considerada "sem defeito" (default normal)

@@ -16,14 +16,14 @@ Instalar como main.py faz o firmware iniciar sozinho a cada reset/boot.
 from machine import Pin
 import time
 
-PRESENCE_PIN = 27          # fiação confirmada na bancada (o docstring sempre disse P27)
+PRESENCE_PIN = 27          # pino normativo; validar tensão/condicionamento no sensor físico
 PINOS_CANDIDATOS = (33, 32, 25, 14, 13, 4)   # entrada com pull-up e livres na placa;
                                              # P27 fica FORA: e o proprio pino do sensor
                                              # (reportado em nivel=) e incluí-lo gerava
                                              # evento falso de "descoberta de fiacao"
 CAPTURE_OUT_PIN = 26
 DEBOUNCE_MS = 20
-STABLE_READS = 5          # leituras LOW para abrir (5 x 20 ms = 100 ms) (5 x 20 ms = 100 ms) (5 x 20 ms = 100 ms)
+STABLE_READS = 5          # leituras LOW para abrir (5 x 20 ms = 100 ms)
 MISS_READS = 5            # leituras HIGH para fechar
 # CAPTURE_OUT sobe no OPEN e desce no CLOSE: o pulso dura a presenca do item.
 # (Havia uma constante WINDOW_MS declarada como "largura do pulso" e nunca usada.)
@@ -33,8 +33,6 @@ ARM_MS = 500              # repouso continuo exigido para armar (era ARM_READS=1
 GUARD_MS = 500            # janela morta apos cada fechamento
 LOG_PATH = "poc01_events.csv"
 LOG_MAX_BYTES = 65536     # o CSV vive no flash interno: sem limite, enche
-nivel_de_objeto_na_linha = "nivel_de_objeto"
-nivel_de_objeto_na_linha = "nivel_de_objeto"
 nivel_de_objeto_na_linha = "nivel_de_objeto"
 PING_MS = 2000            # heartbeat do nivel do sensor na serial (0 desliga)
 

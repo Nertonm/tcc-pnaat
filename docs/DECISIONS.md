@@ -774,9 +774,11 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
   12. Recarga de 15 s: remontava a area e apagava o texto digitado na busca (medido: o texto digitado
      sobrevive a recarga agora); imagens com loading lazy e decoding async.
 - Pendente, com a razao (nao e esquecimento):
-  - Decisao humana da D-30 na tela: os botoes "Forcar aprovacao"/"Confirmar defeito" nao tem handler e
-    nao existe rota de escrita de correcao no backend. Falta a rota unica (via Registro) — tranche
-    propria, com teste de mutacao.
+  - Decisao humana da D-30 na tela: os botoes "Forcar aprovacao"/"Confirmar defeito" ainda nao tem handler
+    na interface. A rota de escrita EXISTE: `POST /api/correcao` (`api.py:1620`, handler `_rota_correcao`
+    em `api.py:1304`) grava via `Registro.corrigir` (`registro.py:329`) com read-back, coberta por
+    `tests/test_correcao.py`. Segue pendente so o handler dos botoes na tela — tranche propria, com
+    teste de mutacao.
   - Escrita do gatilho sob concorrencia: sem WAL nem fila, um escritor segurando o lock faz o POST
     perder o evento depois do timeout. Tranche propria (journal_mode + retry + Retry-After).
   - Desempenho: correlacao_ambiental faz 1 consulta por item (N+1) e o detalhe do item lia a tabela de
@@ -800,7 +802,7 @@ controle de domínio abaixo do limiar declarado; e a taxa de inconclusivo public
 - O que faltava e agora existe:
   1. **mapa camera -> vista DECLARADO** (`src-production/mapeamento_rig.py`): o rig nomeia cameras
      (os papeis `csi`, `usb`, `espcam`) e o registro fala por vista (`topo`, `lateral1`,
-     `lateral2`), e nada ligava os dois. O mapa e declaracao da instalacao (constante `MAPA_PADRAO` ou
+     `lateral2`), e nada ligava os dois. O mapa e declaracao da instalacao (`--mapa camera=vista,...` ou
      `--mapa camera=vista,...`), com validacao: vista repetida e erro, camera fora do mapa e erro, e a
      ORDEM do manifesto nao define vista (a associacao vem do mapa).
   2. **item com evidencia rastreavel**: as fotos sao COPIADAS para a raiz de evidencia do hub
@@ -1290,7 +1292,9 @@ deste pipeline E o borrao de movimento — o mesmo ganho nas duas frentes.
 Estado: adotado na preparação da entrega final (16/09/2026).
 
 `src-production/` é o produto: API, pipeline, decisão, registro, site, firmware e a cadeia de treino.
-`workspace/` fica como história congelada das PoCs, e nada do produto importa de lá.
+`workspace/` é a árvore local de PoCs, **fora do commit** (`.gitignore`): história congelada, sem nada do
+produto importando de lá. As referências a `workspace/` e a `src/pocs/` registradas em decisões
+anteriores (D-25, D-29, D-30, D-33, D-55, D-56) apontam para essa árvore local, não para o repositório.
 `cad-produto/` é o CAD do rig, com inventário e créditos. `docs/` continua sendo a fonte normativa.
 
 Entraram nesta rodada, como peças da entrega:
@@ -1302,10 +1306,10 @@ Entraram nesta rodada, como peças da entrega:
 | `docs/hardware.md` | BOM, pinagem, montagem, o que foi medido e o que não foi |
 | `docs/diagramas/interligacao-eletrica.mmd` | blocos e interfaces do sistema |
 
-Evidência medida nesta máquina, em 16/09/2026: `make verificar` roda 506 testes do produto e 17 do
-firmware; `make -C workspace test` roda 112; `make lint` passa nas duas árvores; `make doctor` dá
-7 FAIL e 2 WARN no perfil de runtime, sendo dois de `anomalib` e cinco de diretórios de dados
-externos, tudo declarado no `README.md` §5.4.
+Evidência medida nesta máquina, em 16/09/2026: `make -C src-production verificar` roda 510 testes do
+produto e 17 do firmware; `make -C src-production lint` passa. O `doctor` pertence à árvore local de PoCs
+(fora do commit) e dá 7 FAIL e 2 WARN no perfil de runtime — dois de `anomalib` e cinco de diretórios de
+dados externos —, declarados na seção de limites conhecidos do `README.md`.
 
 A checagem de higiene confere o **índice**, não a árvore de trabalho:
 reportou 0 achado enquanto o índice estava em dia e passou a acusar `dataset/TRABALHO/backup-pnaat.sh`
@@ -1348,10 +1352,11 @@ Estado: `make -C src-production lint` e o lint das PoCs dão 0 achado. A dívida
 
 ## D-56: A regra de mídia tem uma fonte única, e o doctor passou a consumi-la
 
-O `workspace/scripts/doctor.py` repetia a regra de mídia com exceção apenas para `dataset/`,
+O `doctor.py` da árvore local de PoCs (`workspace/scripts/doctor.py`, fora do commit) repetia a regra de
+mídia com exceção apenas para `dataset/`,
 então acusava FAIL no CAD do entregável (`cad-produto/**`), que a política permite, e o relatório do
 doctor contradizia o da checagem sobre a mesma árvore. Agora ele importa `midia_bloqueada` de
-`workspace/scripts/politica_midia.py`, que já era a fonte única da checagem de higiene e do gate.
+`politica_midia.py` da mesma árvore local, que já era a fonte única da checagem de higiene e do gate.
 
 Regra: a política de mídia mora em um arquivo só, e quem confere importa de lá. Duas implementações da
 mesma regra divergem no primeiro ajuste, e a que fica para trás acusa o que a outra permite.

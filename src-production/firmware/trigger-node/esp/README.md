@@ -10,9 +10,9 @@ atuação física e sem controle da esteira.
 
 - **E18-D80NK**: sensor IR difuso (emissor + receptor), saída digital NPN NO.
 - Lógica da saída: **LOW = objeto dentro do alcance** (active low); HIGH fora.
-- Tensão de alimentação do sensor: VCC 5V; a saída segue esse nível, então NÃO
-  ligue o sinal direto em pino de 3.3V sem divificar (divisor de tensão ou módulo
-  de lógica/level shifter).
+- Tensão de alimentação do sensor: VCC 5 V. Meça a saída: se ela chegar a 5 V, NÃO
+  ligue o sinal direto ao pino de 3,3 V; use divisor ou conversor de nível. Se for
+  open-collector pura, use o pull-up de 3,3 V do GPIO.
 
 ## Fiação (sensor → ESP32)
 
@@ -39,9 +39,9 @@ opcional de saída, usado como sinal de "capturando" para LED/release em teste).
 5. **Fechamento**: após `MISS_READS` leituras estáveis de ausência, fecha a janela
    (`EV CLOSE ... dur_ms=`) e volta a aguardar presença.
 
-Relação com o código testado: `presence.py` (na pasta `trigger-node/`) é a lógica pura,
-testada por pytest e agnóstica de hardware. `esp/main.py` é a mesma lógica sem
-dependência de `dataclasses`, rodando em MicroPython no ESP32.
+Relação com o código de desktop: `../presence.py` contém o subconjunto portável de debounce,
+testado por pytest e agnóstico de hardware. `main.py` acrescenta warm-up, armamento, guarda,
+heartbeat, GPIO e persistência no flash; portanto o simulador não substitui o teste na placa.
 
 ## Testar no ESP32 (hardware)
 
@@ -57,8 +57,9 @@ dependência de `dataclasses`, rodando em MicroPython no ESP32.
 
 ## Testar em desktop (CI, sem hardware)
 
-```
-make -C src-production test-trigger        # inclui tests/test_trigger.py (5 testes)
+```bash
+make -C src-production test-trigger
+make -C src-production trigger-simular
 ```
 
 O teste cobre: abertura após debounce, pulso isolado não abre e fechamento após
@@ -96,8 +97,9 @@ não force o resultado.
 ## Fluxo no hardware (depois do componente aprovado)
 
 1. Grave MicroPython no ESP32 (`esptool.py --chip <seu chip> write_flash -z 0x1000 <fw.bin>`).
-2. Copie o firmware: `mpremote connect /dev/ttyUSB0 cp src/pocs/poc01_trigger/esp/main.py :main.py`
-   (ou Thonny: salvar como `main.py` no dispositivo).
+2. Da raiz, copie o firmware com
+   `make -C src-production/firmware flash-trigger PORTA_TRIGGER=/dev/serial/by-id/<ESP32-trigger>`
+   (ou use Thonny para salvar `src-production/firmware/trigger-node/esp/main.py` como `main.py`).
 3. Abra o monitor: `mpremote connect /dev/ttyUSB0 repl` (ou `screen /dev/ttyUSB0 115200`).
 4. Aproxime/afaste o objeto. Esperado no serial:
    `EV READY pin=27 out=26 ...` → `EV OPEN n=1 ... livre_ms=...` → `EV CLOSE n=1 dur_ms=...`
@@ -106,15 +108,15 @@ não force o resultado.
    objeto parado na frente (inclusive com flicker) → 1 janela só; pulso curto
    (ruído) → nenhuma janela. Sensor bloqueado no boot → `EV ARM_WAIT` + `EV PING`
    (o nó avisa, não arma, e continua vivo no serial).
-6. Compare com a simulação sem hardware (`make simular-poc01`), que usa as MESMAS regras:
-   se o firmware e a simulação divergirem, um dos dois está errado: investigue antes de seguir.
+6. Compare abertura e fechamento com `make -C src-production trigger-simular`. O simulador cobre o
+   debounce básico; warm-up, guarda temporal, flash e GPIO só são validados na placa.
 
 ## Simular o fluxo sem hardware (roda hoje)
 
 ```bash
-cd code-workspace
-make simular-poc01                 # todos os casos
-python3 scripts/simular_trigger.py --niveis 1,1,0,0,0,0,0,0,1,1
+make -C src-production trigger-simular
+.venv/bin/python src-production/firmware/trigger-node/host/simular_trigger.py \
+  --niveis 1,1,0,0,0,0,0,0,1,1
 ```
 
 

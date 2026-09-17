@@ -40,8 +40,9 @@ A ponte serial (`esp32cam_site.py`) é quem religa o evento de um ao comando do 
 ### 2.1 Nó de trigger (E18-D80NK + ESP32, MicroPython)
 
 Código: `src-production/firmware/trigger-node/esp/main.py` (firmware) e `presence.py` (máquina de estados pura,
-testada). Pinos confirmados na bancada: `PRESENCE_PIN = 27` (active-low, pull-up) e
-`CAPTURE_OUT_PIN = 26`. O esquemático de referência está em `ESP32S3-Trigger.zip` (Wokwi).
+testada). Pinos adotados no firmware: `PRESENCE_PIN = 27` (active-low, pull-up) e
+`CAPTURE_OUT_PIN = 26`; a validação elétrica do sensor real continua pendente. O esquemático
+normativo está em `docs/diagramas/interligacao-eletrica.mmd`; o ZIP Wokwi é histórico.
 
 O nó lê o E18-D80NK a cada `DEBOUNCE_MS = 20 ms`, só arma após repouso contínuo de `ARM_MS = 500 ms`
 (elimina a janela espúria do boot), abre a janela após `STABLE_READS = 5` leituras de presença,
@@ -50,8 +51,9 @@ transição sai como `EV <evento> campo=valor`, também gravado em CSV no board;
 `PING_MS`. Gravação e monitor no ESP32:
 
 ```bash
-make -C src-production/firmware flash-trigger PORTA_TRIGGER=/dev/serial/by-id/<ESP32-trigger>
-.venv/bin/python src-production/firmware/trigger-node/host/esp_tool.py run main.py --segundos 30
+cd src-production/firmware/trigger-node/host
+.venv/bin/python esp_tool.py upload ../esp/main.py main.py
+.venv/bin/python esp_tool.py run main.py --segundos 30
 ```
 
 ### 2.2 Nó de visão (ESP32-CAM, ESP-IDF)

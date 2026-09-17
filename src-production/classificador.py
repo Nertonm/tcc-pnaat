@@ -5,7 +5,7 @@ caixa da garrafa; a faixa SUPERIOR de 22% da altura dessa caixa (a tampa/gargalo
 redimensionada para 224x224; o embedding vem do MobileNetV3-small CONGELADO (pesos ImageNet DEFAULT,
 `classifier = Identity`); a decisao e de uma regressao logistica (`C=0.5`, `max_iter=3000`) sobre
 `StandardScaler`. Referencia no conjunto proprio: acuracia 0,977, LB95 0,882, maioria 0,455,
-ganho +0,523, n=44 (`docs/DECISIONS.md:509`; saida bruta em `aval_cnn_sem_conf.txt`).
+ganho +0,523, n=44 (`docs/DECISIONS.md:452`; a saida bruta da medicao nao e versionada).
 
 Nao existe peso treinado versionado; de proposito. O que existe e o conjunto rotulado e ESTE codigo:
 o treino acontece na hora, no conjunto proprio (`CONJUNTO_PADRAO`), porque um `.pt`/`.pkl` binario
@@ -110,7 +110,7 @@ DOBRAS = 5
 SEMENTE = 7
 
 #: fonte do protocolo medido; `arquivo:linha` do numero que sustenta a D-30 (D-24)
-FONTE_DO_PROTOCOLO = "docs/DECISIONS.md:509"
+FONTE_DO_PROTOCOLO = "docs/DECISIONS.md:452"
 
 #: identificacao do artefato. E a receita inteira: mudar qualquer constante acima muda esta string,
 #: e o teste de identificacao falha se elas divergirem.

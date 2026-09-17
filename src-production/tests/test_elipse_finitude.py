@@ -5,6 +5,7 @@ nao pegava nada (mutation test: removida a guarda, o teste continuava passando).
 chama a validacao com Ap=0 / Cp=0 / NaN, que e o estado exato que produzia eixo infinito aprovado.
 """
 
+import numpy as np
 import preprocessamento as pp
 import pytest
 
@@ -27,11 +28,18 @@ def test_conica_valida_passa():
     pp.validar_eixos_da_elipse(1.0, 2.0, -3.0)  # nao levanta
 
 
-def test_nunca_devolve_eixo_infinito_pelo_caminho_publico():
-    # sem a guarda, este input devolveria eixo infinito com ok=True
-    r = (
-        pp.fit_ellipse_direct_ls.__wrapped__
-        if hasattr(pp.fit_ellipse_direct_ls, "__wrapped__")
-        else None
-    )
-    assert r is None or callable(r)
+def test_caminho_publico_passa_pela_guarda(monkeypatch):
+    """Mutation test: se a validacao sair do ajuste publico, este teste falha.
+
+    A guarda e substituida por uma que sempre reprova; se `fit_ellipse_direct_ls` nao a chamar,
+    o ajuste devolve uma elipse valida e o teste falha.
+    """
+
+    def reprova(*_a, **_k):
+        raise ValueError("guarda acionada")
+
+    monkeypatch.setattr(pp, "validar_eixos_da_elipse", reprova)
+    t = np.linspace(0.0, 2.0 * np.pi, 24, endpoint=False)
+    pontos = np.column_stack([10.0 * np.cos(t), 6.0 * np.sin(t)])
+    with pytest.raises(ValueError):
+        pp.fit_ellipse_direct_ls(pontos)
