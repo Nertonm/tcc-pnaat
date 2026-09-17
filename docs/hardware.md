@@ -68,13 +68,10 @@ suposição (`docs/reference/ref-e18-d80nk-sensor.md:27,45-49`):
 Nos dois casos, conferir a tensão de saída em bancada antes de ligar. Terra comum entre sensor,
 ESP32 e host é obrigatório (`src-production/firmware/README.md:176`).
 
-O esquemático elétrico do trigger está publicado na raiz em `ESP32S3-Trigger.zip` (projeto Wokwi,
-documentado em `docs/reference/esquematico-trigger.md`;
-contribuição de Paulo Victor, commit `9fefd73`): ESP32-S3 DevKitC-1 com sensor PIR genérico simulando
-o trigger, divisor de tensão de 2,2 kΩ na saída e 3,3 kΩ para terra, GPIO de exemplo 5 e GPIO27
-especificado no projeto. URL do simulador: https://wokwi.com/projects/475343904586369025. Este
-documento descreve o esperado, o firmware declara o pino e o modo elétrico, e o acionamento em operação
-é feito por comando de bancada. Falta medir, com o sensor real, os níveis de saída, o debounce, com
+O esquemático de interligação atualizado está em `docs/diagramas/interligacao-eletrica.mmd`. O
+projeto histórico `ESP32S3-Trigger.zip` usa um PIR genérico no Wokwi e **não** é a fonte normativa
+da pinagem; sua limitação está registrada em `docs/reference/esquematico-trigger.md`. O firmware
+declara GPIO27 e o modo elétrico. Falta medir, com o sensor real, os níveis de saída, o debounce, com
 alvo de 50 ms, e o cooldown, com alvo de 250 ms (`main.c:23-24`;
 `src-production/firmware/README.md:195-196`).
 

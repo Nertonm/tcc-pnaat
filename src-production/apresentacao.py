@@ -541,7 +541,7 @@ def montar_relatorio(painel: Painel) -> Relatorio:
     qual dos dois falhou.
     """
     return Relatorio(
-        titulo="Relatorio de inspecao de itens (iamralp)",
+        titulo="Relatorio de inspecao de itens (PNAAT)",
         secoes=(
             secao_resumo(painel),
             secao_taxa_por_lote(painel),
