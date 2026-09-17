@@ -77,6 +77,11 @@ o destino.
   depois do manifesto, entao `sha256sum -c` acusa FAILED nesse arquivo. O peso, o `modelo.json` e
   os metadados conferem. O defeito existe tambem no acervo de origem; a correcao e regerar o
   manifesto do pacote, decisao de quem e dono do entregavel.
+- **Pacote `v9b-lateral-calibrado` publicado com hashes internos defasados**: o `modelo.json`
+  publicado mantem os hashes do peso e dos metadados de antes da re-serializacao, entao o
+  consumidor (`pacote_detector.verificar_bundle`) rejeita o pacote baixado do Hub. Correcao:
+  regerar contrato/manifesto no produtor com os hashes publicados e republicar, depois validar
+  o download publico.
 - Destino externo do store (fora deste host).
 
 ## Publicacao no Hugging Face

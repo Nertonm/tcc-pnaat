@@ -6,8 +6,10 @@
 #   docker compose -f docker/docker-compose.yml up -d
 #   curl http://127.0.0.1:8080/api/health
 #
-# Sem hardware: apenas o serviço `api` fica saudável (é o núcleo). rig e ponte exigem devices
-# reais (diretório de séries, câmeras, /dev/ttyUSB*); sem eles sobem degradados.
+# Sem hardware: `docker compose -f docker/docker-compose.yml up -d api` sobe só o núcleo.
+# Com hardware: `docker compose --profile hardware -f docker/docker-compose.yml up -d` sobe
+# api + rig + ponte. rig e ponte ficam no profile `hardware` porque exigem devices reais
+# (diretório de séries, câmeras, /dev/ttyUSB*).
 #
 # Variáveis de instalação:
 #   PNAAT_SERIES_DIR_HOST : caminho no host do diretório de séries do rig (default ./series,
@@ -45,6 +47,7 @@ services:
 
   rig:
     image: tcc-pnaat:local
+    profiles: ["hardware"]
     command: ["python", "src-production/rig_service/app.py", "--porta", "8090"]
     environment:
       PNAAT_SERIES_DIR: /series
@@ -63,6 +66,7 @@ services:
 
   ponte:
     image: tcc-pnaat:local
+    profiles: ["hardware"]
     command: ["python", "src-production/firmware/esp32cam-test/esp32cam_site.py", "--porta", "8094", "--host", "0.0.0.0", "--serial", "/dev/ttyUSB0", "--serial-trigger", "/dev/ttyUSB1"]
     environment:
       PNAAT_PONTE: http://127.0.0.1:8094

@@ -144,7 +144,7 @@ git clone https://github.com/Nertonm/tcc-pnaat.git && cd tcc-pnaat
 ### 5.2 Ambiente Python
 
 ```bash
-python3.11 -m venv .venv            # ou: uv venv --python 3.11 .venv
+python3.11 -m venv .venv            # ou: uv venv --seed --python 3.11 .venv
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -e "src-production[dev,leitura,serial]"
 ```

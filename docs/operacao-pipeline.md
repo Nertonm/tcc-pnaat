@@ -50,9 +50,8 @@ transição sai como `EV <evento> campo=valor`, também gravado em CSV no board;
 `PING_MS`. Gravação e monitor no ESP32:
 
 ```bash
-cd src-production/firmware/trigger-node/host
-.venv/bin/python esp_tool.py upload ../esp/main.py main.py
-.venv/bin/python esp_tool.py run main.py --segundos 30
+make -C src-production/firmware flash-trigger PORTA_TRIGGER=/dev/serial/by-id/<ESP32-trigger>
+.venv/bin/python src-production/firmware/trigger-node/host/esp_tool.py run main.py --segundos 30
 ```
 
 ### 2.2 Nó de visão (ESP32-CAM, ESP-IDF)

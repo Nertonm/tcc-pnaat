@@ -1,18 +1,24 @@
-%% Interligação do rig PNAAT: blocos e interfaces.
-%% ESTADO: o que está declarado no firmware e no código. O esquemático elétrico do sensor de
-%% proximidade é contribuição de outro integrante da equipe e ainda NÃO foi publicado; até então,
-%% a ligação do E18-D80NK ao GPIO do ESP32 é REQUISITO NÃO VALIDADO (ver docs/hardware.md § 2).
+%% Interligação do rig PNAAT: arquitetura adotada (montagem principal).
+%% A ligação direta E18 -> GPIO13 da ESP32-CAM existe no firmware e é declarada como
+%% alternativa, não como a montagem padrão. Níveis elétricos do sensor não medidos.
 flowchart LR
     subgraph bancada[Bancada de envase]
-        item([Garrafa PET no trilho]) --> sensor[Sensor de presença<br/>E18-D80NK<br/>5 V · saída NPN]
+        item([Garrafa PET no trilho]) --> sensor[Sensor fotoelétrico E18-D80NK<br/>5 V · saída NPN · active-low<br/>LOW com objeto no alcance]
         item --> esteira[Esteira<br/>~100 mm/s declarado<br/>FORA do núcleo: o sistema não controla]
     end
 
+    subgraph trigger[Trigger dedicado · ESP32 com MicroPython]
+        sensor -. "VCC 5V · GND comum · Sinal → GPIO27 (PULL_UP)<br/>divisor 5V→3V3 somente se medir 5 V no sinal<br/>NÍVEL ELÉTRICO NÃO MEDIDO" .-> trigger_fw[presence.py + esp/main.py<br/>debounce 20 ms · guarda 500 ms<br/>abre a janela por active-low]
+        trigger_fw --> ev["EV OPEN / EV CLOSE<br/>serial do trigger (USB-serial)"]
+    end
+
     subgraph borda[ESP32-CAM · borda]
-        sensor -. "GPIO13, active-low, borda de descida<br/>NÍVEL ELÉTRICO NÃO MEDIDO: exige<br/>terra comum e condicionamento (NPN→3V3)" .-> irq[ISR mínima<br/>timestamp + fila FreeRTOS]
+        ev -- "ponte lê a serial dedicada<br/>e envia CMD_TRIG" --> ponte[esp32cam_site.py<br/>ponte serial · dona da porta]
+        ponte --> irq[ISR mínima<br/>timestamp + fila FreeRTOS]
         irq --> fototask[Task de captura<br/>1 foto por trigger]
         fototask --> cam[OV2640<br/>PWDN alto = standby<br/>XCLK parado entre fotos]
         cam --> enc[Enquadramento binário<br/>SOF A5 5A + CRC16 + CRC32]
+        sensor -. "ALTERNATIVA: SENSOR_GPIO = GPIO13<br/>direto na ESP32-CAM (TRIGGER_SOURCE_E18)<br/>não é a montagem padrão · não medida" .-> irq
     end
 
     subgraph host[Host de visão · Raspberry Pi 5 ou Linux x86-64]
@@ -35,5 +41,5 @@ flowchart LR
 
     classDef naomedido fill:#fff3e0,stroke:#e65100,color:#111,stroke-dasharray:4 4
     classDef fora fill:#eceff1,stroke:#607d8b,color:#111
-    class sensor,irq naomedido
+    class sensor,trigger_fw,ev naomedido
     class esteira fora

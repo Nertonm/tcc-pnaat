@@ -7,7 +7,7 @@ PY      ?= .venv/bin/python
 # Instalacao reproduzivel (idempotente): venv da raiz + o pacote do produto.
 install:
 	@test -x "$(PY)" || { \
-	  if command -v uv >/dev/null 2>&1; then uv venv --python 3.11 .venv; \
+	  if command -v uv >/dev/null 2>&1; then uv venv --seed --python 3.11 .venv; \
 	  elif command -v python3.11 >/dev/null 2>&1; then python3.11 -m venv .venv; \
 	  elif command -v python3.12 >/dev/null 2>&1; then python3.12 -m venv .venv; \
 	  else echo "erro: o pacote exige Python >=3.11 e <3.13; instale python3.11/3.12 ou uv (uv venv --python 3.11 .venv)"; exit 1; fi; \

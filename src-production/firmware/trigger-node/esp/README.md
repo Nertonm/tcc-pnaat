@@ -39,9 +39,9 @@ opcional de saída, usado como sinal de "capturando" para LED/release em teste).
 5. **Fechamento**: após `MISS_READS` leituras estáveis de ausência, fecha a janela
    (`EV CLOSE ... dur_ms=`) e volta a aguardar presença.
 
-Relação com o código de desktop: `src/pocs/poc01_trigger/presence.py` é a lógica
-pura (testada por pytest, agnóstica de hardware). `esp/main.py` é a mesma lógica
-sem dependência de `dataclasses`, rodando em MicroPython no ESP32.
+Relação com o código testado: `presence.py` (na pasta `trigger-node/`) é a lógica pura,
+testada por pytest e agnóstica de hardware. `esp/main.py` é a mesma lógica sem
+dependência de `dataclasses`, rodando em MicroPython no ESP32.
 
 ## Testar no ESP32 (hardware)
 
@@ -58,8 +58,7 @@ sem dependência de `dataclasses`, rodando em MicroPython no ESP32.
 ## Testar em desktop (CI, sem hardware)
 
 ```
-cd code-workspace
-make test        # inclui tests/test_trigger.py
+make -C src-production test-trigger        # inclui tests/test_trigger.py (5 testes)
 ```
 
 O teste cobre: abertura após debounce, pulso isolado não abre e fechamento após
