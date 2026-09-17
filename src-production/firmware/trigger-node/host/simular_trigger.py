@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Simula o PoC-01 (trigger de presenca) SEM hardware, com a MESMA logica do firmware.
+"""Simula o debounce básico do trigger de presença sem hardware.
 
-Serve para validar o FLUXO antes de ligar a placa: emite exatamente os mesmos eventos que o
-`esp/main.py` (CAPTURE_WINDOW_OPEN / CAPTURE_WINDOW_CLOSE) e aplica as mesmas regras de debounce.
+Serve para validar abertura e fechamento antes de ligar a placa. Não reproduz warm-up, armamento,
+guarda temporal, heartbeat, persistência em flash ou temporização real do `esp/main.py`.
 
-    python3 scripts/simular_trigger.py --caso passagem_limpa
-    python3 scripts/simular_trigger.py --caso todos
-    python3 scripts/simular_trigger.py --niveis 1,1,0,0,0,0,0,0,1,1
+    python3 host/simular_trigger.py --caso passagem_limpa
+    python3 host/simular_trigger.py --caso todos
+    python3 host/simular_trigger.py --niveis 1,1,0,0,0,0,0,0,1,1
 
 Convencao do E18-D80NK: nivel 0 (LOW) = objeto dentro do alcance (active low).
 """
@@ -23,8 +23,6 @@ from presence import PresenceTrigger, present_from_sensor
 DEBOUNCE_MS = 20
 STABLE_READS = 5
 MISS_READS = 5
-WINDOW_MS = 50
-
 CASOS: dict[str, list[int]] = {
     # passagem normal: livre -> objeto -> livre
     "passagem_limpa": [1] * 6 + [0] * 10 + [1] * 10,
@@ -77,8 +75,8 @@ def main() -> int:
     ap.add_argument("--json", type=Path, default=None, help="salva o resultado em JSON")
     args = ap.parse_args()
 
-    print(f"PoC-01 simulada (sem hardware): debounce: {STABLE_READS} leituras, "
-          f"fechamento: {MISS_READS}, janela: {WINDOW_MS} ms, leitura a cada {DEBOUNCE_MS} ms")
+    print(f"PoC-01 simulada (sem hardware): abertura: {STABLE_READS} leituras, "
+          f"fechamento: {MISS_READS} leituras, amostra nominal: {DEBOUNCE_MS} ms")
 
     resultados: dict[str, dict] = {}
     if args.niveis:

@@ -1,6 +1,6 @@
 # src-production: o produto
 
-Pacote `iamralp`. Esta arvore e o **entregavel**: codigo, testes, esquema do hub, firmware, o site
+Pacote `pnaat-inspecao`. Esta arvore e o **entregavel**: codigo, testes, esquema do hub, firmware, o site
 estatico e o pipeline de treino que produz o detector. As PoCs da geração anterior foram removidas
 deste checkout; documentos sob `docs/pocs/` permanecem como histórico, sem fonte executável nesta
 árvore. `dataset/TRABALHO/` e `dirty-workspace/` guardam a arvore de trabalho antiga: **nao e importada em runtime**.

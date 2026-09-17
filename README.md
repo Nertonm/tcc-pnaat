@@ -34,7 +34,7 @@ com múltiplos nós são expansão (`docs/escopo.md`).
 
 | Artefato | Onde está | Estado |
 |---|---|---|
-| Código do produto (API, pipeline, decisão, registro, site) | `src-production/` | 506 testes passam, mais 17 do firmware |
+| Código do produto (API, pipeline, decisão, registro, site) | `src-production/` | suíte automatizada do produto e do firmware |
 | PoCs da geração anterior | fontes removidas deste checkout | os READMEs em `docs/pocs/` são histórico, não comandos executáveis |
 | Cadeia de treino (dataset, treino, avaliação, calibração, pacote) | `src-production/treino/` | pronta; rodar exige GPU e o acervo externo |
 | Modelos CAD do rig | `cad-produto/` | montagem conferida geometricamente, com ressalvas na seção 3 |
@@ -44,6 +44,23 @@ com múltiplos nós são expansão (`docs/escopo.md`).
 | Pacotes de modelo (7) | [huggingface.co/Nerton/pnaat-modelos](https://huggingface.co/Nerton/pnaat-modelos) | publicado, com peso, contrato e `SHA256SUMS` por pacote |
 | Índice dos pesos treinados (158 pesos, 35 famílias) | `models/INDEX.csv` | índice versionado; os pesos são dado e ficam fora do repositório |
 | Serviço de rig (captura de três câmeras, série e manifest) | `src-production/rig_service/` | testes com câmera falsa: 24 rotas + 49 bordas |
+
+### 1.1 Conferência da Entrega 6
+
+| Exigência | Evidência versionada | Como conferir |
+|---|---|---|
+| Código-fonte desenvolvido | `src-production/` | `make -C src-production verificar` |
+| Esquemático elétrico | `docs/diagramas/interligacao-eletrica.mmd` e projeto histórico `ESP32S3-Trigger.zip` | pinagem e cautelas na seção 3.1 |
+| Diagramas finais de arquitetura | `docs/arquitetura.md` | diagramas proposta e implementada, identificados separadamente |
+| Pré-requisitos e recursos | seções 3 e 4 | lista de hardware, toolchains e perfis de software |
+| Instalação e dependências | seção 5 | ambiente virtual ou Docker |
+| Configuração | seção 5.3 | diretórios, URLs, mapa de câmeras e token |
+| Montagem e ligações | seções 3.1 e 3.2 | ligação medida antes de energizar e sequência mecânica |
+| Execução | seção 6 | API, inferência, ingestão e firmware |
+| Confirmação do resultado | seção 9 | comandos, respostas e resultados esperados |
+
+Esta tabela é um índice de auditoria, não substitui os procedimentos. Caminhos que dependem de
+hardware ou modelos externos estão marcados como tal; a rota local sem hardware permanece executável.
 
 ## 2. Rotas de execução
 
@@ -88,7 +105,9 @@ O mapa de câmeras para vistas é: `lateral1` vem da ESP32-CAM, `lateral2` da we
 câmera CSI apontada para baixo (`cad-produto/00-produto/composicao-esteira/contract.json`). Trocar
 esse mapa muda a decisão do item, por isso ele é declarado e não inferido.
 
-O esquemático elétrico do trigger está em `ESP32S3-Trigger.zip` na raiz (Wokwi: ESP32-S3 com divisor 2,2 kΩ/3,3 kΩ e GPIO27).
+O esquemático normativo está em `docs/diagramas/interligacao-eletrica.mmd`. O
+`ESP32S3-Trigger.zip` da raiz preserva a referência histórica Wokwi, mas usa um PIR genérico e não
+fecha a ligação ao GPIO27; não deve ser usado sozinho para montar a bancada.
 O firmware declara o pino e o modo elétrico esperado, e o documento de hardware marca a ligação como
 não validada até a medição de bancada.
 
@@ -109,6 +128,43 @@ Conjectura CAD da montagem (peças referência, não desenho de fabricação):
 Os arquivos editáveis estão nos diretórios indicados
 em `cad-produto/`.
 
+### 3.1 Ligação elétrica do trigger
+
+> **Não conecte o fio de sinal ao ESP32 antes de medir a tensão.** Desenergize a bancada para mudar
+> a fiação e use GND comum. O GPIO do ESP32 aceita no máximo lógica de 3,3 V.
+
+1. Alimente o E18-D80NK em 5 V: fio bege/marrom em `+5V` e azul em `GND`.
+2. Com multímetro em tensão contínua, meça o fio preto contra GND com o sensor livre e com uma
+   garrafa presente. O sinal deve ser active-low: alto em repouso e próximo de 0 V com objeto.
+3. Se o sinal livre nunca passar de 3,3 V (saída open-collector pura), ligue o preto diretamente ao
+   `GPIO27`; o firmware habilita o pull-up interno de 3,3 V.
+4. Se o sinal livre ficar próximo de 5 V, ligue preto → `R1 2,2 kΩ` → nó do `GPIO27`, e desse nó →
+   `R2 3,3 kΩ` → GND. Confirme no nó uma tensão de no máximo 3,3 V antes de conectá-lo ao GPIO.
+5. `GPIO26` é apenas uma saída opcional indicadora da janela de captura; não é a ligação da
+   ESP32-CAM. O trigger chega à ponte pela serial USB, e a ponte envia `CMD_TRIG` à ESP32-CAM pela
+   segunda serial USB.
+6. Energize e confira no monitor serial: `EV READY pin=27 out=26`, depois `EV ARMED`; uma passagem
+   deve produzir exatamente um par `EV OPEN`/`EV CLOSE`.
+
+O esquemático atualizado é `docs/diagramas/interligacao-eletrica.mmd`. O ZIP Wokwi preservado na
+raiz é histórico, usa um PIR genérico e não é a fonte normativa da pinagem. Fotografias, tensão,
+distância e 10 passagens com garrafa vazia e cheia devem ser registradas na validação da bancada.
+
+### 3.2 Sequência de montagem mecânica
+
+1. Imprima ou fabrique as peças indicadas por `cad-produto/README.md`; confira dimensões antes de
+   usar os furos M6 e não trate a montagem candidata como desenho liberado para fabricação.
+2. Monte `MontanteA`, `MontanteB` e `Travessa` no trilho com junções e chavetas; instale a base DIN.
+3. Fixe a câmera CSI acima do trilho, eixo óptico para baixo, preservando a folga nominal de
+   110,2836 mm até o topo da garrafa; valide novamente a distância para a lente realmente usada.
+4. Instale ESP32-CAM e webcam USB em lados opostos, sem obstrução do item e com iluminação constante.
+5. Ligue CSI ao conector da Raspberry Pi, webcam à USB e as duas ESPs a adaptadores USB-seriais
+   distintos. Identifique as portas estáveis em `/dev/serial/by-id/`.
+6. Declare o mapa `espcam=lateral1,usb=lateral2,csi=topo`, capture uma série de teste e confira
+   visualmente se cada arquivo corresponde à vista declarada antes de habilitar decisão.
+
+Medidas, peças, ressalvas geométricas e a lista completa de materiais estão em `docs/hardware.md`.
+
 ## 4. Requisitos de software
 
 | Item | Uso |
@@ -121,7 +177,7 @@ em `cad-produto/`.
 | GPU com `torch` e `ultralytics` | treino e inferência YOLO; não é necessária para API e consultas locais |
 
 `src-production/pyproject.toml` é a fonte das dependências. O runtime base declara `numpy` e
-`opencv-python`; os extras são `leitura` (Pillow e SciPy), `serial` (pyserial), `inferencia`
+`opencv-python-headless`; os extras são `leitura` (Pillow e SciPy), `serial` (pyserial), `inferencia`
 (torch, torchvision, ultralytics, scikit-learn e PyYAML) e `dev` (pytest, pytest-timeout, ruff e
 PyYAML). `anomalib` não é um extra declarado neste checkout. Se for necessário para um experimento,
 instale-o num ambiente separado e não o trate como pré-requisito do produto.
@@ -156,18 +212,56 @@ Para treino e inferência YOLO, acrescente o extra de inferência:
 .venv/bin/python -m pip install -e "src-production[inferencia]"
 ```
 
-### 5.3 Verificar a instalação
+### 5.3 Configurar a instalação
+
+Não há endereço, device ou mapa de câmera pessoal embutido no código. Declare, conforme a rota:
+
+```bash
+export PNAAT_SERIES_DIR=/caminho/gravavel/series
+export PNAAT_PONTE=http://127.0.0.1:8094
+export PNAAT_RIG=http://127.0.0.1:8090
+export PNAAT_API_TOKEN='gere-um-token-longo-e-aleatorio'  # obrigatório fora de loopback/Docker
+export PNAAT_MODELOS=/caminho/para/pesos-e-datasets       # somente treino/inferência
+```
+
+Use `/dev/serial/by-id/...` para `--serial` e `--serial-trigger`; não suponha que `ttyUSB0` seja
+sempre a mesma placa. O diretório de séries precisa ser gravável pelo usuário do serviço. O mapa de
+vistas não tem default e deve ser informado na ingestão como
+`csi=topo,usb=lateral2,espcam=lateral1`. Endereços diferentes são permitidos, desde que as três URLs
+sejam alcançáveis pelo gateway.
+
+### 5.4 Verificar a instalação
 
 ```bash
 make -C src-production verificar     # suíte do produto e do firmware
 make -C src-production lint          # ruff com a configuração do projeto
 ```
 
-A saída esperada é `506 passed, 4 skipped` no produto, `17 passed` no firmware e `All checks passed!`
-no lint. Os quatro skips são conhecidos: três exigem `scikit-learn`, do extra `inferencia`, e um exige
-o artefato `.npz` do classificador, que é dado e vive fora do git.
+A saída esperada não contém falhas, termina com `produto e firmware verificados` e o lint imprime
+`All checks passed!`. Skips podem aparecer quando não estão instalados `scikit-learn`, do extra
+`inferencia`, ou o artefato `.npz` do classificador, que é dado e vive fora do git. Não se fixa aqui
+uma contagem: adicionar um teste correto não deve tornar o manual falso.
 
-### 5.4 Perfis de ambiente
+### 5.5 Execução conteinerizada
+
+Como alternativa ao ambiente virtual, a composição reproduz a API, o serviço do rig e a ponte em
+uma imagem Python 3.11. O perfil completo inclui a inferência e, por isso, o primeiro build pode ser
+demorado. Da raiz do clone:
+
+```bash
+docker compose -f docker/docker-compose.yml build
+export PNAAT_API_TOKEN='troque-este-token'
+docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml ps
+curl -H 'Authorization: Bearer troque-este-token' http://127.0.0.1:8080/api/health
+```
+
+Os serviços `rig` e `ponte` precisam das câmeras e das portas seriais reais; sem o hardware, use
+somente a API com `docker compose -f docker/docker-compose.yml up -d api`. Antes de expor a porta,
+defina um `PNAAT_API_TOKEN` próprio. Os devices, o diretório de séries e todas as variáveis estão
+documentados em `docker/docker-compose.yml` e em `docs/replicacao-ponta-a-ponta.md`.
+
+### 5.6 Perfis de ambiente
 
 O runtime cobre a demonstração e a operação. O perfil completo acrescenta o que só o treino e a
 detecção de anomalia usam.
@@ -292,7 +386,7 @@ O dataset atual basta para demonstração de conceito não para afirmar desempen
 
 | Verificação | Comando | O que ela cobre |
 |---|---|---|
-| Produto, 506 testes, mais 17 do firmware | `make -C src-production verificar` | decisão, registro, API, cadeia, pacote e transporte |
+| Produto e firmware | `make -C src-production verificar` | decisão, registro, API, cadeia, pacote, documentação e transporte; termina sem falhas |
 | Lint | `make -C src-production lint` | zero achado com a configuração do `pyproject.toml` |
 | Contrato do detector | `treino/gera_contrato_preproc.py --conferir` | ROI, limiares, classes, imgsz, fingerprint e SHA-256 do peso, pelo validador do consumidor |
 | Pacote do detector | `treino/pacote_entrega.py --pacote <dir>` | read-back fechado de um pacote já gravado |
@@ -316,7 +410,7 @@ tcc-pnaat/
 │   ├── treino/            Cadeia de treino, do dataset ao pacote
 │   ├── firmware/          Firmware ESP32-CAM e receptor do transporte binário
 │   ├── site/              Frontend estático, servido pela API
-│   └── tests/             506 testes do produto
+│   └── tests/             suíte automatizada do produto
 ├── cad-produto/           CAD do rig: montagem, 21 peças, peças de impressão, créditos e SHA256SUMS
 ├── docs/                  Guia de operação, arquitetura, hardware, requisitos, decisões e referências
 ├── dataset/               Amostras de método, 181 arquivos

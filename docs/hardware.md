@@ -47,7 +47,7 @@ Estas são as constantes de pino do firmware próprio, em
 | Chave de carga do rail 3V3 da câmera, `CAM_POWER_GPIO` | -1, ausente nesta placa; o firmware tem o caminho pronto (`main.c:38`) | não implementado no hardware |
 | `RESET` da câmera, `CAM_PIN_RESET` | -1, não usado (`main.c:43`) | |
 | Comunicação ESP32 e host | UART/USB, console e imagem no mesmo fio, demux por enquadramento com SOF `A5 5A`, CRC16 do cabeçalho e CRC32 do payload | medido no fio |
-| Nó de trigger MicroPython (E18-D80NK) | `PRESENCE_PIN=27` active-low com pull-up e `CAPTURE_OUT_PIN=26`, fiação confirmada na bancada (`firmware/trigger-node/esp/main.py`) | implementado; divisor 5V→3,3V na saída do sensor a conferir |
+| Nó de trigger MicroPython (E18-D80NK) | `PRESENCE_PIN=27` active-low com pull-up e `CAPTURE_OUT_PIN=26`, declarados em `firmware/trigger-node/esp/main.py` | lógica implementada; ligação e níveis do sensor real a medir |
 
 O contrato congelado em `src-production/firmware/README.md:71-81` declara apenas `TRIGGER_GPIO`, o
 pino 13, e o modo elétrico esperado. Os outros pinos estão no firmware, não no contrato.
@@ -68,13 +68,10 @@ suposição (`docs/reference/ref-e18-d80nk-sensor.md:27,45-49`):
 Nos dois casos, conferir a tensão de saída em bancada antes de ligar. Terra comum entre sensor,
 ESP32 e host é obrigatório (`src-production/firmware/README.md:176`).
 
-O esquemático elétrico do trigger está publicado na raiz em `ESP32S3-Trigger.zip` (projeto Wokwi,
-documentado em `docs/reference/esquematico-trigger.md`;
-contribuição de Paulo Victor, commit `9fefd73`): ESP32-S3 DevKitC-1 com sensor PIR genérico simulando
-o trigger, divisor de tensão de 2,2 kΩ na saída e 3,3 kΩ para terra, GPIO de exemplo 5 e GPIO27
-especificado no projeto. URL do simulador: https://wokwi.com/projects/475343904586369025. Este
-documento descreve o esperado, o firmware declara o pino e o modo elétrico, e o acionamento em operação
-é feito por comando de bancada. Falta medir, com o sensor real, os níveis de saída, o debounce, com
+O esquemático de interligação atualizado está em `docs/diagramas/interligacao-eletrica.mmd`. O
+projeto histórico `ESP32S3-Trigger.zip` usa um PIR genérico no Wokwi e **não** é a fonte normativa
+da pinagem; sua limitação está registrada em `docs/reference/esquematico-trigger.md`. O firmware
+declara GPIO27 e o modo elétrico. Falta medir, com o sensor real, os níveis de saída, o debounce, com
 alvo de 50 ms, e o cooldown, com alvo de 250 ms (`main.c:23-24`;
 `src-production/firmware/README.md:195-196`).
 
@@ -189,7 +186,9 @@ instalação.
 
 1. O sensor de proximidade E18-D80NK está declarado no firmware e no mapa de GPIO, sem medição
    registrada da ligação física (seção 2).
-2. Níveis elétricos do E18-D80NK e ligação física ao GPIO13 não foram medidos (seção 2).
+2. Níveis elétricos do E18-D80NK e ligação física ao GPIO27 do nó de trigger não foram medidos
+   (seção 2). O GPIO13 da ESP32-CAM é somente uma entrada local alternativa, sem fio na topologia
+   adotada com o nó dedicado.
 3. Debounce, com alvo de 50 ms, e cooldown, com alvo de 250 ms, não foram medidos com o sensor real.
 4. O firmware aceita comando de bancada de qualquer origem. A restrição por origem em modo de
    produção é um modo de segurança documentado, a ser habilitado na instalação

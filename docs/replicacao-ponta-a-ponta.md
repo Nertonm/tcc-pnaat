@@ -73,14 +73,18 @@ duplicatas (17 testes).
 ### 4.2 Nó de trigger: ESP32 + E18-D80NK
 
 ```bash
-cd src-production/firmware/trigger-node/host
-.venv/bin/python esp_tool.py upload ../esp/main.py main.py
-.venv/bin/python esp_tool.py run main.py --segundos 30
+.venv/bin/python src-production/firmware/trigger-node/host/esp_tool.py \
+  --porta /dev/serial/by-id/<ESP32-trigger> upload \
+  src-production/firmware/trigger-node/esp/main.py main.py
+.venv/bin/python src-production/firmware/trigger-node/host/esp_tool.py \
+  --porta /dev/serial/by-id/<ESP32-trigger> run main.py --segundos 30
 ```
 
-Pinos confirmados na bancada: `PRESENCE_PIN=27`, `CAPTURE_OUT_PIN=26`. O esquemático de referência
-está em `ESP32S3-Trigger.zip` (Wokwi: divisor 2,2 kΩ/3,3 kΩ, GPIO27 no projeto). A saída do sensor é
-NPN active-low; use divisor de nível se medir 5 V no sinal. A lógica pura (`presence.py`) tem 5 testes.
+Pinos adotados e exercitados no firmware: `PRESENCE_PIN=27`, `CAPTURE_OUT_PIN=26`; os níveis do
+sensor real ainda precisam de medição. O esquemático normativo está
+em `docs/diagramas/interligacao-eletrica.mmd`; o ZIP Wokwi é apenas histórico e não fecha a ligação
+ao GPIO27. A saída do sensor é NPN active-low; use divisor de nível se medir 5 V no sinal. A lógica
+pura (`presence.py`) tem 5 testes.
 
 ## 5. Serviços (ordem de subida)
 
@@ -146,7 +150,7 @@ decisão, por isso é sempre declarado.
 
 | O quê | Comando | Esperado |
 |---|---|---|
-| Produto e firmware | `make -C src-production verificar` | 506 + 4 skip no produto, 17 no firmware |
+| Produto e firmware | `make -C src-production verificar` | sem falhas; termina com `produto e firmware verificados` |
 | Lint | `make -C src-production lint` | `All checks passed!` |
 | Trigger (lógica pura) | `make -C src-production test-trigger` | 5 passed |
 | Trigger (simulador) | `make -C src-production trigger-simular` | janelas esperadas por caso |
@@ -186,8 +190,9 @@ e `.git` da imagem.
 
 ```bash
 docker compose -f docker/docker-compose.yml build   # imagem tcc-pnaat:local (torch/ultralytics: build pesado)
-docker compose -f docker/docker-compose.yml up -d   # api + rig + ponte
-curl http://127.0.0.1:8080/api/health               # 200 JSON; cria o schema do hub.db no primeiro /api/health
+export PNAAT_API_TOKEN='troque-este-token'
+docker compose -f docker/docker-compose.yml up -d
+curl -H 'Authorization: Bearer troque-este-token' http://127.0.0.1:8080/api/health
 docker compose -f docker/docker-compose.yml ps
 docker compose -f docker/docker-compose.yml logs -f api
 ```
@@ -207,7 +212,7 @@ Variáveis de instalação (compose):
 | `PNAAT_SERIES_DIR_HOST` | rig | `./series` (cria `docker/series/`) | bind do diretório de séries do host em `/series` |
 | `PONTE_SERIAL_CAM` | ponte | `/dev/ttyUSB0` | device da ESP32-CAM |
 | `PONTE_SERIAL_TRIGGER` | ponte | `/dev/ttyUSB1` | device do trigger-node |
-| `PNAAT_API_TOKEN` | api | `pnaat-local` | Bearer token; a API recusa bind fora do loopback sem token (api.py:1373) |
+| `PNAAT_API_TOKEN` | api | obrigatório, sem padrão | Bearer token; a API recusa bind fora do loopback sem token (api.py:1373) |
 
 O `hub.db` vive no volume nomeado `hub-db` (montado em `/data`, pré-criado com o dono do usuário
 não-root `app`, uid 1000, igual ao uid do nerton no host). Healthchecks por `urllib` (sem curl na
@@ -243,6 +248,6 @@ Confirmação no fio após o flash: a ESP32-CAM imprime `BOOT_TEST firmware=esp3
 sensor_gpio=13 active=LOW`; o trigger imprime `EV READY pin=27 out=26` seguido de `EV PING`
 a cada 2 s.
 
-Pinos confirmados na bancada (código `src-production/firmware/trigger-node/esp/main.py`):
+Pinos adotados no código `src-production/firmware/trigger-node/esp/main.py`:
 `PRESENCE_PIN = 27` (linha 19, sinal do E18-D80NK, entrada com pull-up, active-low) e
 `CAPTURE_OUT_PIN = 26` (linha 24, saída "capturando").

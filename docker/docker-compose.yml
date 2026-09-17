@@ -14,7 +14,7 @@
 #                           relativo a docker/; criado como root se não existir)
 #   PONTE_SERIAL_CAM      : device da ESP32-CAM (default /dev/ttyUSB0)
 #   PONTE_SERIAL_TRIGGER  : device do trigger-node (default /dev/ttyUSB1)
-#   PNAAT_API_TOKEN       : Bearer token da API (default pnaat-local; troque em exposição real)
+#   PNAAT_API_TOKEN       : Bearer token da API (obrigatório; sem credencial padrão versionada)
 #
 # Healthchecks usam urllib da própria imagem (sem curl no python:3.11-slim).
 
@@ -30,7 +30,7 @@ services:
     environment:
       PNAAT_RIG: http://rig:8090
       PNAAT_PONTE: http://ponte:8094
-      PNAAT_API_TOKEN: ${PNAAT_API_TOKEN:-pnaat-local}
+      PNAAT_API_TOKEN: ${PNAAT_API_TOKEN:?defina PNAAT_API_TOKEN com um token nao trivial}
     ports:
       - "8080:8080"
     volumes:

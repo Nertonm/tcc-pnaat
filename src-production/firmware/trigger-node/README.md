@@ -7,15 +7,17 @@ firmware abre a janela de captura multi-view, sem duplicar e sem janela espúria
 
 - `esp/main.py` — MicroPython: leitura do sensor com debounce, arming somente em repouso, guarda
   anti-duplicação, log `EV ...` e CSV no board.
-- Pinos (fiação confirmada na bancada): `PRESENCE_PIN = 27` (pull-up, active low), `CAPTURE_OUT_PIN = 26`.
+- Pinos adotados no firmware: `PRESENCE_PIN = 27` (pull-up, active low),
+  `CAPTURE_OUT_PIN = 26`; níveis e condicionamento do sensor real ainda devem ser medidos.
 - Documento do sensor: `esp/README.md` (fiação bege=+5V, preto=sinal, azul=GND; nivel 5V exige
   divisor ou level shifter antes de pino 3.3V).
 - Gravação no board: `host/esp_tool.py upload esp/main.py main.py` (raw REPL, com sha256 no board).
 
 ## Lógica pura e simulador
 
-- `presence.py` — mesma máquina de estados, sem hardware, testada por pytest.
-- `host/simular_trigger.py --caso todos` — fluxo sem hardware, mesmos eventos do firmware.
+- `presence.py` — subconjunto portável de abertura/fechamento por debounce, testado por pytest.
+- `host/simular_trigger.py --caso todos` — fluxo básico sem hardware; não simula warm-up, guarda,
+  persistência em flash nem temporização real do firmware.
 
 ## Lane de host (porta serial)
 

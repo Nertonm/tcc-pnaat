@@ -1,8 +1,11 @@
 # Esquemático do trigger (ESP32-S3 + sensor)
 
-O esquemático do trigger está na raiz do repositório em **`ESP32S3-Trigger.zip`**, contribuição de
-Paulo Victor (commit `9fefd73`). É um projeto do simulador Wokwi, não um layout de placa
-fabricado: serve como referência da ligação do sensor ao ESP32 nos resistores e pinos corretos.
+O projeto Wokwi original está na raiz em **`ESP32S3-Trigger.zip`**, contribuição de Paulo Victor
+(commit `9fefd73`). Ele é uma referência histórica de protoboard, não um layout fabricável nem a
+fonte normativa da ligação: usa um PIR genérico e seu `diagram.json` não materializa a ligação ao
+GPIO27 adotado pelo firmware. O esquemático de interligação atualizado é
+`docs/diagramas/interligacao-eletrica.mmd`; a pinagem normativa e o procedimento de medição estão em
+`docs/hardware.md`, seção 2.
 
 ## O que o zip contém
 
@@ -23,13 +26,12 @@ Reproduzir online: https://wokwi.com/projects/475343904586369025 (ou importar o 
 | Sensor genérico (PIR simula o trigger) | VCC em 5V, GND comum, saída `OUT` no divisor |
 | Resistor R1 de 2,2 kΩ | entre a saída do sensor e o GPIO (redução de nível) |
 | Resistor R2 de 3,3 kΩ | do GPIO para GND (pull de referência) |
-| GPIO | pino de exemplo `5` no esquemático; **GPIO27** é o especificado no projeto |
+| GPIO | o arquivo histórico não fecha a ligação ao GPIO de produção; **GPIO27** é o pino do firmware |
 | Serial | TX/RX no monitor serial, 115200 |
 
-No projeto, o sensor real é o E18-D80NK (NPN active-low, 5V); a saída do módulo pode ultrapassar
-3,3V, então o divisor R1/R2 (2,2k/3,3k) condiciona o nível antes do GPIO. O comentário do commit
-resume: resistores adequados para uma GPIO qualquer, tensão padrão 3,3V; no código do produto o
-pino é o 27.
+No produto, o sensor real é o E18-D80NK (NPN active-low, 5 V). R1/R2 só deve ser usado se a medição
+do sinal livre indicar tensão acima de 3,3 V; para saída open-collector pura, usa-se GPIO27
+diretamente com pull-up para 3,3 V.
 
 ## Relação com o firmware
 
