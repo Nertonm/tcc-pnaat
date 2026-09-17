@@ -259,14 +259,14 @@ curl -H "Authorization: Bearer $PNAAT_API_TOKEN" http://127.0.0.1:8080/api/healt
 
 Os serviços `rig` e `ponte` precisam das câmeras e das portas seriais reais; sem o hardware, use
 somente a API (`up -d api`); `rig` e `ponte` ficam no profile `hardware`. Antes de expor a porta,
-defina um `PNAAT_API_TOKEN` próprio. Os devices, o diretório de séries e todas as variáveis estão
+defina um `PNAAT_API_TOKEN` próprio. Os devices, o diretório de séries e todas as variáveis estão documentados em `docker/docker-compose.yml` e em `docs/replicacao-ponta-a-ponta.md`.
 Com hardware (câmeras e portas seriais reais), a pilha completa sobe pelo profile `hardware`:
 
 ```bash
 docker compose --profile hardware -f docker/docker-compose.yml up -d
 ```
 
-documentados em `docker/docker-compose.yml` e em `docs/replicacao-ponta-a-ponta.md`.
+
 
 ### 5.6 Perfis de ambiente
 
