@@ -16,7 +16,7 @@ inferencia = ["torch", "torchvision", "ultralytics", "scikit-learn"]
 # (avaliacao_ood.py, classificador_artefato.py, preprocessamento.py). Declarados aqui porque
 # dependencia que so existe na maquina de quem escreveu nao esta declarada -- esta emprestada.
 leitura = ["Pillow", "scipy"]
-dev = ["pytest", "pytest-timeout", "ruff"]
+dev = ["pytest", "pytest-timeout", "ruff", "PyYAML"]
 
 [tool.setuptools]
 # Modulos soltos na raiz da arvore (layout escolhido: sem subpacote src/).

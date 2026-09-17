@@ -40,6 +40,8 @@ O recorte atual é: Cenário 1, inspeção de envase. O núcleo propõe observa�
 | Estrutura e autoridade de cada namespace do repositório | `estrutura-repositorio.md` |
 | Estado final do documento entregue na Entrega 1 | `entrega1-estado-final.md` |
 | Roteiro, checklist de rubrica e texto da Entrega 2 | `entrega2/` |
+| Conferência de documentação e reprodutibilidade da Entrega 6 | `entrega6/README.md` |
+| Esquemático legível e notas de segurança do trigger | `hardware/esp32s3-trigger/README.md` |
 | Artefatos da geração anterior rotulados como expansão | `backlog/README.md` |
 
 ## Fichas de requisitos

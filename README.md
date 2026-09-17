@@ -1,239 +1,210 @@
 # Inspeção multi-view e rastreabilidade em linha de envase
 
-Projeto de conclusão do módulo TCC da capacitação PNAAT 2026 (FIT), a partir do cenário 1: identificar, em uma bancada de escala reduzida, garrafas com tampa ausente, tampa mal rosqueada ou deformidade no corpo, registrar cada item e encaminhar os defeitos para análise manual.
+Projeto de conclusão do módulo TCC da capacitação PNAAT 2026 (FIT). A solução observa uma
+linha de envase em escala reduzida, captura mais de uma vista de cada garrafa PET, classifica
+defeitos de tampa e corpo, combina as evidências sem aprovar silenciosamente casos incompletos e
+registra o resultado para consulta no dashboard local.
 
-O núcleo é uma camada de observação: um evento de presença abre a janela de captura, mais de uma vista do mesmo item é classificada por domínio, os resultados são combinados por regra determinística, e o item passa a existir como evento rastreável no registro local, consultável no dashboard. O núcleo não assume controle da velocidade da esteira nem atuação física, e a composição multi-view não fixa cardinalidade nesta fase. Atuação, iluminação pulsada, encoder e topologia distribuída (MQTT, hub, multi-nó) são expansão registrada, não capacidade do núcleo.
+> **Status de entrega:** o repositório contém o produto, os testes, o firmware, os modelos CAD e
+> a documentação. A classificação de tampa possui cadeia implementada; a classificação de corpo
+> e a integração elétrica com o sensor real permanecem experimentais. Consulte
+> [`docs/entrega6/README.md`](docs/entrega6/README.md) antes de apresentar resultados.
 
 ## Sumário
 
-- [Arquitetura em resumo](#arquitetura-em-resumo)
-- [Dependências](#dependências)
-- [Estado do projeto](#estado-do-projeto)
-- [Documentação](#documentação)
-- [Estrutura do repositório](#estrutura-do-repositório)
-- [Como começar](#como-começar)
-- [Convenções](#convenções)
+- [O que é entregue](#o-que-é-entregue)
+- [Arquitetura](#arquitetura)
+- [Pré-requisitos](#pré-requisitos)
+- [Instalação](#instalação)
+- [Configuração](#configuração)
+- [Executar e confirmar](#executar-e-confirmar)
+- [Montagem elétrica e mecânica](#montagem-elétrica-e-mecânica)
+- [Estrutura e documentação](#estrutura-e-documentação)
+- [Limitações conhecidas](#limitações-conhecidas)
 
-## Arquitetura em resumo
+## O que é entregue
+
+| Artefato | Local | Situação |
+|---|---|---|
+| Código do produto e testes | [`src-production/`](src-production/) | entregável principal |
+| Dashboard e API local | [`src-production/site/`](src-production/site/) e `api.py` | implementados e testados |
+| Firmware ESP32-CAM | [`src-production/firmware/`](src-production/firmware/) | bancada; sensor real pendente |
+| Esquemático ESP32-S3 de trigger | [`docs/hardware/esp32s3-trigger/`](docs/hardware/esp32s3-trigger/) | simulação Wokwi, não diagrama de produção |
+| Modelos mecânicos e montagem | [`cad-produto/`](cad-produto/) | CAD final versionado, com verificações geométricas |
+| Documentação de engenharia | [`docs/`](docs/) | arquitetura, requisitos, dados, decisões e PoCs |
+| PoCs anteriores | [`code-workspace/`](code-workspace/) | histórico; não é o produto final |
+| Documento acadêmico | [`latex-workspace/`](latex-workspace/) | fontes LaTeX |
+| Evidências | [`evidencias/`](evidencias/) e [`models/INDEX.csv`](models/INDEX.csv) | índices e recibos versionados |
+
+## Arquitetura
 
 ```mermaid
 flowchart LR
-    subgraph nucleo[Núcleo: observação e rastreabilidade]
-        item[Item na bancada] --> trigger[Trigger de presença<br/>ESP32 + sensor]
-        trigger --> captura[Captura multi-view<br/>mais de uma vista por item]
-        captura --> cls1[Classificação lateral 1<br/>tampa e corpo]
-        captura --> cls2[Classificação lateral 2<br/>tampa e corpo]
-        captura --> cls3[Check dimensional do topo<br/>veta ou escala, não aprova]
-        cls1 --> fusao[Fusão por domínio<br/>regra determinística]
-        cls2 --> fusao
-        cls3 --> fusao
-        fusao --> decisao{Status do item}
-        decisao -->|ok, defeito ou inconclusivo| registro[Registro local<br/>SQLite]
-        registro --> dash[Dashboard e alertas]
-    end
-    subgraph expansao[Expansão registrada, fora do núcleo]
-        encoder[Encoder de movimento<br/>candidato D-21]
-        ilum[Iluminação pulsada e difusa<br/>candidato D-18]
-        separacao[Separação física confirmada<br/>D-06 e D-22]
-        rede[MQTT, hub e múltiplos nós]
-    end
-    trigger -.-> encoder
-    captura -.-> ilum
-    decisao -.-> separacao
-    registro -.-> rede
+    S[Sensor / trigger] --> E[ESP32]
+    E --> C[Captura multi-view]
+    C --> P[Pré-processamento]
+    P --> T[Classificador de tampa]
+    P --> B[Classificador de corpo]
+    T --> F[Fusão por domínio]
+    B --> F
+    F --> R[(SQLite)]
+    R --> A[API local]
+    A --> D[Dashboard]
 ```
 
-As duas vistas laterais decidem o domínio da tampa e o do corpo; a vista de topo é um check dimensional independente, que veta ou escala o caso mas nunca aprova sozinha (D-23). Defeito detectado em um domínio não é cancelado pelo outro (D-04), e evidência insuficiente mantém o item inconclusivo, sem aprovação silenciosa. Os componentes, o contrato do evento e o fluxo completo estão em `docs/arquitetura.md`; o recorte entre núcleo e expansão está em `docs/backlog/README.md`.
+A decisão é *fail-closed*: falta de vista, evidência inadequada ou falha de modelo gera resultado
+`inconclusivo`, nunca `normal`. A vista de topo auxilia e pode vetar, mas não aprova sozinha. O
+fluxo detalhado, contratos e expansões estão em [`docs/arquitetura.md`](docs/arquitetura.md); a
+implementação de produção está descrita módulo a módulo em
+[`src-production/README.md`](src-production/README.md).
 
-## Dependências
+## Pré-requisitos
 
-### Hardware
+### Obrigatórios para executar o software
 
-| Componente | Função na arquitetura | Status |
-|---|---|---|
-| Raspberry Pi 5 | Captura, inferência, registro local e dashboard | Adotado (D-19) |
-| ESP32 com MicroPython | Aquisição do sinal de presença e controle temporal | Adotado (D-19) |
-| Câmeras CSI e USB UVC | Captura multi-view (laterais e topo) | Modelos e quantidade definidos na PoC-01 e PoC-02 (escopo, D-03) |
-| Sensor fotoelétrico E18-D80NK | Trigger de presença | Candidato (D-20) |
-| Encoder incremental KY-040 | Medição de movimento | Candidato (D-21) |
-| LEDs com acionamento controlado | Iluminação pulsada e difusa | Candidato (D-18) |
-| Impressora 3D Creality K1C | Fabricação do rig em PETG | Disponibilidade e limites a confirmar no laboratório |
+- Linux, macOS ou WSL com Git e `make`;
+- Python **3.11** (o projeto aceita `>=3.11,<3.13`, mas a entrega foi verificada em 3.11);
+- `venv` e `pip` disponíveis para esse Python;
+- aproximadamente 2 GB livres para o ambiente básico (mais espaço para Torch, pesos e datasets).
 
-### Software e bibliotecas
+Dependências básicas são declaradas em [`src-production/pyproject.toml`](src-production/pyproject.toml):
+NumPy e OpenCV. O extra `dev` adiciona pytest, pytest-timeout, Ruff e PyYAML; `leitura` adiciona
+Pillow e SciPy; `inferencia` adiciona Torch, torchvision, Ultralytics e scikit-learn.
 
-| Dependência | Versão | Uso | Onde é declarada |
-|---|---|---|---|
-| Python | >= 3.11 e < 3.13 (verificado em 3.11.15) | Runtime do nó de visão | `code-workspace/pyproject.toml` |
-| NumPy | 2.3.5 | Operações numéricas e métricas | `pyproject.toml` (dependência) |
-| OpenCV (`opencv-python`) | 5.0.0.93 | Captura, ROI e processamento de imagem | `pyproject.toml` (dependência) |
-| SciPy | 1.17.1 | Ajuste de elipse e intervalos de confiança | `pyproject.toml` (dependência) |
-| Pillow | 12.3.0 | Manipulação de imagens em testes | `pyproject.toml` (extra `leitura`) |
-| pyserial | 3.5 | Comunicação serial com o ESP32 | `pyproject.toml` (dependência) |
-| pytest | 9.1.1 | Suíte de testes | `pyproject.toml` (extra `dev`) |
-| anomalib | 2.6.1 | Detector one-class, camada de expansão | `pyproject.toml` (extra `anomalib`) |
-| MicroPython | a definir pelo firmware em uso | Firmware do ESP32 | `code-workspace/src/pocs/poc01_trigger/esp/main.py` |
-| SQLite | stdlib | Persistência do registro local | `docs/dados-telemetria.md` |
+### Hardware da bancada completa
 
-### Ferramentas e plataformas
+- Raspberry Pi 5 (ou computador Linux para reprodução sem bancada);
+- câmeras CSI/USB e ESP32-CAM conforme o mapa do rig;
+- ESP32-S3 e sensor de presença, quando o trigger físico for utilizado;
+- estrutura impressa descrita em [`cad-produto/README.md`](cad-produto/README.md).
 
-| Ferramenta | Uso |
-|---|---|
-| Git e GitHub | Repositório, versionamento e publicação |
-| FreeCAD, CadQuery e trimesh | Modelagem e validação do rig (`cad-workspace/`); instalação separada, fora do venv do projeto |
-| LuaLaTeX, latexmk e biber | Compilação do documento formal (`latex-workspace/`) |
-| Roboflow | Datasets públicos usados como apoio metodológico |
-| Fatiador da K1C | Geração de G-code do lote de impressão |
+O teste automatizado e o dashboard podem ser usados sem esse hardware. Treinar ou executar o
+detector real requer dataset e pacote de modelo mantidos fora do Git por tamanho e privacidade.
 
-As versões marcadas como "a definir" serão fixadas depois das PoCs de integração. Componentes marcados como candidatos dependem da PoC correspondente (ver `docs/DECISIONS.md`).
+## Instalação
 
-## Estado do projeto
+Execute a partir da raiz do clone:
 
-A documentação de engenharia está em desenvolvimento e o código cobre parte do fluxo. O que existe hoje, com o estado verificado em `docs/pocs/README.md`:
+```bash
+git clone <URL-DESTE-REPOSITORIO> tcc-pnaat
+cd tcc-pnaat
+python3.11 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -e "./src-production[dev,leitura]"
+```
 
-- PoC-01 (trigger): debounce e abertura de janela implementados em `code-workspace/src/pocs/poc01_trigger/`; o firmware do ESP32 está em `esp/main.py` e o protocolo do ensaio físico, com pacote de evidência, em `docs/entrega2/ROTEIRO-VIDEO.md`.
-- PoC-04 (fusão): implementada por domínio, com a regra que impede o cancelamento de defeito por outra vista e trata a vista de topo como veto (D-04, emenda D-23, D-29).
-- PoC-05, PoC-06 e PoC-07: registro, retry e dashboard existem em versão parcial e declarada assim nas fichas.
-- PoC-08 (pré-processamento): implementada e testada como MVP.
-- PoC-02 (classificação de tampa) e PoC-03 (deformidade lateral): não integradas; dependem de conjunto de dados com itens defeituosos e de calibração dimensional.
-- CAD: base, peça de plataformas e mount de câmera validados em `cad-workspace/INDICE.md`; a folga de encaixe foi validada em ensaio de impressão registrado em `cad-workspace/lote-impressao-20260911/PLANO-FATIAMENTO.md`.
+Para inferência YOLO, instale também o extra pesado:
 
-Metas de requisito não são resultados: os números de RNF-01, RNF-02 e RNF-05 permanecem metas até a medição no setup declarado.
+```bash
+.venv/bin/python -m pip install -e "./src-production[inferencia]"
+```
 
-## Documentação
+`<URL-DESTE-REPOSITORIO>` é intencional: substitua pela URL do repositório definitivo da equipe
+antes da divulgação. Não há credencial, hostname pessoal ou caminho absoluto embutido no projeto.
 
-| Documento | Conteúdo |
-|---|---|
-| `docs/README.md` | Índice completo da documentação, por objetivo |
-| `docs/escopo.md` | Cenário, núcleo da proposta, limites e restrições |
-| `docs/arquitetura.md` | Diagrama, componentes, contrato do evento e expansões |
-| `docs/requisitos.md` | Catálogo RF-01 a RF-30 e RNF-01 a RNF-21, com escopo núcleo ou expansão |
-| `docs/requisitos/` | Fichas detalhadas por domínio (funcionais, não funcionais, dados e interfaces, hardware e ML, operação) |
-| `docs/DECISIONS.md` | 29 decisões técnicas com opções, direção, regras e critério de fechamento |
-| `docs/dados-telemetria.md` | Schema do registro, taxonomia de defeitos e consultas analíticas |
-| `docs/pocs/` | Protocolo e fichas das provas de conceito, mais o mapa entre a numeração antiga e a entregue |
-| `docs/metodologia.md` | Método do trabalho e critério de testabilidade |
-| `docs/FLUXOS.md` | Fluxos canônicos, cada um com gate e evidência |
-| `docs/SANITIZACAO.md` | O que nunca entra no repositório e como verificar |
-| `docs/REFERENCIAS.md` | Referências com grau de verificação (P, S, B, N) |
-| `docs/reference/` | Notas de referência, medições e auditorias |
-| `docs/design/` | Especificações de design: grip, pré-processamento PET e adaptação de detector |
-| `docs/backlog/` | Artefatos da geração anterior rotulados como expansão |
-| `docs/entrega1-estado-final.md` | Estado e pendências do documento entregue na Entrega 1 |
-| `docs/entrega2/` | Roteiro, checklist de rubrica e texto da apresentação da Entrega 2 |
-| `latex-workspace/` | Fonte do documento formal (Levantamento de Requisitos e roteiro do pitch) |
+## Configuração
 
-## Estrutura do repositório
+Os testes básicos não exigem variáveis de ambiente. Para treino e inferência reais, declare:
+
+```bash
+export PNAAT_DADOS=/caminho/para/dados
+export PNAAT_MODELOS=/caminho/para/pesos-e-runs
+```
+
+- `PNAAT_DADOS`: datasets e capturas que não são versionados;
+- `PNAAT_MODELOS`: pesos, datasets derivados, runs e pacotes calibrados.
+
+O detector só aceita um pacote que contenha peso, contrato de pré-processamento, limiares
+calibrados, metadados e checksums. A forma de produzir e conferir esse pacote está em
+[`src-production/README.md`](src-production/README.md#um-contrato-so-calibrado-nao-existe-modo-provisorio).
+
+## Executar e confirmar
+
+### 1. Verificação automatizada
+
+```bash
+make -C src-production verificar
+.venv/bin/python -m ruff check --select F src-production
+```
+
+O primeiro comando testa produto e firmware. O segundo executa o gate de correção (nomes
+indefinidos, imports mortos e código inalcançável) usado pela entrega. O resultado esperado é
+retorno zero; o pytest apresenta a contagem de testes aprovados e o Ruff imprime
+`All checks passed!`. `make -C src-production lint` executa também a dívida de estilo documentada
+em `src-production/README.md` e ainda não é um gate verde.
+
+### 2. Dashboard local com dados demonstrativos
+
+Crie um banco de demonstração e inicie a API na mesma origem do site:
+
+```bash
+.venv/bin/python src-production/semear_demo.py /tmp/pnaat-demo.db
+.venv/bin/python src-production/api.py --db /tmp/pnaat-demo.db \
+  --site src-production/site --host 127.0.0.1 --porta 8080
+```
+
+Abra <http://127.0.0.1:8080>. A confirmação visual é o dashboard preenchido com os eventos do
+banco de demonstração. Encerre com `Ctrl+C`. `api.py --help` lista as opções do servidor; o único
+argumento de `semear_demo.py` é o caminho opcional do banco (o padrão é `hub.db`).
+
+### 3. Pipeline com pacote real
+
+Não há peso fictício ou fallback silencioso. Com um pacote calibrado e uma captura válida:
+
+```bash
+make -C src-production smoke-detector \
+  PACOTE=/caminho/pacote CAPTURA=/caminho/captura ITEM=lote-0001 \
+  DB=/tmp/hub.db JANELA=3600 ALINHAMENTO=declarado \
+  EQUIPAMENTO=rig-bancada LOCALIZACAO=bancada
+```
+
+O comando retorna um evento e persiste o item no SQLite. Pacote inválido, parâmetro ausente,
+vista insuficiente ou evidência inadequada para decisão falha explicitamente ou resulta em
+`inconclusivo`.
+
+## Montagem elétrica e mecânica
+
+O esquemático recebido para o ESP32-S3 foi aberto e documentado em
+[`docs/hardware/esp32s3-trigger/README.md`](docs/hardware/esp32s3-trigger/README.md). Ele representa
+uma simulação Wokwi com PIR e divisor resistivo; **não autoriza ligação do E18-D80NK real**. Antes
+da montagem física, confirme tipo de saída, tensão, GND comum e condicionamento para 3,3 V. O
+firmware ESP32-CAM também registra os pinos, o protocolo e as pendências elétricas em
+[`src-production/firmware/README.md`](src-production/firmware/README.md).
+
+A montagem mecânica, peças, imagens, integridade e atribuições estão em
+[`cad-produto/README.md`](cad-produto/README.md), [`cad-produto/MANIFEST.json`](cad-produto/MANIFEST.json)
+e [`cad-produto/ATRIBUICOES.md`](cad-produto/ATRIBUICOES.md).
+
+## Estrutura e documentação
 
 ```text
 tcc-pnaat/
-├── README.md                  Este arquivo: arquitetura, dependências, estrutura e preparação
-├── CONTRIBUTING.md            Convenções de contribuição e de commit
-├── docs/                      Documentação normativa (requisitos, decisões, PoCs, dados)
-├── code-workspace/            Código das PoCs
-│   ├── src/pocs/              Um pacote por PoC, mais o contrato de evento
-│   ├── scripts/               Ferramentas: demo, treino, calibração, doctor, gate
-│   ├── tests/                 Suíte pytest
-│   ├── notebooks/             Apoio exploratório (sem saídas versionadas)
-│   ├── demo/                  Entrada e saída da demonstração local
-│   └── Makefile               Atalhos: test, demo, doctor, sanitizar, poc04
-├── cad-workspace/             Pipeline mecânico
-│   ├── cad/, scripts/         Fontes CadQuery e validadores
-│   ├── exports/               CAD gerado (fora do versionamento)
-│   ├── reports/, data/g0/     Laudos de referência e canários de medição
-│   └── INDICE.md              Veredito de cada artefato (válido, reprovado, conceito)
-├── latex-workspace/           Documento formal
-│   ├── main.tex, texto/       Levantamento de Requisitos
-│   └── Roteiro.tex            Roteiro do vídeo pitch
-├── evidencias/                Índice da cadeia de evidência (manifests, medições, vídeos)
-└── dataset/                   Imagens do rig versionadas por decisão do grupo
+├── src-production/     produto, testes, firmware, treino, API e site
+├── docs/               arquitetura, requisitos, decisões e documentação da entrega
+├── cad-produto/        modelos CAD, peças, verificações e atribuições
+├── code-workspace/     PoCs históricas (não importadas pelo produto)
+├── latex-workspace/    fontes do documento acadêmico
+├── evidencias/         índices da cadeia de evidências
+├── dataset/            material versionado permitido pela política
+└── models/             índice de modelos; pesos ficam fora do Git
 ```
 
-Não são versionados, por política (`docs/SANITIZACAO.md`): mídia bruta do experimento, credenciais, caminhos e identificadores de infraestrutura, STEP e STL de terceiros, checkpoints e pesos de modelo, saídas de medição locais e o próprio conjunto de dados canônico (`datasets/pnaat/`). Arquivos com recibo `.sha256` ou manifest são evidência e não devem ser reescritos.
+Comece pelo [`índice da documentação`](docs/README.md). Para a Entrega 6, a matriz entre cada
+critério, seu artefato e sua limitação está em [`docs/entrega6/README.md`](docs/entrega6/README.md).
+As regras de segurança e sanitização estão em [`docs/SANITIZACAO.md`](docs/SANITIZACAO.md).
 
-## Como começar
+## Limitações conhecidas
 
-Cada passo corresponde a uma dependência listada acima. Comandos executados a partir da raiz do repositório.
+- o modelo de tampa possui cadeia de treino/inferência; o modelo de corpo medido não atingiu
+  desempenho útil e não deve ser apresentado como pronto;
+- os pesos e o dataset canônico não são versionados; a reprodução da inferência real exige os
+  arquivos externos conferidos por hash;
+- o trigger do sensor real, debounce, níveis elétricos e integração completa Pi ↔ ESP ainda não
+  foram validados no hardware final;
+- o CAD foi verificado geometricamente, mas não constitui desenho de fabricação nem validação
+  estrutural, térmica ou metrológica;
+- o dashboard é local e não deve ser exposto à Internet sem uma camada adicional de implantação e
+  segurança.
 
-1. Obter o código:
-
-```bash
-git clone <url-do-repositorio> tcc-pnaat && cd tcc-pnaat
-```
-
-2. Ambiente Python (NumPy, OpenCV e pyserial (dependencias); SciPy e Pillow no extra `leitura`; extra `dev` com pytest e ruff). O venv é único, na raiz do clone, e o projeto roda em Python 3.11 (o `python3` do host pode ser mais novo e quebrar o extra `anomalib`):
-
-```bash
-python3.11 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -e "code-workspace[dev]"
-```
-
-O extra `anomalib` é necessário apenas para a camada de detecção de anomalia:
-
-```bash
-.venv/bin/python -m pip install -e "code-workspace[anomalib]"
-```
-
-Os alvos do `Makefile` encontram esse venv automaticamente (`../.venv` a partir de `code-workspace/`).
-
-3. Verificar a instalação com a suíte de testes e o diagnóstico de ambiente:
-
-```bash
-make -C code-workspace test
-make -C code-workspace doctor
-```
-
-4. Dados: o conjunto canônico fica fora do repositório e é apontado por variável de ambiente. As imagens em `dataset/` são as versionadas por decisão do grupo.
-
-```bash
-export PNAAT_DATASETS="$HOME/tcc-pnaat/datasets/pnaat"
-test -d "$PNAAT_DATASETS/dataset/normal"
-```
-
-5. Demonstração do fluxo (gatilho, pré-processamento, decisão, registro e dashboard):
-
-```bash
-make demo
-```
-
-6. Firmware e bancada (pyserial e ESP32): o pino de presença e a porta serial estão declarados no firmware e na ferramenta de bancada.
-
-```bash
-python -m serial.tools.list_ports
-python scripts/esp_tool.py --help
-```
-
-7. CAD (opcional): a validação do rig usa CadQuery, trimesh e FreeCAD headless, que não fazem parte do venv do projeto e exigem instalação própria. Sem eles, `make -C cad-workspace canary` e `validate-optical-rig` param com `ModuleNotFoundError: cadquery`. O estado verificado de cada artefato está em `cad-workspace/INDICE.md`, e a verificação no ambiente de origem em `cad-workspace/TRANSFER.md`. Os STEP e STL ficam em `cad-workspace/exports/`, fora do versionamento.
-
-```bash
-make -C cad-workspace validate-g0   # valida os templates G0 (sem CadQuery)
-make -C cad-workspace canary        # exige CadQuery e trimesh instalados
-```
-
-8. Documento (LuaLaTeX, latexmk e biber): o documento formal e o roteiro do pitch.
-
-```bash
-make -C latex-workspace all                     # Levantamento de Requisitos (main.tex)
-latexmk -lualatex latex-workspace/Roteiro.tex   # roteiro do vídeo pitch
-```
-
-A seção `texto/aceite.tex` ainda tem campos marcados com `\field` a preencher; `make -C latex-workspace check-final` acusa cada um antes da entrega final.
-
-9. Higiene antes de commitar: o gate roda testes, sanitizador e checagem de mídia no staging. O `core.hooksPath` é configuração local e não é herdada por clone, então cada checkout precisa instalar o gate uma vez.
-
-```bash
-make -C code-workspace hooks     # instala o gate neste clone
-make -C code-workspace sanitizar # checagem de higiene (sai != 0 se houver achado)
-```
-
-Bypass consciente: `PNAAT_HOOK_BYPASS=1` **e** o trailer `Bypass: <motivo>` na mensagem do commit — o gate confere o trailer e recusa o escape sem motivo declarado.
-
-## Convenções
-
-- Documentação e comentários em português; nomes de variáveis e funções em inglês ou em português sem acento.
-- Cada PoC possui README próprio em `code-workspace/src/pocs/pocNN_*/README.md`.
-- Decisões registradas em `docs/DECISIONS.md` com regra de atualização por evidência.
-- Classes canônicas: `normal`, `tampa_ausente`, `tampa_mal_rosqueada`, `inconclusivo` (D-28).
-- Evidência segue a cadeia `física -> dados -> modelo -> teste -> documentação` (D-16).
-- Requisito é meta; README de PoC é protocolo; código é mecanismo; evidência é o que aconteceu; decisão interpreta a evidência.
-- Commit passa pelo gate versionado em `code-workspace/scripts/commit_gate.sh`; o escape consciente é `PNAAT_HOOK_BYPASS=1` e o motivo deve ser registrado na mensagem do commit.
+Essas limitações são declaradas para separar código existente, evidência medida e trabalho futuro.
+Não apresente metas de requisitos como resultados experimentais.
