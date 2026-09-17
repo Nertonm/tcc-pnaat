@@ -145,8 +145,7 @@ em `cad-produto/`.
    deve produzir exatamente um par `EV OPEN`/`EV CLOSE`.
 
 O esquemático atualizado é `docs/diagramas/interligacao-eletrica.mmd`. O ZIP Wokwi preservado na
-raiz é histórico, usa um PIR genérico e não é a fonte normativa da pinagem. Fotografias, tensão,
-distância e 10 passagens com garrafa vazia e cheia devem ser registradas na validação da bancada.
+raiz é histórico, usa um PIR genérico e não é a fonte normativa da pinagem.
 
 ### 3.2 Sequência de montagem mecânica
 
@@ -250,7 +249,7 @@ docker compose -f docker/docker-compose.yml build
 export PNAAT_API_TOKEN='troque-este-token'
 docker compose -f docker/docker-compose.yml up -d api    # sem hardware: só o núcleo
 docker compose -f docker/docker-compose.yml ps
-curl -H 'Authorization: Bearer troque-este-token' http://127.0.0.1:8080/api/health
+curl -H "Authorization: Bearer $PNAAT_API_TOKEN" http://127.0.0.1:8080/api/health
 ```
 
 Os serviços `rig` e `ponte` precisam das câmeras e das portas seriais reais; sem o hardware, use
